@@ -20,6 +20,12 @@ requires-python = ">=3.12,<3.13"
 # sub-packages installed by its own `./isaaclab.sh -i` orchestration (symlinks,
 # RL-framework extras, per-package editable installs) that uv cannot drive from
 # `sync`. It is a documented post-sync step. See design_notes.
+#
+# WARNING: after `isaaclab.sh -i`, a plain `uv sync` is DESTRUCTIVE -- exact
+# sync prunes every package the lock does not know, which is precisely the
+# Isaac Lab layer (isaaclab*, rsl_rl, wandb, ...). To pick up dependency
+# changes on an installed machine use `uv sync --inexact`, or re-run
+# `./isaaclab.sh -i` (with this venv active) after any plain sync.
 # ---------------------------------------------------------------------------
 dependencies = [
     # Isaac Sim 6.0 as pip wheels -- the full simulator, not a viz add-on.
@@ -42,6 +48,11 @@ dependencies = [
     # fork's version. Installed editable so the working tree is the live import
     # path.
     "newton[sim]",
+
+    # Isaac Lab's built-in VideoRecorder (train --video) imports moviepy at env
+    # creation and only suggests `pip install` in the error -- an install nobody
+    # remembers on the next machine. Pinned <2 per Isaac Lab's own requirement.
+    "moviepy<2",
 ]
 
 # ---------------------------------------------------------------------------
