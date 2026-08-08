@@ -1,4 +1,7 @@
-"""Gym task registrations for the Trossen Stationary AI cube-lift and spatula-lift tasks.
+"""Gym task registrations for the Trossen Stationary AI cube-lift task.
+
+The spatula-lift task lives in IsaacLab proper:
+``isaaclab_tasks.contrib.trossen_spatula_lift`` (``IsaacContrib-Lift-Spatula-Trossen-v0``).
 
 Importing this (via ``import trossen_cube``) registers the gym ids. The env-cfg
 modules import ``isaaclab.*``, so this must run AFTER ``AppLauncher`` has started.
@@ -23,26 +26,6 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": f"{__name__}.cube_lift.cube_lift_env_cfg:StationaryAiCubeLiftEnvCfg_PLAY",
         "rsl_rl_cfg_entry_point": f"{__name__}.cube_lift.agents.rsl_rl_ppo_cfg:StationaryAILiftPPORunnerCfg",
-    },
-    disable_env_checker=True,
-)
-
-gym.register(
-    id="Isaac-Lift-Spatula-StationaryAI-Teacher-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.spatula_lift.spatula_lift_env_cfg:StationaryAiSpatulaLiftEnvCfg",
-        "rsl_rl_cfg_entry_point": f"{__name__}.spatula_lift.agents.rsl_rl_ppo_cfg:StationaryAISpatulaLiftPPORunnerCfg",
-    },
-    disable_env_checker=True,
-)
-
-gym.register(
-    id="Isaac-Lift-Spatula-StationaryAI-Teacher-Play-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.spatula_lift.spatula_lift_env_cfg:StationaryAiSpatulaLiftEnvCfg_PLAY",
-        "rsl_rl_cfg_entry_point": f"{__name__}.spatula_lift.agents.rsl_rl_ppo_cfg:StationaryAISpatulaLiftPPORunnerCfg",
     },
     disable_env_checker=True,
 )
