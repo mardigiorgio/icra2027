@@ -76,9 +76,12 @@ IsaacContrib-Velocity-Flat-UnitreeGo1
 Isaac-Velocity-Flat-UnitreeGo2
 Isaac-Velocity-Flat-G1-v0
 Isaac-Velocity-Flat-H1
-Isaac-Reorient-Cube-Allegro-Direct
-Isaac-Lift-KukaAllegro
 "}
+# Dexterous tasks removed from this box's default roster (2026-08-08): at 300 iterations
+# they cannot produce learning curves (stock budgets are 5000/15000), and their
+# throughput + stability signal has been banked -- including reorient-adaptive's 3/3
+# NaN failure at stock scale, which graduated to a dedicated diagnostic. Re-add via
+# TASKS= if a cell is ever needed.
 
 die() { echo "[FATAL] $*" >&2; exit 1; }
 
