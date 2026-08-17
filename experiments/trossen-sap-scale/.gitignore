@@ -9,3 +9,5 @@ wandb/
 logs/
 sweep.out
 summary.tsv
+runs-p34-n*/
+matched_n.out

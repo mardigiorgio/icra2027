@@ -18,6 +18,9 @@ tools/rubato_sweep/
     analyze.py      replicate-aware aggregation, refuses n=1 differences
     preflight.py    dump both arms' resolved identity and diff them
     preflight_probe.py  the GPU-side dumper (runs under isaaclab.sh -p)
+    crossplay.py    the 2x2 cross-play evaluation: policy x physics
+    artifact.py     artifact-exploitation signatures and the 2x2 verdict (CPU)
+    artifact_probe.py   the GPU-side rollout instrument and baseline measurer
     configs/        experiment configs, including the queued protocols
     tests/          CPU-only tests: python -m pytest tools/rubato_sweep/tests -q
 ```
@@ -64,6 +67,54 @@ Then:
 which prints per-run cost (s/iter, samples/s, ms per accepted substep, GPU peak,
 and whether the run had the device to itself) and, per metric, the between-arm
 difference **against the within-arm replicate spread**.
+
+## Cross-play: does a policy's score survive a different timestepper?
+
+A training curve cannot tell you whether a policy learned the task or learned an
+artifact of the integrator. Replaying it under the OTHER timestepper can:
+
+```
+.venv/bin/python tools/sweep.py crossplay <crossplay.yaml> --plan   # no GPU
+.venv/bin/python tools/sweep.py crossplay <crossplay.yaml>          # 2x2 + video
+.venv/bin/python tools/sweep.py artifact  <out_dir>                 # re-judge, no GPU
+.venv/bin/python tools/sweep.py cost <N> --seeds 2                  # price it first
+```
+
+`crossplay` measures a per-physics BASELINE first (resting contact overlap, the
+free-fall acceleration and energy residuals, the speed-comparison noise floor),
+then runs every policy under every physics, writing per-step traces, a mean
+episodic return and one video per cell. `artifact` judges the traces: four
+invalid-configuration signatures (interpenetration past the object's own wall,
+support with an empty contact set, energy gained in contact-free flight, the
+object outrunning the gripper), the share of reward-bearing steps and of income
+they account for, and a three-condition verdict over the 2x2.
+
+Its rules, on top of the ones below:
+
+10. **A threshold is a measured baseline or it does not exist.** Every signature
+    is judged against a reference measured in the SAME physics arm by the same
+    probe. A signature with no baseline reports `UNCALIBRATED` and is excluded
+    from the verdict; it never falls back to a constant.
+
+11. **`exploit_fraction` is a LOWER bound.** It is the union of the signatures
+    that are live. An exploit none of them models is invisible, so a zero means
+    "none of these four", never "the physics was valid".
+
+12. **A truncated contact set voids every contact claim.** If the triangle-pair
+    buffer overflowed, an empty contact set is not evidence of no contact and a
+    shallow overlap is not evidence of no overlap. Every signature reports
+    `VOID`.
+
+13. **Transfer asymmetry alone is not exploitation.** The verdict requires
+    asymmetry AND a mechanism (the fixed-trained policy's invalid-configuration
+    rate exceeds the adaptive-trained policy's *under the same physics*) AND
+    locality (that rate collapses when the physics changes). Asymmetry without a
+    mechanism is reported as brittleness, which is a real and different finding.
+
+14. **Watch the videos.** Every cell renders one to its own directory with its
+    own filename prefix — `play` writes into the checkpoint's run directory,
+    which made pass 30's cross cells overwrite the same-arm ones. `artifact`
+    prints what to look for in each cell.
 
 ## The rules, and the failure each one encodes
 
@@ -114,8 +165,15 @@ difference **against the within-arm replicate spread**.
 
 ## Status
 
-The CPU paths (config, expansion, parsing, demand normalization, aggregation)
-are covered by `tests/` and pass. `preflight_probe.py` and the GPU launch path
-were written under a no-GPU rail and have **not been executed**; their access
-paths are lifted from the campaign's proven parity probe. Treat the first run as
-a shakedown.
+The CPU paths (config, expansion, parsing, demand normalization, aggregation,
+and every artifact signature) are covered by `tests/` and pass. The whole
+artifact read/judge/report path has also been exercised end-to-end on synthetic
+traces, including the null case.
+
+`preflight_probe.py`, `artifact_probe.py` and the GPU launch paths were written
+under a no-GPU rail and have **not been executed**; their solver access paths
+are lifted from the campaign's proven probes (`p30_regime_probe.py`,
+`p31_eval_probe.py`, `p32_pen_core.py`). Treat the first run as a shakedown, and
+read the first baseline JSON before trusting anything downstream of it: its
+resting overlap and free-fall residual are physically interpretable numbers, and
+an absurd one means the probe is reading the wrong array.

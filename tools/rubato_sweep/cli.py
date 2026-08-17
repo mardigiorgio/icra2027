@@ -6,7 +6,7 @@ import argparse
 import os
 import sys
 
-from . import analyze, gpu, parse, preflight as preflight_mod, runner
+from . import analyze, artifact, crossplay as crossplay_mod, gpu, parse, preflight as preflight_mod, runner
 from .config import SweepCfg
 
 
@@ -83,6 +83,39 @@ def cmd_analyze(args) -> int:
     return 0
 
 
+def cmd_crossplay(args) -> int:
+    """The 2x2 cross-play evaluation and its artifact analysis."""
+    cfg = crossplay_mod.CrossplayCfg.from_file(args.config)
+    os.makedirs(cfg.out_dir, exist_ok=True)
+    if args.plan:
+        crossplay_mod.run(cfg, dry_run=True)
+        return 0
+    with gpu.SweepLock(os.path.join(cfg.out_dir, ".lock")):
+        crossplay_mod.run(cfg, dry_run=False)
+    return 0
+
+
+def cmd_artifact(args) -> int:
+    """CPU-only: re-judge existing traces. Touches no GPU."""
+    out_dir = args.target
+    if out_dir.endswith((".yaml", ".yml", ".json")):
+        out_dir = crossplay_mod.CrossplayCfg.from_file(out_dir).out_dir
+    artifact.report(out_dir)
+    return 0
+
+
+def cmd_cost(args) -> int:
+    """CPU-only: what the matched-N protocol costs, as a function of N."""
+    est = crossplay_mod.wall_estimate(args.iterations, args.seeds, s_per_iter_fixed=args.s_per_iter)
+    print(f"matched-N protocol at N={args.iterations}, {args.seeds} seed(s) per arm:")
+    print(f"  fixed-arm training  {est['fixed_training_h']:6.2f} h   "
+          f"({args.seeds} x {args.iterations} x {args.s_per_iter:.3f} s/iter, MEASURED s/iter)")
+    print(f"  cross-play + video  {est['crossplay_h']:6.2f} h   (PROJECTED cell cost)")
+    print(f"  TOTAL               {est['total_h']:6.2f} h")
+    print("  the adaptive arm is NOT priced: its policy at iteration N comes from the run already in flight")
+    return 0
+
+
 def cmd_census(args) -> int:
     print(gpu.census().line())
     return 0
@@ -112,6 +145,22 @@ def main(argv: list[str] | None = None) -> int:
     an.add_argument("config", help="config file or an output directory")
     an.add_argument("--window", type=int, default=50, help="iterations averaged at the tail of each run")
     an.set_defaults(func=cmd_analyze)
+
+    xp = sub.add_parser("crossplay", help="2x2 cross-play evaluation + artifact analysis")
+    xp.add_argument("config")
+    xp.add_argument("--plan", action="store_true", help="print the cells and resolved checkpoints; no GPU")
+    xp.set_defaults(func=cmd_crossplay)
+
+    ar = sub.add_parser("artifact", help="re-judge existing cross-play traces (CPU only)")
+    ar.add_argument("target", help="cross-play config file or an output directory")
+    ar.set_defaults(func=cmd_artifact)
+
+    co = sub.add_parser("cost", help="price the matched-N protocol (CPU only)")
+    co.add_argument("iterations", type=int, help="N, the matched horizon")
+    co.add_argument("--seeds", type=int, default=2, help="training seeds per arm (default 2, the minimum)")
+    co.add_argument("--s-per-iter", type=float, default=8.067,
+                    help="fixed-arm seconds per iteration (default: pass-31 measured 8.067 at 1024 envs)")
+    co.set_defaults(func=cmd_cost)
 
     cs = sub.add_parser("census", help="print the current GPU compute-app census")
     cs.set_defaults(func=cmd_census)
