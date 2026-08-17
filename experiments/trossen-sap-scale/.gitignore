@@ -1,0 +1,11 @@
+# Per-machine run artifacts. Completion lives in the run JSON and the W&B
+# ledger, not in git.
+runs/
+runs-scale/
+runs-pack/
+status/
+joblogs/
+wandb/
+logs/
+sweep.out
+summary.tsv
