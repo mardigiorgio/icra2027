@@ -18,7 +18,14 @@ from typing import Any
 
 from .config import Cell, SweepCfg
 
-PROBE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "preflight_probe.py")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+#: Single-family (SAP fixed-vs-adaptive) probe: reaches into the SAP solver and
+#: dumps its tolerances, capacities and contact law.
+PROBE = os.path.join(_HERE, "preflight_probe.py")
+#: Multi-engine probe: backend-agnostic. Dumps the MDP and control contract that
+#: the engines must share, and only best-effort solver detail, because no single
+#: object graph spans PhysX and Newton.
+CONTRACT_PROBE = os.path.join(_HERE, "contract_probe.py")
 
 # Fields that are legitimately per-arm in a fixed-vs-adaptive comparison. Any
 # other difference is a confound until someone says otherwise in the config.
@@ -53,7 +60,8 @@ def run_probe(cfg: SweepCfg, arm_name: str, out_json: str, echo=print) -> dict[s
     env["RS_NENV"] = str(cfg.preflight.num_envs)
     env["CHECK_OUT"] = out_json
     env.update(arm.env)
-    cmd = [os.path.join(cfg.isaaclab_dir, "isaaclab.sh"), "-p", PROBE, "--headless"]
+    probe = CONTRACT_PROBE if cfg.preflight.by_family else PROBE
+    cmd = [os.path.join(cfg.isaaclab_dir, "isaaclab.sh"), "-p", probe, "--headless"]
     echo(f"preflight: {arm_name} -> {out_json}")
     log_path = out_json.replace(".json", ".log")
     with open(log_path, "w") as log:
@@ -65,6 +73,10 @@ def run_probe(cfg: SweepCfg, arm_name: str, out_json: str, echo=print) -> dict[s
         raise RuntimeError(f"preflight probe produced no JSON for arm '{arm_name}'; see {log_path}")
     with open(out_json) as fh:
         return json.load(fh)
+
+
+def _matches(key: str, patterns: set[str]) -> bool:
+    return any(key == p or key.startswith(p + ".") for p in patterns)
 
 
 def compare(dumps: dict[str, dict[str, Any]], expected: tuple[str, ...]) -> dict[str, Any]:
@@ -80,11 +92,69 @@ def compare(dumps: dict[str, dict[str, Any]], expected: tuple[str, ...]) -> dict
         values = {arm: f.get(key) for arm, f in flat.items()}
         if len({json.dumps(v, sort_keys=True, default=str) for v in values.values()}) == 1:
             continue
-        if any(key == a or key.startswith(a + ".") for a in allowed):
+        if _matches(key, allowed):
             intended[key] = values
         else:
             unexpected[key] = values
     return {"intended": intended, "unexpected": unexpected, "ok": not unexpected}
+
+
+def compare_by_family(
+    dumps: dict[str, dict[str, Any]],
+    families: dict[str, list[str]],
+    expected: tuple[str, ...],
+    contract_keys: tuple[str, ...],
+) -> dict[str, Any]:
+    """Multi-engine preflight: strict within a family, contract-only across them.
+
+    Returns the same ``intended``/``unexpected``/``ok`` shape as :func:`compare`,
+    plus a per-family breakdown and the resolved contract, so the report says
+    which check each finding came from.
+
+    A key that is MISSING on one arm and present on another counts as a contract
+    violation, not as agreement: an engine that cannot report the control rate
+    has not demonstrated it matches.
+    """
+    per_family: dict[str, dict[str, Any]] = {}
+    unexpected: dict[str, dict[str, Any]] = {}
+    intended: dict[str, dict[str, Any]] = {}
+
+    for fam, arms in sorted(families.items()):
+        if len(arms) < 2:
+            per_family[fam] = {"arms": arms, "intended": {}, "unexpected": {}, "ok": True,
+                               "note": "single arm in this family: nothing to diff"}
+            continue
+        rep = compare({a: dumps[a] for a in arms}, expected)
+        per_family[fam] = {"arms": arms, **{k: rep[k] for k in ("intended", "unexpected", "ok")}}
+        for key, values in rep["intended"].items():
+            intended[f"[{fam}] {key}"] = values
+        for key, values in rep["unexpected"].items():
+            unexpected[f"[{fam}] {key}"] = values
+
+    flat = {arm: _flatten(d) for arm, d in dumps.items()}
+    contract: dict[str, dict[str, Any]] = {}
+    missing = set(contract_keys)
+    for key in sorted({k for f in flat.values() for k in f}):
+        if not _matches(key, set(contract_keys)):
+            continue
+        missing.discard(next((p for p in contract_keys if key == p or key.startswith(p + ".")), key))
+        values = {arm: f.get(key, "<absent>") for arm, f in flat.items()}
+        contract[key] = values
+        if len({json.dumps(v, sort_keys=True, default=str) for v in values.values()}) != 1:
+            unexpected[f"[contract] {key}"] = values
+
+    for key in sorted(missing):
+        unexpected[f"[contract] {key}"] = {arm: "<absent>" for arm in dumps}
+
+    return {
+        "mode": "by_family",
+        "intended": intended,
+        "unexpected": unexpected,
+        "ok": not unexpected,
+        "per_family": per_family,
+        "contract": contract,
+        "contract_keys_absent": sorted(missing),
+    }
 
 
 def preflight(cfg: SweepCfg, cells: list[Cell] | None = None, echo=print) -> dict[str, Any]:
@@ -96,7 +166,15 @@ def preflight(cfg: SweepCfg, cells: list[Cell] | None = None, echo=print) -> dic
         dumps[arm.name] = run_probe(cfg, arm.name, out, echo=echo)
         if not dumps[arm.name].get("ok"):
             raise RuntimeError(f"preflight probe failed for arm '{arm.name}': {dumps[arm.name].get('error')}")
-    report = compare(dumps, cfg.preflight.expected_differences)
+    if cfg.preflight.by_family:
+        fams: dict[str, list[str]] = {}
+        for arm in cfg.arms:
+            fams.setdefault(arm.family, []).append(arm.name)
+        report = compare_by_family(
+            dumps, fams, cfg.preflight.expected_differences, cfg.preflight.contract_keys
+        )
+    else:
+        report = compare(dumps, cfg.preflight.expected_differences)
     report["dumps"] = dumps
     path = os.path.join(cfg.out_dir, "preflight_report.json")
     with open(path, "w") as fh:

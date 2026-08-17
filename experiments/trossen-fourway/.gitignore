@@ -1,0 +1,9 @@
+# Per-machine run artifacts. Completion lives in the run JSON, the trace files
+# and the W&B ledger, not in git.
+runs-screen/
+runs-screen3/
+runs-full/
+runs-crossplay/
+fourway.out
+wandb/
+logs/

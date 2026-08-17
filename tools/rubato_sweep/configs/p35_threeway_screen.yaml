@@ -1,0 +1,99 @@
+# PASS 35 -- THE THREE-ENGINE COMPARISON, SCREENING STAGE.
+#
+# This is p35_fourway_screen.yaml with the PhysX arm removed, and it is the
+# version that runs on TODAY'S stack with no task, scene or asset edit. Use it
+# to start the campaign while the PhysX arm is still gated on Marco's task-side
+# changes; the three arms it does run are exactly the three the four-way will
+# run, at the same horizon and the same seeds, so the cells are reusable.
+#
+# Arms: MuJoCo-Warp fixed, SAP fixed, SAP adaptive.
+#
+# WHAT THIS STAGE IS FOR, and it is not the paper's claim:
+#   * that all four arms CONSTRUCT and RUN on this scene at all -- the PhysX arm
+#     has never run once on this machine, in any repo, at any time;
+#   * a window-matched throughput measurement for all four (n=3), which does not
+#     exist today: the SAP numbers on record are the last-50 of 150-iteration
+#     runs while the MuJoCo number is a still-rising 40-iteration run, so they
+#     are not comparable and the MuJoCo figure is a lower bound;
+#   * the failure-mode census per arm: divergence terminations, speeding
+#     terminations, contact/triangle-pair overflow, memory, NaN.
+#
+# WHAT IT CANNOT SUPPORT: anything about reward, sample efficiency or final
+# performance. Pass 33 measured the within-arm reward range at 150 iterations at
+# 97% of the arm's own mean; at 300 iterations pass 30 found the two SAP arms
+# 0.6% apart against a 2.4x same-config replicate spread. Do not quote a reward
+# number from a cell in this file.
+#
+# WHY IT IS STILL WORTH RUNNING WITHOUT PhysX: MuJoCo-fixed vs SAP-fixed is an
+# engine comparison at a matched timestep structure, and SAP-fixed vs
+# SAP-adaptive is the only pair in the whole design that isolates adaptivity.
+# The PhysX arm adds a third contact law and a second collision pipeline; it
+# does not carry either of those two claims.
+
+name: p35-threeway-screen
+task: IsaacContrib-Lift-Spatula-Trossen-v0
+project: rubato-trossen
+out_dir: ~/Documents/code/IsaacLabRubato/experiments/trossen-fourway/runs-screen3
+
+# Read off the task cfg (decimation 4, sim.dt 1/120 -> 30 Hz control) and the
+# agent cfg, and re-checked by preflight against every arm.
+num_steps_per_env: 24
+decimation: 4
+
+timing_sensitive: true      # this stage exists to produce timings; never pack it
+timeout_s: 14400
+startup_abort_s: 900
+
+video:
+  enabled: true
+  every_iterations: 50
+  length: 200
+
+# --viz newton is a Newton-only visualizer; it is passed per-arm, not globally,
+# so the PhysX arm does not carry it.
+viz: null
+
+arms:
+  mujoco_fixed:
+    solver: mujoco
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp"]
+    family: mujoco
+  sap_fixed:
+    solver: sap
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp"]
+    family: sap
+  sap_adaptive:
+    solver: sap-adaptive
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp_adaptive"]
+    family: sap
+
+axes:
+  num_envs: [1024]
+  iterations: [200]
+  seeds: [42, 7, 13]
+
+preflight:
+  enabled: true
+  num_envs: 8
+  abort_on_diff: true
+  # Multi-engine mode: the two SAP arms are still diffed field for field (that
+  # is the D7 fairness check and it must not weaken), while across engines only
+  # the contract below is required to match. The engines are SUPPOSED to differ
+  # in every solver field; that difference is the experiment.
+  by_family: true
+  expected_differences: []
+  contract_keys:
+    # The control contract: dt, decimation, the derived rate, episode length.
+    - contract.control
+    # Action and observation dimensions, and the env count.
+    - contract.spaces
+    # Every MDP term name, its function, its weight and its mode. If one arm's
+    # reward set differs by a term or a weight, the arms are not running the
+    # same task and no downstream care repairs it.
+    - contract.mdp
+    # The scene inventory and the actuated joints.
+    - contract.scene.assets
+    - contract.scene.robot_joint_names
+    - contract.scene.robot_body_names
+    - contract.scene.robot_default_joint_pos
+    - contract.scene.object_mass_kg

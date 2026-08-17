@@ -50,14 +50,24 @@ def load_mapping(path: str) -> dict[str, Any]:
 
 @dataclass(frozen=True)
 class Arm:
-    """One solver configuration under comparison."""
+    """One physics configuration under comparison.
+
+    ``solver`` is the ``--solver`` latch and is OPTIONAL, because it only exists
+    for the Newton MuJoCo-Warp backend: the training entry point raises if it is
+    passed against a physics cfg with no ``solver_cfg``, which is exactly the
+    PhysX case. A PhysX arm therefore declares ``solver: null`` and selects its
+    engine through ``extra_args: ["physics=physx"]`` alone.
+    """
 
     name: str
-    solver: str
+    solver: str | None = None
     extra_args: tuple[str, ...] = ()
     env: Mapping[str, str] = field(default_factory=dict)
+    family: str = "newton"
 
     def cli_args(self) -> list[str]:
+        if self.solver is None:
+            return list(self.extra_args)
         return ["--solver", self.solver, *self.extra_args]
 
 
@@ -113,6 +123,20 @@ class PreflightCfg:
     ``expected_differences`` lists the keys the arms are ALLOWED to differ in
     (for a fixed-vs-adaptive comparison, the solver class and the substep count
     are the intended difference). Any other difference aborts the sweep.
+
+    ``by_family`` switches the check for a MULTI-ENGINE sweep, where the strict
+    all-arms diff is the wrong question: PhysX and MuJoCo and SAP are meant to
+    differ in every solver field, so demanding equality would either abort
+    always or, once silenced, check nothing. Instead:
+
+      * arms sharing a ``family`` are diffed strictly, as today -- that is where
+        a real confound can hide, because those arms DO share a contact law;
+      * across families only ``contract_keys`` must match. Those are the axes
+        the comparison equalizes (the MDP, the control contract, the batch),
+        and they are the only axes its claims are allowed to live on.
+
+    A cross-family sweep with no ``contract_keys`` is refused: it would be a
+    comparison with nothing held fixed.
     """
 
     enabled: bool = True
@@ -120,6 +144,8 @@ class PreflightCfg:
     expected_differences: tuple[str, ...] = ()
     abort_on_diff: bool = True
     timeout_s: int = 1800
+    by_family: bool = False
+    contract_keys: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -189,9 +215,10 @@ class SweepCfg:
         arms = tuple(
             Arm(
                 name=name,
-                solver=str(spec["solver"]),
+                solver=None if spec.get("solver") is None else str(spec["solver"]),
                 extra_args=tuple(str(a) for a in spec.get("extra_args", ())),
                 env={str(k): str(v) for k, v in dict(spec.get("env", {})).items()},
+                family=str(spec.get("family", "newton")),
             )
             for name, spec in arms_raw.items()
         )
@@ -223,7 +250,7 @@ class SweepCfg:
             packing=PackingCfg(**dict(data.get("packing", {}))),
             preflight=PreflightCfg(
                 **{
-                    k: (tuple(v) if k == "expected_differences" else v)
+                    k: (tuple(v) if k in ("expected_differences", "contract_keys") else v)
                     for k, v in dict(data.get("preflight", {})).items()
                 }
             ),
@@ -253,6 +280,28 @@ class SweepCfg:
             raise ConfigError("packing.max_concurrent must be >= 2 when packing is enabled")
         if not self.seeds or not self.env_counts or not self.horizons:
             raise ConfigError("axes.seeds, axes.num_envs and axes.iterations must each be non-empty")
+        for arm in self.arms:
+            if arm.solver is None and not arm.extra_args:
+                raise ConfigError(
+                    f"arm '{arm.name}' selects no physics at all: with 'solver: null' it must name "
+                    "its engine in extra_args (e.g. physics=physx). Otherwise it silently runs the "
+                    "task's default preset under another arm's name, and the sweep compares one "
+                    "engine with itself."
+                )
+        if self.preflight.enabled and len({a.family for a in self.arms}) > 1:
+            if not self.preflight.by_family:
+                raise ConfigError(
+                    "arms span more than one physics family, so the strict all-arms preflight diff "
+                    "would abort on differences that ARE the experiment. Set preflight.by_family: "
+                    "true and list the axes this comparison equalizes in preflight.contract_keys."
+                )
+            if not self.preflight.contract_keys:
+                raise ConfigError(
+                    "preflight.by_family with no contract_keys checks nothing across engines. List "
+                    "the axes this comparison equalizes -- the MDP terms, the action and observation "
+                    "contract, the control rate, the batch -- because those are the only axes its "
+                    "claims may live on."
+                )
 
     # -- expansion ---------------------------------------------------------
 

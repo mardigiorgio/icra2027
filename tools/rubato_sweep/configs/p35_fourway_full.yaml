@@ -1,0 +1,111 @@
+# PASS 35 -- THE FOUR-ENGINE COMPARISON, CONFIRMATION STAGE.
+#
+# Arms: PhysX, MuJoCo-Warp fixed, SAP fixed, SAP adaptive. One task, one asset,
+# one MDP, one policy architecture, one batch, one control rate, one seed set,
+# one iteration budget. Everything the design equalizes is equalized here; the
+# preflight contract below is what proves it rather than asserting it.
+#
+# WHAT THIS STAGE CAN SUPPORT:
+#   * wall cost per engine to a fixed sample budget (98.3M env steps per run);
+#   * whether each engine learns the task at all at that budget;
+#   * the 4x4 cross-play matrix built from these checkpoints, which is where the
+#     paper's claim actually lives -- see p35_fourway_crossplay.yaml. The eval
+#     instrument pools ~1024 episodes per cell and reports a standard error near
+#     0.25% of the mean, against a training-curve seed spread that pass 33
+#     measured at 97% of the mean. The evaluation separates effects the training
+#     curves cannot, and it costs about 2% of this file's bill.
+#
+# WHAT IT CANNOT SUPPORT: that any engine is MORE ACCURATE than another. There
+# is no ground truth here and the three contact laws are different constitutive
+# models, not three discretizations of one. Accuracy claims are only available
+# WITHIN an engine, by refining that engine's own step and measuring what
+# collapses -- which is the refinement column of the cross-play config.
+#
+# HORIZON. 4000 iterations is chosen to match the campaign's one long run
+# (main-sap-adaptive-1024x4000-s42). BEFORE SPENDING THIS, read that run's
+# finished reward curve and pick the smallest horizon at which its slope is
+# below the seed-spread band; if that is 1500-2000, this file's cost drops by
+# 50-62% and the claim is unchanged. A horizon chosen from data is cheaper and
+# more defensible than one chosen from a round number.
+#
+# PRICE at 1024 envs, 3 seeds, measured s/iter where measured:
+#   mujoco_fixed  >= 3.61 s/iter (last-10 of a 40-iteration run, still rising)
+#   sap_fixed        8.07 s/iter (n=3, last-50 of 150)
+#   sap_adaptive    18.21 s/iter (n=3, last-50 of 150)
+#   physx           UNKNOWN -- never run on this machine. The screening stage
+#                   measures it; do not run this file until it has.
+#
+# GATE: the PhysX arm needs task-side changes that are Marco's. Do not run this
+# file before the screening stage has passed on all four arms.
+
+name: p35-fourway-full
+task: IsaacContrib-Lift-Spatula-Trossen-v0
+project: rubato-trossen
+out_dir: ~/Documents/code/IsaacLabRubato/experiments/trossen-fourway/runs-full
+
+# Read off the task cfg (decimation 4, sim.dt 1/120 -> 30 Hz control) and the
+# agent cfg, and re-checked by preflight against every arm.
+num_steps_per_env: 24
+decimation: 4
+
+timing_sensitive: true      # this stage exists to produce timings; never pack it
+timeout_s: 108000
+startup_abort_s: 900
+
+video:
+  enabled: true
+  every_iterations: 200
+  length: 200
+
+# --viz newton is a Newton-only visualizer; it is passed per-arm, not globally,
+# so the PhysX arm does not carry it.
+viz: null
+
+arms:
+  physx:
+    solver: null                      # --solver is Newton-only and raises under PhysX
+    extra_args: ["physics=physx"]
+    family: physx
+  mujoco_fixed:
+    solver: mujoco
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp"]
+    family: mujoco
+  sap_fixed:
+    solver: sap
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp"]
+    family: sap
+  sap_adaptive:
+    solver: sap-adaptive
+    extra_args: ["--viz", "newton", "physics=newton_mjwarp_adaptive"]
+    family: sap
+
+axes:
+  num_envs: [1024]
+  iterations: [4000]
+  seeds: [42, 7, 13]
+
+preflight:
+  enabled: true
+  num_envs: 8
+  abort_on_diff: true
+  # Multi-engine mode: the two SAP arms are still diffed field for field (that
+  # is the D7 fairness check and it must not weaken), while across engines only
+  # the contract below is required to match. The engines are SUPPOSED to differ
+  # in every solver field; that difference is the experiment.
+  by_family: true
+  expected_differences: []
+  contract_keys:
+    # The control contract: dt, decimation, the derived rate, episode length.
+    - contract.control
+    # Action and observation dimensions, and the env count.
+    - contract.spaces
+    # Every MDP term name, its function, its weight and its mode. If one arm's
+    # reward set differs by a term or a weight, the arms are not running the
+    # same task and no downstream care repairs it.
+    - contract.mdp
+    # The scene inventory and the actuated joints.
+    - contract.scene.assets
+    - contract.scene.robot_joint_names
+    - contract.scene.robot_body_names
+    - contract.scene.robot_default_joint_pos
+    - contract.scene.object_mass_kg
