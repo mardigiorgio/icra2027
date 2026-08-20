@@ -73,7 +73,13 @@ index-strategy = "unsafe-best-match"
 #    (-> torch 2.11.0), but Isaac Lab's install.py pins torch 2.10.0 and that is the
 #    verified working full-stack combo. Pin to it so the lock reproduces the tested
 #    environment rather than isaacsim's standalone metadata.
-override-dependencies = ["numpy>=2", "newton[sim]", "torch==2.10.0", "torchvision==0.25.0"]
+#  - mujoco~=3.11.0 / mujoco-warp~=3.11.0: isaacsim-core hard-pins 3.8.x of
+#    both, but the newton fork requires ~=3.11.0 and nothing in the isaacsim
+#    path we exercise consumes the 3.8 pins; the running venvs ship 3.11.0 of
+#    each. Without the overrides a fresh `uv lock`/`uv sync` is unsatisfiable.
+#  - warp-lang==1.16.0: the version the validated venvs run; unpinned, the lock
+#    drifts to whatever dev snapshot is newest on lock day.
+override-dependencies = ["numpy>=2", "newton[sim]", "torch==2.10.0", "torchvision==0.25.0", "mujoco~=3.11.0", "mujoco-warp~=3.11.0", "warp-lang==1.16.0"]
 # Non-package project: `uv sync` builds the env from the lock without trying to
 # build isaaclab-rubato itself as a wheel. (Replaces the original's misuse of an
 # empty [tool.uv.workspace] table for this purpose.)
