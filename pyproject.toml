@@ -93,6 +93,11 @@ package = false
 # ---------------------------------------------------------------------------
 [tool.uv.sources]
 isaacsim    = { index = "nvidia" }
+# NVIDIA's warp-lang 1.16.0 is a different BUILD than PyPI's release of the
+# same version string (newer annotation machinery the newton fork's type
+# hints require — newton's own pyproject binds warp-lang to this index).
+# Resolving it from PyPI imports newton with a TypeError at class definition.
+warp-lang   = { index = "nvidia" }
 torch       = { index = "pytorch-cu128" }
 torchvision = { index = "pytorch-cu128" }
 # The fork's own pyproject sets [project.name] = "newton", so uv matches this
