@@ -56,11 +56,11 @@ STATIONARY_AI_CFG = ArticulationCfg(
         },
     ),
     actuators={
-        # Isaac Lab manipulation reference gains (Franka & OpenArm lift both use arm stiffness=80,
-        # damping=4). The USD-baked gains are ~40000/340 -- ~500x too stiff, a ~30-100 Hz PD bandwidth
-        # that faithfully reproduces the policy's ~18 Hz command micro-oscillation as visible hold
-        # jitter (diagnosed in diag_jitter.py). The soft 80/4 PD (~1.5-4.5 Hz bandwidth) cannot follow
-        # that chatter, so it smooths it -- which is why the reference arms hold steadily.
+        # Isaac Lab manipulation reference gains (Franka & OpenArm lift both use arm
+        # stiffness=80, damping=4). The USD-baked gains are orders of magnitude stiffer, a PD
+        # bandwidth high enough to track the policy's own command micro-oscillation and render
+        # it as visible hold jitter. The soft PD cannot follow that chatter, so it smooths it,
+        # which is why the reference arms hold steadily.
         "left_arm": ImplicitActuatorCfg(joint_names_expr=["follower_left_joint_[0-5]"], stiffness=80.0, damping=4.0),
         "left_gripper": ImplicitActuatorCfg(
             joint_names_expr=["follower_left_left_carriage_joint"], stiffness=None, damping=None

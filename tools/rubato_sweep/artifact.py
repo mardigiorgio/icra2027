@@ -108,9 +108,9 @@ class Baseline:
     minimal_height_m: float | None = None
     table_top_z_m: float | None = None
 
-    # Multipliers applied to the measured baselines. They are declared here, in
-    # one place, so a reader can see every judgement call at once. Each is a
-    # safety factor over a MEASURED floor, not a physical claim.
+    # Multipliers applied to the baselines. They are declared here, in one place,
+    # so a reader can see every judgement call at once. Each is a safety factor
+    # over a measured floor, not a physical claim.
     pen_ratio_flag: float = 3.0
     accel_sigma: float = 10.0
     energy_sigma: float = 10.0
@@ -246,9 +246,8 @@ def episode_ids(done: np.ndarray) -> np.ndarray:
 def episode_returns(reward: np.ndarray, done: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Return (returns, mask) per (episode_index, env), completed episodes only.
 
-    An episode still running when the window ends is DISCARDED, not truncated --
-    the same rule ``p31_eval_probe.py`` used, so returns stay comparable across
-    cells with different termination rates.
+    An episode still running when the window ends is DISCARDED, not truncated, so
+    returns stay comparable across cells with different termination rates.
     """
     r = np.asarray(reward, dtype=np.float64)
     d = np.asarray(done, dtype=bool)

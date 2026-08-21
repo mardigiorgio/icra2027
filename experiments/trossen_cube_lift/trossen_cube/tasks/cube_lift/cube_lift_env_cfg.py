@@ -53,13 +53,13 @@ GRIPPER_JOINT = "follower_left_left_carriage_joint"
 # ``body_name`` nor resolved by ``robot.find_bodies`` -- only the wrist ``follower_left_link_6``
 # is available there. We reference link_6 for the articulation body and place the real grasp
 # frame via a fixed offset: the TCP (== follower_left_ee_gripper_link) sits 0.1561 m ahead of
-# link_6 along its local x (measured from the USD). The reach reward uses link_6 + this offset,
-# so it targets the true tool-center, not the wrist (which would bias the reward ~16 cm high).
+# link_6 along its local x in the USD. The reach reward uses link_6 + this offset, so it
+# targets the true tool-center rather than the wrist, which would bias the reward forward.
 EE_LINK = "follower_left_link_6"
-# 0.1561 (= `ee_gripper_link`) put the reach TCP ~7cm IN FRONT of the fingers (measured
-# TCP->finger_mid = 6.96cm by diag_grasp_geom.py) -> the reach reward landed the cube 7cm short of
-# the fingers, so the gripper could never close. The real grasp point is the finger MIDPOINT:
-# link_6 -> finger_mid is ~0.087 along link_6's local x.
+# The reach target must be the finger MIDPOINT, not the vendor TCP: the vendor
+# `ee_gripper_link` sits ahead of the fingers, so aiming there parks the cube short of the
+# grasp channel and the gripper closes on nothing. link_6 -> finger_mid is ~0.087 along
+# link_6's local x.
 EE_TCP_OFFSET = (0.087, 0.0, 0.0)
 BASE_LINK = "follower_left_base_link"
 # ``NORAILS_USD`` (imported above) is a thin override (make_norails_usd.py): the rig's ``frame_link``
@@ -202,12 +202,11 @@ class StationaryAiCubeLiftEnvCfg(LiftEnvCfg):
             spawn=STATIONARY_AI_CFG.spawn.replace(usd_path=NORAILS_USD),
         )
 
-        # manipuland: DexCube. CRITICAL: it must be WIDER than the gripper's CLOSED finger gap
-        # (4.83 cm, measured by diag_grasp_geom.py) or the fingers close right past it without touching.
-        # DexCube native is 6 cm; scale 0.8 = 4.8 cm was TOO SMALL (0.3 mm under the closed gap). scale
-        # 0.9 = ~5.4 cm -> the gripper seats firmly on it. Rests on the rig tabletop (top z=0.02); z=0.05
-        # settles it on the slab. Spawns OUT IN FRONT of the left arm (base at y~0.46) and within reach --
-        # not back under the arm's shoulder. See the cube reset + goal ranges below.
+        # manipuland: DexCube. It must be WIDER than the gripper's CLOSED finger gap, or the
+        # fingers close right past it without touching -- the scale here is set against that
+        # gap, not chosen for size. Rests on the rig tabletop (top z=0.02); z=0.05 settles it
+        # on the slab. Spawns out in front of the left arm and within reach, not back under
+        # the arm's shoulder. See the cube reset + goal ranges below.
         self.scene.object = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/Object",
             init_state=RigidObjectCfg.InitialStateCfg(pos=[0.0, 0.13, 0.05], rot=[1, 0, 0, 0]),
@@ -236,14 +235,12 @@ class StationaryAiCubeLiftEnvCfg(LiftEnvCfg):
             close_command_expr={GRIPPER_JOINT: 0.0},
         )
 
-        # Goal target: random, OUT IN FRONT of the arm and WITHIN ITS REACH -- not back under the base
-        # (y~0.46), and not pushed so far toward platform centre that the arm can't reach it. z is free to
-        # be HIGH: the arm may hold the cube up in the air; the constraint is reachability, not height.
-        # The x/y band stays inside the region the previous run already grasped + tracked across.
-        # Goal randomized OUT IN FRONT of the arm. The cube spawns near (y~0.13, see below) and the goal
-        # sits forward of it (y in [-0.10, 0.05]) so the task is grasp-near -> carry forward -> place out
-        # front, not lift-in-place. Base is at y~0.457; the measured graspable footprint (reach_map.json)
-        # reaches to ~ -0.29, so this band stays inside reach. Goal is uniform-random over this range.
+        # Goal target: uniform-random, out in front of the arm and within its reach -- not back
+        # under the base (y~0.46), and not so far toward platform centre that the arm cannot
+        # reach it. z is free to be high: the arm may hold the cube up in the air, so the
+        # constraint is reachability, not height. The cube spawns nearer the base than this
+        # band, so the task is grasp-near -> carry forward -> place out front, not
+        # lift-in-place.
         self.commands.object_pose.body_name = EE_LINK
         self.commands.object_pose.ranges.pos_x = (-0.12, 0.12)
         self.commands.object_pose.ranges.pos_y = (-0.10, 0.05)

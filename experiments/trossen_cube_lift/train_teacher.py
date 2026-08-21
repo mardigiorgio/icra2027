@@ -102,7 +102,7 @@ def main():
     # Still-hold (jitter) lever: strengthen a motion penalty (one var per run). Override the base
     # reward weight AND the curriculum terminal weight together so the penalty bites immediately --
     # crucial on --resume_from, where common_step_counter resets and the stock iter-~417 curriculum
-    # would otherwise keep the weight at -1e-4 for most of a short fine-tune. See JITTER_FIX_GUIDE.md.
+    # would otherwise keep the weight near zero for most of a short fine-tune.
     for term, weight in (("joint_vel", args.joint_vel_weight), ("action_rate", args.action_rate_weight)):
         if weight is not None:
             getattr(env_cfg.rewards, term).weight = weight

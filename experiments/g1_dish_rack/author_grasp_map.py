@@ -88,9 +88,9 @@ def search():
     dist = torch.linalg.vector_norm(palms - target, dim=1)
 
     # HARD CONSTRAINT: no right hand/wrist link may intrude into the plate's
-    # fall corridor (expanded edgewise slab through the slot) — an authored
-    # index fingertip at y=-0.129 tipped 100% of staged landings flat
-    #. Corridor: x in [0.13,0.37], y > -0.17, z in [0.75,1.10].
+    # fall corridor (expanded edgewise slab through the slot) -- a link inside
+    # it tips the plate flat on landing.
+    # Corridor: x in [0.13,0.37], y > -0.17, z in [0.75,1.10].
     hand_ids = [i for i, n in enumerate(robot.body_names) if "right" in n and ("hand" in n or "wrist" in n)]
     hp = robot.data.body_pos_w.torch[:, hand_ids, :] - env.scene.env_origins[:, None, :]
     in_corr = (
