@@ -126,7 +126,7 @@ Launcher: `IsaacLab/scripts/experiments/trossen_campaign.sh` — waits for GPU
 drain (up to 5 min), 5 launch attempts per run with stall detection (no
 "Learning iteration" + CPU < 5 % for 5 checks), logs under
 `$CAMPAIGN_LOG_DIR` (default /tmp/trossen_campaign), TROSSEN_RAILS=1.
-Preflight, per its header: coefficient probe exits 0, mug convexified,
+Preflight, per its header: coefficient probe exits 0, the mug scene pass merged,
 flip settle+reward smokes passed, GOAL_SPEED confirmed (0.20 committed),
 GPU free. K5wall inherits K5's step overrides (fixed 2026-08-30 after
 launch — the live campaign hands over to `trossen_campaign_resume.sh` at
