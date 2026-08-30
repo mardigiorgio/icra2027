@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Verify the IsaacLabRubato platform is wired correctly.
+"""Verify the icra2027 platform is wired correctly.
 
 Asserts, in order:
   1. `import newton` resolves to the custom fork checkout (newton-adaptive),
@@ -103,4 +103,4 @@ print(f"newton   : {newton.__version__}  (fork active, SolverMuJoCoAdaptive pres
 print(f"           {newton_path}")
 print(f"sap      : {'ok  (SolverSAP + SolverSAPAdaptive)' if sap_ok else 'DISABLED (see warning above)'}")
 print("isaaclab : ok  (isaaclab + isaaclab_newton import, newton_adaptive_ui + --solver present)")
-print("OK: IsaacLabRubato platform verified.")
+print("OK: icra2027 platform verified.")

@@ -1,0 +1,67 @@
+# QUEUED, NOT RUN. Written pass 33; no GPU was available that pass.
+#
+# THE MEASUREMENT: how does cost scale with env count, per arm?
+#
+# This is the largest measurable unknown in the campaign and it sets the
+# operating point for every future experiment. Everything currently believed
+# about 2048/4096 rests on ONE pre-campaign ratio (pass 9, det=1, 1024 vs 4096,
+# adaptive arm only), from which the whole scale projection is extrapolated.
+#
+# WHY IT MATTERS. For a FIXED SAMPLE BUDGET, larger env counts pay only if
+# s/iter grows sublinearly with env count. Writing T(N) = T0 (N/N0)^alpha, a
+# fixed sample budget needs iterations proportional to 1/N, so
+#     wall(N) proportional to N^(alpha - 1)
+# and the break-even is alpha = 1. The pass-9 ratio implies alpha ~ 0.84 for the
+# ADAPTIVE arm (only ~20% saved by going 4x wider), because the adaptive arm
+# pays a demand tax: batch-wide accepted substeps are set by the SLOWEST world,
+# and the maximum over 4x more worlds is larger. The FIXED arm has no such tail,
+# so its alpha should be much lower (the per-march price alone scaled at ~0.57).
+# That asymmetry is a PREDICTION this protocol tests directly.
+#
+# HORIZON. 150 iterations is a throughput measurement, not a learning
+# measurement: it resolves s/iter, samples/s, memory and capacity, and nothing
+# about what the policy learns. Do not quote reward from these cells.
+#
+# ORDER. Small to large, arms interleaved. If 4096 is memory-blocked the sweep
+# still ends with complete 1024 and 2048 sets.
+#
+# BEFORE RUNNING: 4096 at the current 65,536-pairs/world budget resolves to the
+# task's authored 192M-pair pool and is expected NOT to construct on a 32 GB
+# card. That expectation is exactly what the 4096 cells test; the startup-abort
+# guard will stop the sweep with the allocation size in the log rather than
+# chaining more runs onto a broken stack.
+
+name: p33-scale-confirm
+task: IsaacContrib-Lift-Spatula-Trossen-v0
+project: rubato-trossen
+out_dir: ~/Documents/code/icra2027/experiments/trossen-sap-scale/runs-scale
+
+num_steps_per_env: 24
+decimation: 4
+
+timing_sensitive: true      # this sweep exists to produce timings; never pack it
+timeout_s: 28800
+startup_abort_s: 900
+
+video:
+  enabled: true
+  every_iterations: 50
+  length: 200
+
+arms:
+  fixed:
+    solver: sap
+  adaptive:
+    solver: sap-adaptive
+    extra_args: ["physics=newton_mjwarp_adaptive"]
+
+axes:
+  num_envs: [1024, 2048, 4096]
+  iterations: [150]
+  seeds: [42, 7]
+
+preflight:
+  enabled: true
+  num_envs: 8
+  abort_on_diff: true
+  expected_differences: []

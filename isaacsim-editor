@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# isaacsim-editor - open the Isaac Sim editor on the full Newton physics stack
+# (isaacsim.physics.newton + .tensors backend + .ui). Drop an object, press Play.
+# Pass an experience to override, e.g.:  ./isaacsim-editor isaacsim.exp.full
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
+isaacsim=""
+for cand in "${VIRTUAL_ENV:-}/bin/isaacsim" "$here/.venv/bin/isaacsim"; do
+  [ -x "$cand" ] && { isaacsim="$cand"; break; }
+done
+[ -n "$isaacsim" ] || { echo "isaacsim not found - activate the platform venv (or run the install first)." >&2; exit 1; }
+[ $# -eq 0 ] && set -- isaacsim.exp.full.newton
+exec env OMNI_KIT_ACCEPT_EULA=YES "$isaacsim" "$@"

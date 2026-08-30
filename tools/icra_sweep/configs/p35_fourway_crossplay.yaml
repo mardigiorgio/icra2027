@@ -1,0 +1,111 @@
+# PASS 35 -- THE CROSS-PLAY MATRIX. This is where the paper's claim lives.
+#
+# Every policy replayed under every physics, plus each engine's own refined
+# reference. Consumed by icra_sweep.crossplay (pass 34) and judged by
+# icra_sweep.artifact.crossplay_verdict, which is reused pairwise here rather
+# than reimplemented: the 4x4 is six of its 2x2s plus the refinement column.
+#
+#                                 replayed under
+#                  physx  mujoco_fixed  sap_fixed  sap_adaptive | *_ref
+#   trained  physx   R      R             R          R          |  --
+#   under    mujoco  R      R             R          R          |  R
+#            sap_f   R      R             R          R          |  R
+#            sap_a   R      R             R          R          |  R
+#
+# WHY THIS AND NOT THE TRAINING CURVES. Measured, on this task, this card:
+#   * a training-curve reward at 150 iterations has a within-arm range of 97% of
+#     its own mean across 3 seeds (pass 33, p33_p31_ingest/summary.json);
+#   * one evaluation cell pools 1024 completed episodes and reports a standard
+#     error of 0.28-0.34 on a mean of 112-137, i.e. 0.25% (pass 31,
+#     p31_eval_*.json).
+# The evaluation instrument is roughly two orders of magnitude more sensitive
+# than the training instrument, and it costs about 2% of the training bill. Put
+# the claim on the matrix.
+#
+# THE THREE READINGS THE MATRIX SEPARATES, and only their conjunction is the
+# artifact claim (this is pass 34's condition set, unchanged):
+#   asymmetry  -- policy i retains less of its score off its own physics than
+#                 policy j does in the mirror direction;
+#   mechanism  -- under ONE physics, policy i earns more of its reward at
+#                 invalid configurations than policy j does;
+#   locality   -- policy i's invalid-configuration fraction collapses when the
+#                 physics changes, i.e. the states it farmed stop existing.
+# Asymmetry alone is brittleness, not cheating, and must be reported as such.
+#
+# THE REFINEMENT COLUMN is the one accuracy axis this design legitimately has.
+# There is no cross-engine ground truth -- PhysX compliance, MuJoCo solref/solimp
+# and SAP's R are three different constitutive laws, not three discretizations
+# of one -- so "which engine is right" is unanswerable here. But WITHIN an
+# engine, replaying a policy at a 4x finer fixed step of the SAME contact law is
+# a valid convergence test: a score that falls when the engine is refined was
+# bought from that engine's discretization error. The SAP-adaptive policy's
+# reference is sap_fixed_ref, NOT a tightened estimator tolerance: tol is a
+# campaign rail and the physics being demonstrated, so it is not an evaluation
+# knob. PhysX has no reference arm because nobody has ever run PhysX on this
+# machine and inventing a refinement schedule would be a guess.
+#
+# REQUIRED BEFORE THIS RUNS, and it is a three-line change to pass 34's probe:
+#   artifact_probe.py currently hard-codes
+#       env_cfg.sim.physics.solver_cfg.backend = "sap"
+#       env_cfg.sim.physics.solver_cfg.sap_adaptive = RA_PHYSICS == "adaptive"
+#       env_cfg.sim.physics.num_substeps = 1 if RA_PHYSICS == "adaptive" else 2
+#   which cannot reach MuJoCo or PhysX (a PhysX cfg has no solver_cfg at all).
+#   Replace those three lines with
+#       env_cfg, applied = physics_arm.apply_to(env_cfg, TASK, RA_PHYSICS)
+#   so training and evaluation resolve the engine through the same preset path.
+#   The arm names below are the keys of icra_sweep.physics_arm.ARMS.
+#
+# ALSO REQUIRED: the A1 interpenetration signature reads the solver's own
+# contact set. That channel exists under Newton and has no PhysX equivalent
+# wired up, so PhysX cells must set Trace.pen_channel_live=False and A1 reports
+# UNCALIBRATED there. A2 levitation, A3 energy gain and A4 ejection are purely
+# kinematic and do port. Three of four signatures survive the four-way; say so
+# rather than reporting a silent zero.
+
+name: p35-fourway-crossplay
+task: IsaacContrib-Lift-Spatula-Trossen-v0
+out_dir: ~/Documents/code/icra2027/experiments/trossen-fourway/runs-crossplay
+experiment_name: trossen_spatula_lift
+
+# One policy per training arm. log_glob resolves against
+# <isaaclab_dir>/logs/rsl_rl/<experiment_name>/ and carries {seed}.
+# target_iter is the MATCHED horizon: every policy is taken at the same number
+# of training iterations, never at "its own best", or the matrix compares
+# training length instead of physics.
+policies:
+  physx:
+    log_glob: "*_p35-fourway-full-physx-1024x4000-s{seed}"
+    target_iter: 4000
+  mujoco_fixed:
+    log_glob: "*_p35-fourway-full-mujoco_fixed-1024x4000-s{seed}"
+    target_iter: 4000
+  sap_fixed:
+    log_glob: "*_p35-fourway-full-sap_fixed-1024x4000-s{seed}"
+    target_iter: 4000
+  sap_adaptive:
+    log_glob: "*_p35-fourway-full-sap_adaptive-1024x4000-s{seed}"
+    target_iter: 4000
+
+# The four production engines, then the two refinement references.
+physics:
+  - physx
+  - mujoco_fixed
+  - sap_fixed
+  - sap_adaptive
+  - mujoco_fixed_ref
+  - sap_fixed_ref
+
+# A replicate is a TRAINING seed; the evaluation seed is held fixed across every
+# cell so the comparison is paired and seed-to-seed level differences cancel.
+seeds: [42, 7, 13]
+eval_seed: 1234
+
+num_envs: 256
+steps: 600          # 4 complete 150-step episodes per env -> 1024 episodes/cell
+checkpoint_tolerance: 50
+
+video: true
+video_length: 300
+video_envs: 32
+
+timeout_s: 3600

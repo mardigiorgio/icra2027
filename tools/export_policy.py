@@ -21,7 +21,7 @@ import torch.nn as nn
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SWEEP_LOGS = os.environ.get(
-    "SWEEP_LOGS", os.path.join(_REPO_ROOT, "experiments", "rubato-ppo-sweep", "logs", "rsl_rl", "g1_flat")
+    "SWEEP_LOGS", os.path.join(_REPO_ROOT, "archive", "rubato-ppo-sweep", "logs", "rsl_rl", "g1_flat")
 )
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "exported")
 

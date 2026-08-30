@@ -28,4 +28,5 @@ wandb/
 
 # Training run outputs (checkpoints, tfevents): too large for git, live under the data root
 experiments/*/logs/
+archive/*/logs/
 nohup.out

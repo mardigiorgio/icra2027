@@ -1,5 +1,5 @@
 [project]
-name = "isaaclab-rubato"
+name = "icra2027"
 version = "0.1.0"
 description = "Adaptive-timestepping solver wired into the Isaac Sim / Isaac Lab / Newton stack."
 readme = "README.md"
@@ -81,7 +81,7 @@ index-strategy = "unsafe-best-match"
 #    drifts to whatever dev snapshot is newest on lock day.
 override-dependencies = ["numpy>=2", "newton[sim]", "torch==2.10.0", "torchvision==0.25.0", "mujoco~=3.11.0", "mujoco-warp~=3.11.0", "warp-lang==1.16.0"]
 # Non-package project: `uv sync` builds the env from the lock without trying to
-# build isaaclab-rubato itself as a wheel. (Replaces the original's misuse of an
+# build icra2027 itself as a wheel. (Replaces the original's misuse of an
 # empty [tool.uv.workspace] table for this purpose.)
 package = false
 

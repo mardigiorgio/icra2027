@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# IsaacLabRubato installer -- one command to a verified platform venv.
+# icra2027 installer -- one command to a verified platform venv.
 #
 # Idempotent: re-running reuses existing clones and the existing venv.
 # Layout contract: this repo, IsaacLab, newton-adaptive, and sap_warp are
@@ -52,7 +52,7 @@ fi
 # venv: the interactive prompt crashes captured-stdin contexts (pytest) and
 # stalls detached (nohup) runs on a fresh install.
 cat > .venv/lib/python3.12/site-packages/sitecustomize.py <<'PYEOF'
-"""IsaacLabRubato venv bootstrap (written by install/install.sh).
+"""icra2027 venv bootstrap (written by install/install.sh).
 
 Isaac Sim's one-time EULA check reads stdin when unset, which crashes
 captured-stdin contexts (pytest) and stalls detached runs; default the

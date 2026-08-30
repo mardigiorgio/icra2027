@@ -1,0 +1,367 @@
+"""Part B — every experiment, one template each."""
+
+
+def partB(nb):
+    nb.pagebreak()
+    nb.title("Part B — Every experiment: reason, design, what the figure says, what it does not")
+    nb.p("Template per entry: background & motivation → question → design → what the figure/table says (numbers) → what it does not show → where it lives → status → gaps for you. Part-1 numbers quoted in the entries are hand-written from the runs of the day; Appendix I is generated from the CSVs at build time and wins whenever they disagree (the clutter scene was corrected on 2026-08-29 evening: walls through the floor, stated dissipation d = 1 s/m, calibrated soft-clutter solref, penetration from t = 0). Part-2 numbers are AS LOGGED in output.log / W&B by past runs — folklore until re-run.", italic=True)
+
+    # ------------------------------------------------------------------ B1
+    nb.h("B1. The killer-experiment logic — why every experiment below exists", 1)
+    nb.p("Claim to support: per-world adaptive time-stepping enables robot learning that fixed-step simulation cannot. Form of the evidence: a physically achievable task on which a policy trained under fixed step fails or learns an artifact exploit, while the same task — same scene, reward, seeds, PPO; solver type the ONLY variable — trains to a working policy under error control. Wall-time claims only at matched accuracy: compare against the fixed step that is artifact-free, never against one large enough to produce the artifacts.")
+    nb.p("Part 1 exists to (a) show what each solver realizes of the model at each step/tolerance (B3, B4, B13), (b) find the artifact-free settings and their cost so the Part-2 comparison is fair (B5, B6), (c) characterize where error control pays and where it does not (B7, B8, B9), (d) certify the instruments (B10, B11, B14–B16), and (e) reproduce the actuated regime RL lives in (B12). Part 2 (B17–B25) is the experiment itself; B28 is the hardware side.")
+    nb.p("Four arms everywhere: MuJoCo fixed (red), MuJoCo error control (orange), ICF fixed (blue), ICF error control = CENIC (green). Every plotted point states its δt or ε_acc. 'Artifact' has a definition: any ejection, or max penetration above the model's own impact depth v√(m/k) (2.3 mm hard clutter, 23 mm soft), or instability, or (actuated) box lift/pitch where the physics says flat.")
+
+    # ------------------------------------------------------------------ B2
+    nb.experiment("B2. The test scenes (figures/scenes.pdf)",
+        background="CENIC (Sec. VII, Fig. 6/8) defines its benchmark cases; a benchmark of our own invention would be unreviewable, so our first Part-1 scene (08-27) was retired (81d91ceb 'Retire the invented Part-1 scene and its results') and the suite rebuilt to the paper's definitions (f5e2007f). The three point-contact cases are reproducible on Newton; the hydroelastic cylinder and the gripper/peg wedge are not (no hydroelastic backend; the 0.01 mm wedge gap is dropped by the contact pipeline under point contact without a margin).",
+        question="Are we measuring the same physics the paper measured, and what did we have to assume?",
+        design=["Soft clutter: 20 spheres (r = 2.5 cm, density 1000 → 65 g) dropped into a 30 cm bin, k = 10³ N/m, v_s = 1 cm/s. Hard clutter: 10 spheres + 10 cubes (2.5 cm half), k = 10⁵ N/m, v_s = 0.1 mm/s. Ball: 0.1 kg, r = 5 cm, k = 10³, zero dissipation, 1 m drop, 10 s.",
+                "Initial arrangement: 4 columns × 5 layers above the bin, alternate layers staggered, every body jittered ±1.5 cm xy / ±5 mm z, cubes randomly rotated, seed 7 — a perfectly aligned drop lands as columns, not clutter (Marco: 'why are the balls just standing on top of each other').",
+                "Point contact, margin 0 (a margin is a skin: bodies rest ON it and read zero penetration by construction; a 5 mm-margin variant is reported separately for penetration).",
+                "ASSUMED (not stated in the paper): object/bin sizes, μ = 0.5, clutter dissipation (kd = 0.02·k for MuJoCo, Hunt–Crossley d = 10 s/m for ICF). Confirm with Vince."],
+        says=["Top row: the three initial conditions; bottom row: after settling under ICF error control ε = 1e-3. The clutter piles are irregular (the perturbed lattice worked); the ball is the single-body reference.",
+              "It is a picture, not a measurement: its job is to let a reader map every later figure to a scene."],
+        not_shown=["Nothing about accuracy. The 'settled' states are one arm's; no claim that they are the physical ones."],
+        where="scripts/scenes/cenic_scenes.py (scene definitions, ASSUMED marked) → scripts/bench/part1_scenes_figure.py → figures/scenes.pdf",
+        status="Done; assumptions to confirm with the PI.",
+        gaps=["Ask Vince for the paper's object/bin sizes, μ and dissipation (or state 'assumed' in the caption).", "Decide whether the 5 mm-margin variant appears at all."])
+
+    # ------------------------------------------------------------------ B3
+    nb.experiment("B3. Realized contact stiffness (figures/stiffness_sweep.pdf)",
+        background="The PI's Part-1 item 'show ICF converges to a solution as δt → 0 while MuJoCo struggles' needed a precise form. The ICF paper's Fig. 18 protocol — resting penetration vs requested stiffness — measures what each solver REALIZES of the model's k at a given step. MuJoCo's contact stiffness is a time constant per effective mass clamped to the step (τ ≥ 2δt, Appendix F), so at the learner's step it cannot be stiff whatever the model says; ICF's stiffness is a model parameter. Marco's field observation ('mean penetration doesn't change with δt is dumb') was the trigger to calibrate MuJoCo's solref explicitly and then to sweep k.",
+        question="At a given δt or ε, what stiffness does each solver actually realize when the model asks for k from 10³ to 10⁸ N/m?",
+        design=["One 65 g sphere at rest on the ground for 3 s; resting penetration read from the state; plotted as penetration / (m g/k): 1.0 = the model.",
+                "Arms: ICF fixed 10 ms and 1 ms; ICF error control ε = 1e-3 and 1e-5; MuJoCo fixed 10 ms and 1 ms (reference solref τ scaled ∝ 1/√k from the 2.4 ms calibration at 10⁵); MuJoCo error control ε = 1e-3 and 1e-5. Hollow marker = the coarser setting of each pair.",
+                "k ∈ {10³, 10⁴, 10⁵, 10⁶, 10⁷, 10⁸}; 48 cells."],
+        says=["ICF: ratio 1.00 at every k up to 10⁷ at δt = 10 ms, at 1 ms and under ε = 1e-3 and 1e-5 alike — the curves coincide; 0.87 at 10⁸ (the float32 floor of the Newton solve). The stiffness is a property of the model, not of the step.",
+              "MuJoCo fixed 10 ms: 0.73 at 10³, then 5.7, 57, 572, 5719, 57,188 — ∝ k past the clamp: it realizes at most ~10³ N/m. Fixed 1 ms: 0.73, 0.98, 0.98, 6.8, 68, 681 — realizes up to 10⁵.",
+              "MuJoCo error control ε = 1e-3: 0.73, 1.68, 16.8, 168, 1678, 16,782 — the controller's steps (~5 ms) sit above the clamp for k ≥ 10⁴ and the softening is invisible to a position norm (the clamped contact is self-consistent). ε = 1e-5 recovers k = 10⁵ (1.2) and then floors where fixed 1 ms does.",
+              "The 0.73 at k = 10³ on every MuJoCo line is the soft-clutter calibration offset: τ = 24 ms scaled from 2.4 ms is 1.37× too stiff because stiffness ∝ 1/τ² holds only through the impedance at one violation."],
+        not_shown=["Dynamics: a resting body only. Impact behaviour is B4/B6; sliding is B12.", "It does not say MuJoCo is 'wrong' — it says MuJoCo's stiffness is a function of the step by design, and what the number is at the RL step."],
+        where="scripts/bench/benchmarks/part1_stiffness_sweep.py → part1_stiffness_sweep.csv → part1_plots.stiffness_sweep() → figures/stiffness_sweep.pdf (+ tables/mujoco_stiffness_probe.md for the calibration)",
+        status="Done (48 rows, 2026-08-29).",
+        gaps=["Decide whether to state the soft-clutter 1.37× offset or rerun the soft set with τ = 28 ms (hours).", "One sentence in the paper on effective-mass scaling (the box in B12 sits 20× stiffer than the sphere with the same τ)."])
+
+    # ------------------------------------------------------------------ B4
+    nb.experiment("B4. Energy convergence on the bouncing ball (figures/ball_energy.pdf, ball_workprecision.pdf)",
+        background="CENIC's Fig. 8 is the paper's convergence figure: a conservative single impact, total energy after 10 s vs δt, step-doubling first order, trapezoid second order. It is the cleanest test of integrator order and of what the position-only error norm sees. Our first two readings were wrong twice — MuJoCo 'never bounces' (Newton's automatic solref conversion had critically damped it) and '−104 % at 5 ms' (the readout landed mid-impact) — so the entry records the instrument as well as the result.",
+        question="At what order does each fixed arm converge on a conservative impact, what does each error-controlled arm do, and which solver is the better integrator here?",
+        design=["0.1 kg ball, k = 10³, zero dissipation, 1 m drop, 10 s; energy E = ½ m v² + m g (z − r), zero at rest on the ground; read at the LAST APEX (KE ≈ 0, no contact energy); rebounds counted as boundary-sampled upward sign flips of v_z (the paper states 11).",
+                "Fixed arms: δt from 10 ms down to 10 µs (10 rungs). Error control: ε from 1e-1 to 1e-6; march budget 4096 (a run that exhausts it is marked).",
+                "MuJoCo contact: direct undamped solref (−2.24·10³, 0) — the reference format cannot take ζ = 0 (diverges) and ζ = 0.05, the smallest stable, still dissipated everything. Calibrated to the resting depth (1.01 mm vs 0.98 model).",
+                "ball_workprecision.pdf puts |ΔE| against wall time per simulated second for all four arms, every point labeled."],
+        says=["ICF fixed: the ball comes to rest within 10 s at δt ≥ 1 ms (−100.1 %; 2, 4, 7, 11 rebounds at 10, 5, 2, 1 ms); from 0.1 ms it is first order — −30.0, −16.3, −6.25, −3.17 % at 100, 50, 20, 10 µs (each halving halves the loss); 11 rebounds at δt ≤ 0.1 ms.",
+              "MuJoCo fixed (direct undamped): −7.1 % at 10 ms, −7.3 % at 5 ms, +0.78 % at 2 ms, −0.02 % at 1 ms, then |ΔE| ≤ 0.004 % down to 10 µs; 10 rebounds at every δt. On a conservative single impact MuJoCo's implicit soft constraint is the better integrator — the figure title says so.",
+              "ICF error control: −100 % for ε ≥ 1e-4 (the position norm does not see the energy a soft impact loses); at ε = 1e-5 it resolves the bounce (11 rebounds, −51 %) but exhausts the 4096-step budget (marked); at 1e-6 exhausted with 0 rebounds.",
+              "MuJoCo error control: +0.8 % at ε ≥ 1e-2 (it stays at δt_max = 10 ms, 9 rebounds); at ε ≤ 1e-3 it GAINS: +57 % (1e-3), +22 % (1e-4), +13 % (1e-5), +4.0 % (1e-6) — about 5 % per impact in the probe's per-bounce trace, while fixed MuJoCo at the same steps conserves. Open defect of our adaptive wrapper (the step changes through the undamped constraint inject energy).",
+              "Work-precision view: MuJoCo fixed 2 ms already at 0.8 % for 0.07 s per simulated second; ICF needs 10 µs (18 s per simulated second) for 3 %."],
+        not_shown=["Nothing about stiff contact or friction: k = 10³ and a single body.", "The ICF error control result is a property of the position-only norm (CENIC's own choice), not a failure of ICF.", "The 5 ms MuJoCo row (−7.3 %) is genuine loss at that step, not the earlier readout artifact."],
+        where="scripts/bench/benchmarks/part1_ball_energy.py (--single ARM KNOB) → part1_ball_energy.csv → part1_plots.ball_energy()/ball_workprecision() → figures; probe: scratchpad probe_ball_ec_energy.log (per-bounce energy trace); tables/mujoco_stiffness_probe.md (solref formats and the undamped ladder)",
+        status="Done (32 rows, last-apex readout, 2026-08-29 14:24).",
+        gaps=["Decide: fix the MuJoCo-EC energy gain in SolverMuJoCoAdaptive (likely the warm-start/constraint state carried across step-size changes) or report it as open.", "The 11-vs-10 rebound count: ICF's counter finds 11, MuJoCo's 10 — the sampler is the same; state the count as measured or drop it."])
+
+    # ------------------------------------------------------------------ B5
+    nb.experiment("B5. Work-precision and fixed-step levels (figures/workprecision.pdf, speed_bars.pdf; tables/part1_table1.md)",
+        background="CENIC's Fig. 9/10 and Table I are its main results: wall time per simulated second against requested accuracy, with fixed-step levels and timeouts. Marco's first reaction to our version was 'work precision makes no sense, see the plots from the CENIC paper' — the layout, axes and labels now copy the paper's. Table I analog adds the artifact verdict per cell so the speed numbers cannot be read without their quality.",
+        question="What does each error-controlled arm cost at each requested accuracy, at one scene and at 1024 scenes, and how does that compare with the fixed-step levels?",
+        design=["Scenes: soft and hard clutter; δt_max = 0.1 s (the paper's), k_Init 0.1, eq. 34 tolerance rule; ε ∈ {1e-1 … 1e-6}; 2 s horizon; first two boundaries excluded; N = 1 rows are 3-trial medians; N = 1024 once; timeout 100 s per simulated second (×), 1 h practical budget (+), march budget 4096 (budget-exhausted).",
+                "Fixed levels: δt ∈ {10, 5, 2, 1} ms drawn as dotted lines. speed_bars.pdf: bars per arm at δt = 10/1 ms and ε = 1e-1/1e-3/1e-5 (speed only).",
+                "Table I analog (tables/part1_table1.md): real-time rate at N = 1 and the artifact verdict from the 64-world penetration run for every cell."],
+        says=["Hard clutter, one scene, wall per simulated second: ICF EC 0.38 / 0.60 / 1.35 / 2.89 / 7.91 / 18.2 at ε = 1e-1 … 1e-6; MuJoCo EC 0.092 / 0.30 / 1.04 / 2.92 / 5.63 / 13.8 — MuJoCo cheaper at every ε (1.5–4×, equal at 1e-4). At 1024 scenes: ICF EC 15 / 23.8 / 49.3 / 115 / 343 / 856 vs MuJoCo EC 0.47 / 1.54 / 5.02 / 15.8 / 37.8 / 88.4 (5–30×).",
+              "Fixed levels, hard clutter, N = 1: ICF 0.20 / 0.29 / 0.59 / 1.13 s at 10/5/2/1 ms; MuJoCo 0.064 / 0.125 / 0.34 / 0.66. N = 1024: ICF 7.5 / 10.9 / 20.9 / 38.2; MuJoCo 0.18 / 0.39 / 1.04 / 2.11.",
+              "Per march iteration (tables/march_cost.md, one world): ICF 2.7–6.9 ms, MuJoCo 1.6–2.1 ms; iterations per simulated second comparable (hard clutter ε = 1e-3: 736 vs 699). The cost difference is the convex Newton solve, not the controller.",
+              "Cost grows ~ε^{−1/2} for both, as expected of a first-order scheme with a second-order estimate.",
+              "Table I analog, hard clutter: ICF EC artifact-free from ε = 1e-2 (real-time rate 166 %) — at 1e-1 it is not (7.0 mm max penetration); MuJoCo EC artifact-free from 1e-3 (96 %); fixed ICF only at 1 ms (88 %; 10/5/2 ms have 27.8/9.4/3.9 mm); fixed MuJoCo from 2 ms (296 %). Soft clutter: every cell artifact-free.",
+              "speed_bars.pdf says nothing about quality — the paper's own caveat, repeated in ours."],
+        not_shown=["Requested ε is not measured error (B9 measures it).", "N = 1 is launch-latency bound (~1–3 ms per boundary floor).", "No claim that 'error control is faster': at every matched-artifact-free pair here fixed step is cheaper (see B6); the saving is in settled phases (B7)."],
+        where="scripts/bench/benchmarks/part1_workprecision.py (--scene --n --trials) → part1_workprecision_{scene}_n{1,1024}.csv → part1_plots.workprecision()/speed_bars(); part1_tables.py → tables/part1_table1.md/.tex; probe_march_cost.py → tables/march_cost.md",
+        status="Done (chains H3/H4, 2026-08-28).",
+        gaps=["Decide which of the two rows (N = 1, N = 1024) the paper shows.", "The 1024-scene ICF EC at ε ≤ 1e-5 (343–856 s per simulated second) is 'no timeout' only because of the 1 h budget — say so."])
+
+    # ------------------------------------------------------------------ B6
+    nb.experiment("B6. Contact artifacts versus cost (figures/artifacts.pdf; penetration_*.pdf; tables/results_tables.md)",
+        background="Speed without quality is meaningless (B5); the paper reports penetration only in prose (Spot at 1 ms: MuJoCo 3.1 cm vs CENIC 6.4 mm). We needed a figure that puts the artifact next to its cost so the wall-time claim is made at matched accuracy, per CLAUDE.md. The criterion went through three versions: 10× resting depth (too strict — everything failed), then the model's own impact depth v√(m/k) (a body dropped at 2.8 m/s onto k = 10⁵ physically dents 2.3 mm; deeper than that is the step's doing), plus any ejection. Earlier readings ('MuJoCo never artifact-free', 'ICF never penetrates') were retracted when the solref calibration and the margin were fixed.",
+        question="Which settings of which arm are artifact-free, and what is the cheapest artifact-free setting of each arm?",
+        design=["64 scenes, 200 boundaries of 10 ms after a 0.2 s warm-up; per boundary the analytic ground penetration of every body from the state (verified against the Newton model by verify_part1_penetration.py, seven checks); ejection = a body leaves the bin.",
+                "Arms: fixed at 10/5/2/1 ms; error control at ε = 1e-1 … 1e-4; wall per boundary from a separate timed pass with no readbacks.",
+                "Top row of artifacts.pdf: max penetration / impact depth (1 = the model), ring = ejection, star = cheapest artifact-free per arm. Bottom row: mean penetration / resting depth m g/k. penetration_{scene}.pdf: the older mean/max-vs-wall view; _margin5mm variants for the skin question."],
+        says=["Hard clutter, mean penetration (µm) at 10/5/2/1 ms: ICF fixed 226 / 34.6 / 8.4 / 6.4; MuJoCo fixed 336 / 100 / 17.0 / 6.6 — both converge to the model's 6.4 µm at 1 ms. Error control at ε = 1e-1 … 1e-4: ICF 30 / 7.1 / 6.2 / 6.1; MuJoCo 550 / 150 / 20.3 / 7.0.",
+              "Max penetration (mm): ICF fixed 27.8 / 9.4 / 3.9 / 0.87; MuJoCo fixed 6.8 / 3.1 / 0.87 / 0.72; ICF EC 7.0 / 0.83 / 0.33 / 0.32; MuJoCo EC 10.1 / 3.9 / 1.1 / 0.71. Impact-depth criterion 2.27 mm.",
+              "Ejections: fixed ICF at 10 ms ejects 1.6 % of bodies (passthrough: 2.8 cm per step > 2.5 cm radius; the lagged spring launches a body first seen past its centre); every other cell 0 %.",
+              "Cheapest artifact-free, hard clutter (wall per simulated second, 64 scenes): MuJoCo fixed 2 ms 0.57 s; MuJoCo EC ε = 1e-3 1.9 s; ICF EC ε = 1e-2 2.3 s; ICF fixed 1 ms 4.1 s. Soft clutter: every setting of every arm artifact-free (mean 0.52–0.67 mm ≈ m g/k = 0.64 mm; max ≤ 6.5 mm ≪ 23 mm).",
+              "Both models converge to the same resting compliance; coarse steps are soft in both for different reasons: MuJoCo's clamp (50× the resting depth at 10 ms), ICF's under-resolved impact (35×)."],
+        not_shown=["On these pure clutter scenes MuJoCo fixed at 2 ms is the cheapest artifact-free arm — the figure does not argue for error control by itself.", "'Penetration' is ground penetration only (body–body overlaps are not read).", "Soft clutter's MuJoCo arm is 1.37× stiffer than the model (B3), which slightly flatters its penetration."],
+        where="scripts/bench/benchmarks/part1_penetration.py (--scene --n 64 --margin) → part1_penetration_{scene}[_margin5mm].csv → part1_plots.artifacts()/penetration(); part1_results_md.py → tables/results_tables.md; verify_part1_penetration.py",
+        status="Done (chain H4 + M, 2026-08-28).",
+        gaps=["Decide whether the 5 mm-margin variant appears (it reads 'zero penetration' by construction — say so if shown).", "Write the one sentence that turns 'MuJoCo fixed 2 ms is cheapest here' into the paper's argument: the cost of being artifact-free is paid at every step by fixed stepping and only at impacts by error control (B7)."])
+
+    # ------------------------------------------------------------------ B7
+    nb.experiment("B7. Error control pays when something happens (figures/realtime_trace_n64.pdf, _n1.pdf)",
+        background="A work-precision number averages a horizon. RL episodes are mostly settled contact with short violent phases; the whole case for per-world adaptivity is that a settled world coasts at δt_max while a violent one refines. A trace of the real-time rate along one drop makes that visible — and is the honest counterpart to B6, where fixed 2 ms MuJoCo wins on the 2 s average.",
+        question="Where along an episode does each arm spend its wall time, and what does error control cost over a horizon that is mostly settled?",
+        design=["Hard clutter, 64 scenes (and 1 scene), 5 s drop; per boundary: wall, solver steps per boundary, cumulative wall; arms fixed 1 ms/10 ms and error control ε = 1e-2/1e-3; every boundary synced (so absolute rates carry the sync floor)."],
+        says=["Fixed step: flat rate by construction. ICF error control at ε = 1e-2: ~10 % real time during the impacts (first ~1 s), climbing past 100 % once the pile settles, taking ~10 steps per 100 ms boundary where fixed 1 ms takes 100.",
+              "Over the 5 s, ICF error control at ε = 1e-2 costs about half of fixed ICF at 1 ms — and both are artifact-free (B6).",
+              "The n1 trace shows the same shape at the launch-latency floor."],
+        not_shown=["One scene family; a training episode with a policy acting is B17+.", "Absolute rates include a per-boundary host sync the timed benches avoid."],
+        where="scripts/bench/benchmarks/part1_realtime_trace.py (--n 64/1 --horizon 5) → part1_realtime_trace_hard-clutter_n{64,1}.csv → part1_plots.realtime_trace()",
+        status="Done (chain H3, 2026-08-28).",
+        gaps=["If Part 2 yields per-world step-count telemetry along a training episode (NEWTON_ICF_STEP_TELEMETRY), that trace belongs next to this one."])
+
+    # ------------------------------------------------------------------ B8
+    nb.experiment("B8. Wall time versus number of worlds (figures/scaling_per_world_*.pdf, scaling_*.pdf)",
+        background="RL throughput is reported as env-steps per second vs batch size with the saturation knee (Theme D). Marco asked for 2^13 as the ceiling. The question behind it: does per-world adaptivity scale on a GPU, and where does the ICF cost come from — the controller or the solver?",
+        question="How does wall per boundary scale from 2⁶ to 2¹³ worlds for each arm, and what is the per-world cost at saturation?",
+        design=["Hard and soft clutter; fixed at δt = 10 ms; error control at ε = 1e-3; 2 s timed window; median of 3 independent runs (spread as the band); njmax 1024 (4096 × 8192 worlds exhausted GPU memory)."],
+        says=["Hard clutter, wall per 100 ms boundary (ms) at 2⁶ → 2¹³: MuJoCo fixed 10.1 → 90.7; MuJoCo EC 174 → 2190; ICF fixed 101 → 5060; ICF EC 322 → 12,700. Soft: MuJoCo fixed 4.7 → 45; MuJoCo EC 28 → 281; ICF fixed 36 → 2500; ICF EC 107 → 5580.",
+              "Per world at 2¹³ (hard): MuJoCo fixed 11 µs, MuJoCo EC 270 µs, ICF fixed 620 µs, ICF EC 1.5 ms per boundary. Cost per world falls with batch size until the GPU saturates; the ICF arms saturate from 2¹⁰.",
+              "ICF's step costs ~55× MuJoCo's per world at 2¹³ (fixed) and ~6× under error control. Not the Newton tolerance (B14: 1e-5…1e-8 changes wall < 5 %): it is the convex Newton solve resolving stiff point contact to the model's compliance, and a batch pays for its slowest world.",
+              "Reproducibility: ICF's run-to-run spread < 1 % at every N; MuJoCo EC's is wide at small N and narrows with N."],
+        not_shown=["No policy, no articulation: the 200 s vs 20 s per-iteration observation on the arm scenes (MuJoCo EC vs ICF EC at 2048 envs) is NOT reproduced here — that regime is Part 2's.", "Fixed at 10 ms is the artifact regime for ICF on hard clutter (B6); the scaling rows are cost only."],
+        where="scripts/bench/benchmarks/part1_scaling.py (--ns 64..8192 --trials 3) → part1_scaling_{scene}.csv → part1_plots.scaling()/scaling_per_world(); tables/results_tables.md (wall vs worlds)",
+        status="Done (chains H3 + J, 2026-08-28).",
+        gaps=["Marco's 200 s vs 20 s: measure per-world accepted-substep counts on an arm task for both EC arms — the number the paper needs and B12/B8 do not give."])
+
+    # ------------------------------------------------------------------ B9
+    nb.experiment("B9. Measured error versus cost — self-consistency (figures/consistency.pdf)",
+        background="Theme C: requested tolerance vs cost is acceptable only among error-controlled methods; a work-precision diagram proper plots MEASURED error against cost. Erez et al. (2015) measure engine consistency by re-initialising short pieces from a fine reference; chaotic piles need those short windows. This bench is the literature-derived replacement for 'requested ε' on the clutter scenes.",
+        question="At the same measured deviation from a fine reference of the same model, which arm is cheaper — and where is the instrument's floor?",
+        design=["Each backend's reference = itself at δt = 0.1 ms over the 2 s drop; from t = 0.2 s, 20 windows of 0.1 s restarted from the reference; deviation after each window = ℓ∞ over bodies of |x_test − x_ref| (the controller's own norm), averaged over windows; wall per window measured; 8 scenes; run on an idle GPU.",
+                "Arms: fixed 10/5/2/1/0.5 ms and — the floor row — 0.1 ms (the reference restarted against itself); error control ε = 1e-1 … 1e-5. Self-check oracle: --self-check must reproduce the reference at the reference step (it did on the ball exactly; not on clutter — B10)."],
+        says=["Floor (reference vs itself, mean dev): soft 11 µm ICF / 0.2 µm MuJoCo; hard 0.62 mm ICF / 0.28 mm MuJoCo. A point within a few × of it is noise.",
+              "Soft clutter (not chaotic): fixed ICF 3.7 mm (10 ms) → 1.9 → 0.73 → 0.29 → 0.12 mm (0.5 ms); MuJoCo 2.4 → 1.1 → 0.35 → 0.15 → 0.08 — first order both. Requested ε bounds the measured deviation (ICF EC 0.39 mm at 1e-3, 41 µm at 1e-5). ICF error control gives ~2× less deviation than fixed ICF at the same cost across the range (ε = 1e-3: 0.39 mm at 0.45 s vs fixed 2 ms 0.73 mm at 0.58 s; 1e-4: 0.14 mm at 1.4 s vs fixed 1 ms 0.29 mm at 1.0 s; 1e-5: 41 µm at 3.2 s vs fixed 0.5 ms 0.12 mm at 1.9 s). MuJoCo error control lands on its own fixed line (1e-4: 96 µm at 0.54 s between fixed 1 ms 0.15 mm/0.42 s and 0.5 ms 0.08 mm/0.84 s) — a wash.",
+              "Hard clutter (chaotic): fixed ICF 20 → 15 → 11 → 4.6 → 2.7 mm; MuJoCo 8.3 → 5.8 → 3.3 → 2.3 → 1.2 mm — ~O(δt^0.7); MuJoCo 2–3× cheaper at the same δt. Requested ε ≠ measured (ICF EC ε = 1e-3 measures 5.6 mm). The tight end (ε ≤ 1e-4, δt ≤ 0.5 ms) sits within 2–4× of the floor and ranks nothing. In the middle neither controller beats its fixed line on this impact-dominated window (ICF EC 1e-3: 5.6 mm at 2.6 s ≈ fixed ICF between 1 and 2 ms; MuJoCo EC 1e-3: 2.5 mm at 1.4 s vs fixed 1 ms 2.3 mm at 0.9 s).",
+              "Reading: error control pays for the solver whose per-step cost is high and whose error falls fastest with the step (ICF), not for the cheap one (MuJoCo); and on impact windows nobody wins — the saving is the settled phase (B7)."],
+        not_shown=["Each arm is compared with its OWN model's reference: convergence and cost, not fidelity to physics (that is B3/B6).", "The hard-clutter tight end is not a measurement (floor).", "The first run's timing was polluted by concurrent jobs; the committed CSV is the idle-GPU rerun."],
+        where="scripts/bench/benchmarks/part1_consistency.py (--scene --n 8; --self-check) → part1_consistency_{scene}.csv → part1_plots.consistency()",
+        status="Done (idle-GPU rerun with floor rows, 2026-08-29 14:53).",
+        gaps=["Decide whether the hard-clutter panel appears at all, or only soft clutter with the caveat.", "State the norm exactly in the caption (ℓ∞ over bodies, mean over windows) — 'mean position deviation' was wrong wording once."])
+
+    # ------------------------------------------------------------------ B10
+    nb.experiment("B10. Run-to-run determinism (tables/determinism_probe.md)",
+        background="The consistency oracle failed on hard clutter (8 mm restart deviation for both backends) and on soft clutter for ICF (0.19 mm) while passing exactly on the ball — either the restart wiring was wrong or the solvers are not reproducible. SimBenchmark and Erez use determinism as a solver certificate; RL reproducibility (same seed = same run) depends on it.",
+        question="Do two identical arms from the same state produce bit-identical trajectories?",
+        design=["Two identical arms on the same model, 8 worlds, 1 s; max |Δx| over bodies between the runs every 0.1 s; scenes ball, soft, hard; arms ICF/MuJoCo fixed 1 ms and EC ε = 1e-3."],
+        says=["Ball: 0 on every arm (bit-exact).",
+              "Soft clutter: ICF 3e-8 at 0.1 s (free fall), 7e-4 m at 0.2 s (first impacts), 2.4e-2 m at 1 s; ICF EC 3.7e-2; MuJoCo 2.7e-6 m at 1 s; MuJoCo EC 4.2e-4.",
+              "Hard clutter: ICF 1.5e-1 m, ICF EC 1.1e-1, MuJoCo 9.4e-2, MuJoCo EC 7.6e-2 at 1 s — centimetres within 0.5 s for both.",
+              "Reading: GPU reduction order in the contact solve differs run to run; the pile amplifies it. ICF's noise is orders larger than MuJoCo's on soft clutter. Consequences: the consistency floor row (B9); two training runs with the same seed are not the same run under clutter contact on either backend; same-config training draws differ in substep demand by the same effect."],
+        not_shown=["Whether the nondeterminism changes learning outcomes — unmeasured (single-seed comparisons are inside the run-to-run noise)."],
+        where="scripts/bench/probe_determinism.py → tables/determinism_probe.md (+ the restart-oracle table)",
+        status="Done (2026-08-29 14:25).",
+        gaps=["Decide how many seeds each Part-2 comparison needs (neither backend has a deterministic mode; single-seed differences are inside the run-to-run noise)."])
+
+    # ------------------------------------------------------------------ B11
+    nb.experiment("B11. Zero-gravity momentum conservation (tables/momentum_probe.md)",
+        background="A per-world step controller that changes δt inside a collision could, in principle, inject momentum (SimBenchmark's ANYmal-momentum test; Erez's momentum drift). A cheap certificate that the four arms' contact solves obey Newton's third law and the controller adds nothing.",
+        question="Is the pair's linear momentum conserved through a head-on collision under every arm?",
+        design=["Two 65 g spheres, k = 10⁵, μ = 0.5, gravity zero in every world (the first version zeroed only world 0 — every arm then reported the identical 23.5 = world 1's free fall; an identical number on every arm is a broken instrument), 0.6 s; |p_end − p_0| / |p_0|."],
+        says=["ICF fixed 1.1e-7 (10 ms and 1 ms); ICF EC exactly 0 (ε = 1e-2, 1e-4); MuJoCo fixed 1.0e-5 (10 ms), 4.6e-7 (1 ms); MuJoCo EC 8.9e-6, 3.9e-6. Every arm conserves to solver precision; the controller injects none."],
+        not_shown=["Energy (B4) and angular momentum are not tested."],
+        where="scripts/bench/probe_momentum.py → tables/momentum_probe.md",
+        status="Done.", gaps=None)
+
+    # ------------------------------------------------------------------ B12
+    nb.experiment("B12. Actuated stiff contact — the RL regime (figures/actuated.pdf, actuated_chatter.pdf; tables/actuated_trace.md)",
+        background="The clutter scenes have no actuator, and the PI's own killer regime is a stiff PD arm on objects (CENIC's 'Franka with box', Fig. 12's K_p axis). Marco's field observation — MuJoCo error control ~200 s/iter vs ICF error control ~20 s/iter at 2048 envs on the arm scenes — lives in this regime, as does the policy's held-target control. Theme E found no source that reports penetration, chatter, energy and tracking together across δt and ε for an actuated contact; Drake issue #14694 names the exact failure ('a light body under high gain'). The scene is the smallest one with the ingredients.",
+        question="Under a stiff PD on a light body against stiff contact, with targets held at the control rate, which solver stays stable, what does each do to the pushed object, and what does the coarse step hide?",
+        design=["Prismatic gantry (x, z) carrying a 0.1 kg fingertip (r = 1 cm); 1 kg 10 cm box on the table; k = 10⁵, μ = 0.5; descend to the box's mid-height beside it, then push from the side on a trapezoidal profile (0.1 s ramps) at 300 mm/s for 0.3 m, hold 1 s; targets updated and held at the 100 Hz boundary — as a policy's actions are.",
+                "K_p ∈ {10², 10³, 10⁴, 10⁵, 10⁶} N/m, K_d = 2√(K_p m) (critically damped, Drake's rule); δt ∈ {10, 5, 2, 1} ms; ε ∈ {1e-1 … 1e-4}; one world (deterministic scene); 80 cells.",
+                "Metrics from the state only: box lift (max rise above its 25 µm resting depth) and pitch-rate RMS during the push — a cube pushed at mid-height with μ = 0.5 slides flat, tipping needs the push above its top face; tip penetration into the box face while the tip is within the face's height (vs quasi-static push depth μ m g/k = 49 µm); tip–box relative velocity RMS in the cruise (a steady push has none); tracking RMS; final displacement vs the commanded 0.28 m; instability = non-finite or |v| > 10 m/s; wall.",
+                "Trajectory probe (tables/actuated_trace.md) traces tip and box per boundary, plus a push-frozen control (box at rest, tip beside it)."],
+        says=["Stability: ICF stable in all 40 cells. MuJoCo blows up in 6: K_p = 10⁵ at δt = 10 and 5 ms; K_p = 10⁶ at 10, 5 and 2 ms and under ε = 1e-1 — the joint gain is explicit in MuJoCo's step (√(K_p/m)·δt ≳ 2 diverges: 10⁵ needs δt ≤ 2 ms, 10⁶ δt ≤ 1 ms). MuJoCo EC at ε = 1e-1 on K_p = 10⁵ survives but throws the box 1.6 m (lift 19 cm).",
+              "The pushed box: ICF slides it flat at every gain, step and tolerance — lift ≤ 0 (stays at m g/(4k)), pitch rate ≤ 0.02 rad/s, vertical velocity ≤ 0.2 mm/s, displacement 0.280 m as commanded for K_p ≥ 10³ (0.235 m at 10², where a 100 N/m controller must lag 5 cm to exceed friction). MuJoCo's box rocks and hops in every stable cell: lift 2–21 mm and pitch 0.7–3.4 rad/s at K_p ≤ 10⁴, 4–9 mm at 10⁵, 10–58 mm at 10⁶ (displacement 0.47 m at 10⁶/1 ms — kicked past the goal); the tip climbs onto the box at K_p = 10² (δt = 5, 2 ms); error control does not remove it (ε = 1e-4: 1.7–10 mm). With the push frozen neither backend moves the box: a sliding-contact behaviour of the soft constraint.",
+              "Tip penetration: ICF ≤ 0.25 mm everywhere (the max is the ramming impact at 0.3 m/s). MuJoCo ≤ 0.6 mm where its box stays near flat (K_p ≥ 10⁴, δt ≤ 2 ms); at K_p ≤ 10³ the reading (up to 11 mm) is the overlap of the tip with a lifted, pitched box — geometry, not compliance. (The first sweep reported 18 mm; the trace showed the tip riding on top of the box; the metric was tightened.)",
+              "Chatter under held targets (actuated_chatter.pdf, K_p = 10⁵): each 3 mm target step is a 300 N kick on the 0.1 kg tip. Tip–box relative velocity RMS in the cruise: ICF 0 (10 ms), 0.083 (5 ms), 0.20 (2 ms), 0.27 m/s (1 ms); K_p = 10⁶: 0.20 → 0.36; MuJoCo 0.36 at 1 ms. Both solvers resolve the chatter as the step shrinks and the 10 ms step integrates it away entirely — a policy trained at 10 ms never sees the contact its own gains excite. ICF error control sits at the 5 ms level (0.08) for ε ≤ 1e-3 and resolves it only at ε = 1e-4 (0.26): a position norm does not see the velocity chatter of a light tip.",
+              "Cost: one world, 0.06–0.5 s per simulated second in every cell — the launch-latency floor."],
+        not_shown=["This scene does NOT reproduce the 2048-env, 6/7-DoF regime of the 200 s vs 20 s observation; it makes no claim about it.", "MuJoCo's box hop is measured, not explained (candidates: 4-corner soft-constraint contacts with the impedance ramp, pyramidal/elliptic cone, τ clamp); the paper should report it as behaviour, not mechanism.", "'Stable' for MuJoCo at K_p = 10⁶/1 ms is marginal (√(K_p/m)·δt = 3.2)."],
+        where="scripts/scenes/actuated_press.py; scripts/bench/benchmarks/part1_actuated.py (--n 1 --ks 1e5 --speeds 0.3) → part1_actuated.csv → part1_plots.actuated()/actuated_chatter(); scripts/bench/probe_actuated_trace.py → tables/actuated_trace.md",
+        status="Done (80 cells, rerun with tightened metrics 2026-08-29 14:30).",
+        gaps=["Decide whether to add the 50 mm/s (quasi-static) and k = 10⁷ variants the design allows.", "Verify the K_p = 10⁶ MuJoCo 'stable' cell by eye (video) before quoting it.", "This is the figure that connects Part 1 to Part 2 — write the sentence that says which of these behaviours the trained policies exploit (needs B17+ evidence)."])
+
+    # ------------------------------------------------------------------ B13
+    nb.experiment("B13. MuJoCo solref calibration and formats (tables/mujoco_stiffness_probe.md)",
+        background="Every early MuJoCo number was wrong because Newton's ke/kd → solref conversion had set (τ = 1 ms, ζ = 3.16) for the clutters and (20 ms, 1.0) for the ball — ~100× softer than k and critically damped. Marco: 'max and mean ground penetration not changing??' and 'colors not consistent, not painting the truth'. The probe establishes how MuJoCo's contact parameters map to the model's compliance, in both solref formats, across δt.",
+        question="What solref realizes the model's m g/k for a resting sphere at δt = 1 ms, and how does each format behave as δt changes?",
+        design=["One 65 g sphere at rest; measure rest depth vs τ (reference format) and vs stiffness (direct format) at δt = 10, 5, 2, 1, 0.25 ms; undamped ball ladder in the direct format (energy after 10 s)."],
+        says=["Reference format: τ = 2.4 ms, ζ = 1 → 6.3 µm at δt = 1 ms (model 6.4); penetration ∝ τ² (4.4 µm at 2 ms); clamped to τ ≥ 2δt so at 10 ms every τ < 20 ms reads the same.",
+              "Direct format at k = 10⁵-equivalent (−1.703·10⁵, −632): exactly 6.4 µm at δt = 2, 1, 0.25 ms; at 5 and 10 ms the body is launched (−1.6e6 and −2.6e7 µm 'penetration') — stable only for ω·δt ≲ 2 (ω = 1240 rad/s → δt < 1.6 ms). The reference format's clamp is the guard against exactly this.",
+              "Undamped ball, direct (−2.24·10³, 0): energy change −3.3 % (10 ms), −105 % (5 ms, mid-impact readout), +0.5 % (2 ms), −0.16 % (1 ms), −0.08 %, −0.03 %, −0.01 % (0.5, 0.2, 0.1 ms) with 9–10 rebounds; reference format with ζ = 0 → NaN; ζ = 0.05 → 25 rebounds but −100 % energy.",
+              "Rule since: each scene sets geom_solref explicitly (four_arms._apply_solref)."],
+        not_shown=["Effective-mass scaling (a different body needs a different τ for the same N/m) — measured indirectly in B12 (box 20× stiffer at the same τ)."],
+        where="scratchpad probes (2026-08-28/29) recorded in tables/mujoco_stiffness_probe.md; constants in scripts/scenes/cenic_scenes.py (MUJOCO_TAU_K1E5 = 2.4 ms, MUJOCO_BALL_DIRECT_STIFFNESS = 2.24e3)",
+        status="Done; the probe scripts are not committed as re-runnable files (the table is).",
+        gaps=["Commit the calibration probe as scripts/bench/probe_mujoco_solref.py so the numbers are re-runnable (the epistemics rule)."])
+
+    # ------------------------------------------------------------------ B14
+    nb.experiment("B14. Newton-tolerance probe (tables/newton_tolerance_probe.md)",
+        background="Hypothesis raised while explaining ICF's 40–60× per-world cost: the paper's fixed-step Newton tolerance 1e-8 is below float32 resolution and pins every solve at the 100-iteration cap. If true, the cost ratio would be a tolerance artifact, not the solver's.",
+        question="Does the ICF Newton tolerance (1e-5 … 1e-8) change wall or penetration at 64, 1024 and 4096 worlds?",
+        design=["Fixed ICF at δt = 10 ms and 1 ms under a 0.1 s boundary, hard clutter; tolerance 1e-5, 1e-6, 1e-7, 1e-8; ms per boundary, mean/max/p95 penetration."],
+        says=["64 worlds, 10 ms: 94.9 / 96.5 / 104.2 / 97.3 ms per boundary; 1 ms: 322 / 354 / 417 / 412 ms. 1024 worlds: 693 / 702 / 726 ms (10 ms); 4096: 2893 / 2916 / 3045 ms. Wall flat within 5 %; penetration unchanged (6.5–6.7 µm at 1 ms). Hypothesis refuted: the cost is the solve, not the tolerance."],
+        not_shown=["Only fixed ICF; the EC arm applies eq. 34 (max(1e-3·ε, 1e-8)) — measured effect on the march < 10 %."],
+        where="probe recorded in tables/newton_tolerance_probe.md (commits 83986896/d452bad2)",
+        status="Done.", gaps=None)
+
+    # ------------------------------------------------------------------ B15
+    nb.experiment("B15. March cost — iterations and µs per iteration vs ε (tables/march_cost.md)",
+        background="Separates the two factors of an error-controlled arm's cost: how many attempts the controller takes per simulated second and what each attempt costs. It is the probe that turned a '46 s per simulated second timeout' into 0.7 s once dropped contacts were fixed (B16).",
+        question="Per simulated second, how many march iterations does each EC arm take at each ε, and what does one iteration cost?",
+        design=["One world, idle GPU, δt_max 0.1 s, calibrated solref; ε = 1e-1 … 1e-6; hard and soft clutter."],
+        says=["Hard clutter, ICF EC: 72 / 264 / 736 / 1621 / 4759 / 14,408 iterations per simulated second at ε = 1e-1 … 1e-6; 6.9 / 4.1 / 3.1 / 2.7 / 2.7 / 2.9 ms per iteration. MuJoCo EC: 54 / 259 / 699 / 2348 / 5330 / 11,611; 2.1 / 1.9 / 2.1 / 2.0 / 1.6 / 1.6 ms. Soft: ICF 32 … 8732 iterations, 6.3 → 2.5 ms; MuJoCo 40 … 7691, 1.8 → 0.95 ms.",
+              "Reading: both controllers take comparable numbers of attempts; ICF's attempt costs 1.5–3× more (three convex solves vs three soft-constraint solves). At tight ε MuJoCo takes MORE attempts than ICF (its error estimate is noisier) but each is cheaper."],
+        not_shown=["N = 1 only; at 1024 worlds the ratio widens (B5, B8)."],
+        where="scripts/bench/probe_march_cost.py → tables/march_cost.md",
+        status="Done.", gaps=None)
+
+    # ------------------------------------------------------------------ B16
+    nb.experiment("B16. Instrument certificates: contact budgets, penetration instrument, restart oracle, retired scenes",
+        background="The epistemics rule — a probe existing is not evidence; re-run it — is enforced by these certificates; each of them caught a wrong number this week before it reached a figure.",
+        question="Do the instruments measure what the figures say they measure?",
+        design=["verify_contact_budgets.py: drives each scene 2 s at 1 ms and fails unless every budget is ≥ 2× the peak contact demand (measured: hard clutter ~520 contacts/world ICF, ~380 active MuJoCo; soft ~280/290). A budget of 256 silently dropped half the contacts; the controller, sizing steps from inconsistent full/half-step physics, took 50× more steps (19k/s vs 355/s at ε = 1e-5) — a 'timeout' that was an instrument fault. Bench parents now fail a child that reports dropped contacts.",
+                "verify_part1_penetration.py: seven independent checks of the analytic ground-penetration readout against the Newton model (drop judged from the initial state; 1 passed / 0 passed logs in the queue).",
+                "part1_consistency.py --self-check: a fixed run at the reference step restarted from the reference must reproduce it (ball: 0 for both backends → the restart wiring is right; clutter: fails by the solvers' own noise → B10).",
+                "part1_convergence.py: a Cauchy ladder on a sphere + sliding box — not consumed by any figure; park or delete."],
+        says=["All certificates pass on the committed configuration; the failures they caught are listed in B29 (traps)."],
+        not_shown=["No certificate covers body–body penetration or the actuated metrics beyond the trajectory probe."],
+        where="scripts/bench/verify_contact_budgets.py; verify_part1_penetration.py; part1_consistency.py --self-check; part1_convergence.py (unused)",
+        status="Done.", gaps=["Delete or park part1_convergence.py so a reviewer of the repo does not mistake it for a result."])
+
+    # ================================================================== PART 2
+    nb.pagebreak()
+    nb.h("Part 2 — the application (B17–B25)", 1)
+    nb.p("Marco's status (2026-08-29): 'slide mug, lift mug, flip mug, place mug on tree, lift plate from dish rack — currently working on mug flip; others are finished.' Each task entry gives the CURRENT recipe, the latest runs on disk with their logged numbers, and the gap between 'finished' and what this machine holds (W&B links, the success definition used). The full run history is in notebook_sources/isaaclab_part2_history.md, not here.", bold=True)
+
+    # ------------------------------------------------------------------ B17
+    nb.experiment("B17. The campaign protocol as encoded (scripts/experiments/trossen_campaign.sh, probe_campaign_coefficients.py)",
+        background="The killer experiment needs every arm to differ in stepping only. After the reward overhaul was reverted (08-26) and the exploration settings were made per-task law (08-27), the protocol was encoded so a run cannot drift: one script, one audit probe asserting the coefficients.",
+        question="What exactly is held fixed, what varies, and what does 'success' mean per task?",
+        design=["Ladder per task: K1 (sim.dt 1/30, decimation 1 → one 33 ms step per action), K2 (1/60, 2), K3 (1/90, 3 — the task default); adaptive = ICF error control marching the same 1/30 s boundary from a 1/90 s seed (tol 1e-3). K3wall = K3 re-run for the adaptive run's wall-clock budget (the wall-matched fixed arm).",
+                "Held fixed: seed 42, 2048 envs, no domain randomization, 30 Hz control, zero object jitter, shared spawn, W&B project rubato-trossen, video 200 frames every 300 iterations, contact cap ICF_MAX_RIGID_CONTACT 1024 (mug scenes) / 8192 (plate); iteration budgets slide 700, lift/plate/flip 1000.",
+                "Per-task recipe asserted by the probe: lift init_std 0.5 / range (0.05, 1.5), arm scale 0.1, gripper 0.05; slide and plate 1.5 / (0.05, 3.0), wide arm scale {0.5, 1.0, 1.5}, gripper 0.15; flip 1.0 / (0.05, 2.5). Entropy 0.006, lr 1e-4 adaptive, gamma 0.98, lam 0.95, KL 0.01, clip 0.2, 5 epochs, 4 minibatches, MLP [256, 128, 64].",
+                "Success gates: lift/plate/flip — object within 5 cm of the goal, tilt ≤ acos(0.87), held 30 consecutive steps (ObjectPoseSuccessCommand); slide — tracked ≥ 95 % of steps within the moving-goal band. Terminations: robot_abnormal, physics_diverged, time_out, object_off_table; early_termination −50."],
+        says=["This is protocol, not a result. The record shows the campaign script was never invoked end to end; every run was launched by hand as smoke-* — so the 'campaign' evidence is the set of smokes in B20–B23, each on the config of its day."],
+        not_shown=["No K3wall run exists for any task. No MuJoCo-fixed run exists on any mug task (the CLAUDE.md item 'MuJoCo arms on all tasks' is open); only two 50-iteration MuJoCo-adaptive parity smokes (08-24).",
+                   "ICF contact stiffness: the campaign script does not export ICF_CONTACT_STIFFNESS/ICF_HC_DISSIPATION, so the smokes ran on IcfParams defaults (k = 1e5, d = 10) unless the shell had them set — which stiffness the smokes actually used is not recoverable from the tree (the 08-18 calibration accepted k = 289.2; run names say k4.6e7)."],
+        where="IsaacLab scripts/experiments/trossen_campaign.sh; scripts/probes/probe_campaign_coefficients.py; task cfgs under source/isaaclab_tasks/isaaclab_tasks/contrib/trossen_*",
+        status="Encoded 08-25; never run as a whole.",
+        gaps=["Run probe_campaign_coefficients.py and record whether it exits 0 on the current tree.", "Pin ICF_CONTACT_STIFFNESS in the campaign script (and say which value the finished runs used).", "Run K3wall for each finished task — it is the wall-matched arm the paper's rule requires."])
+
+    # ------------------------------------------------------------------ B18
+    nb.experiment("B18. Platform, plumbing, and the wall-time staircase (IsaacLab Newton manager)",
+        background="Everything in Part 2 runs through NewtonMJWarpManager: it selects the backend and the adaptive mode, builds IcfParams once for both arms, calls solver.step() once per substep boundary, and latches physics_diverged.",
+        question="How is the solver arm chosen and configured from a task, and what platform defects have been found and fixed?",
+        design=["--solver {mujoco, mujoco-adaptive, icf, icf-adaptive} → physics_presets.apply_solver_choice → env overrides NEWTON_SOLVER / NEWTON_ICF_ADAPTIVE=1 / NEWTON_ADAPTIVE=1. ICF branch: icf_warp from ICF_WARP_PATH; IcfParams from ICF_CONTACT_STIFFNESS, ICF_HC_DISSIPATION, ICF_MAX_RIGID_CONTACT (unset → icf_warp defaults; 128 silently drops contacts during grasps); adaptive dt_inner_init = sim.dt × num_substeps (the fixed arm's step), tol NEWTON_ADAPTIVE_TOL (1e-3), max_substeps 256, ICF_ADAPTIVE_DT_MIN/MAX/RTOL. MuJoCo branch: SolverMuJoCoAdaptive with NEWTON_ADAPTIVE_* overrides.",
+                "Physics preset: MJWarpSolverCfg njmax 4096, nconmax 400, impratio 10, cone elliptic, iterations 100, ls_iterations 15; NewtonCollisionPipelineCfg rigid_contact_max 8,000,000, max_triangle_pairs 192,000,000 (the 12.47 GB the campaign freed at 1024 by moving the cap manager-side); NewtonShapeCfg ke 4.6e7, kd 2√ke, gap 3 mm (639ab761e5: 'narrow-phase collision 84.5 % of the adaptive march's GPU time').",
+                "Telemetry: NEWTON_ICF_STEP_TELEMETRY, NEWTON_ADAPTIVE_DUMP_BELOW (names the argmax body), NEWTON_ADAPTIVE_LOG(_EVERY)."],
+        says=["Fixes in force that a reader of any adaptive training wall must know: the orphan follower_left_ee_gripper_link (a dropped fixed joint left a free body falling in every world and drove the float32 error estimate into quantization noise — the 'wall-time staircase') is deactivated (ec9bad65ab); vendor joint velocity limits are applied via velocity_limit_sim (PhysX-namespaced USD attributes are silently dead under Newton); object contacts use condim 6. Adaptive training wall is flat (~14.6 s/iter at the mesh-era configuration) since.",
+              "Diagnostic rule in force: per-step telemetry (NEWTON_ADAPTIVE_DUMP_BELOW names the argmax body), not checkpoint replay."],
+        not_shown=["physics_diverged is a no-op on the MuJoCo fixed arm (open)."],
+        where="IsaacLab source/isaaclab_newton/isaaclab_newton/physics/mjwarp_manager.py (_resolve_solver_mode ~372, _create_solver 441–698, _step_solver 808–870), mjwarp_manager_cfg.py, source/isaaclab_tasks/.../utils/physics_presets.py; memory cenic-icf-adaptive-status",
+        status="Working; defects above open.",
+        gaps=["MuJoCo velocity-limit parity check (open in memory) before any MuJoCo arm runs on the mug tasks."])
+
+    # ------------------------------------------------------------------ B20
+    nb.experiment("B20. Slide mug across the table (IsaacContrib-Slide-Mug-Trossen-v0) — Marco: finished",
+        background="The most controllable stiff-contact task: a pushed mug must track a moving goal without tipping. Current recipe (since 08-26/27): moving goal at 0.20 m/s (Marco-confirmed), tight Gaussian tracking kernel std 0.04, no final-anchored income, success = tracked ≥ 95 % of steps — each chosen against a measured exploit (a fixed goal let the policy pick the push speed: 'an unphysical shove'; a loose kernel let it stop mid-path; final-anchored income let it 'whack the mug across').",
+        question="Does a policy trained at fixed step fail or exploit, and does the same task train under error control — and on which success definition?",
+        design=["Episode 6 s; moving goal from the spawn to (0.285, 0) at 0.20 m/s; obs joint_pos_rel, joint_vel_rel, object_position, target_object_position, actions (no history); actions arm scale {0.5, 1.0, 1.5}, gripper 0.15; rewards early_termination −50, reaching_object 0.5 (std 0.2), object_goal_tracking 5.0 (gaussian std 0.04, min_up_cos 0.6, max_speed 0.75), table_scrape −2.0, action_rate −3e-3, action_jerk −1e-3, joint_vel −5e-4; PPO init_std 1.5, range (0.05, 3.0); teacher/distill/finetune variants with sim2real DR (mug friction 0.1–0.4, mass ×[1/1.3, 1.3], COM ±5/±10 mm, table friction 0.4–1.2)."],
+        says=["Latest runs on disk (as logged): on the current recipe (GOAL_SPEED 0.20, tracked ≥ 95 %): smoke7-K3-slide (08-27, 1999 iters) success 0, tracked_fraction 0.606; smoke7-adaptive-slide (08-27, 501/1000 last logged) success 0, tracked 0.766. On the previous success definition (30-step held delivery, moving goal): smoke-K3-slide (08-25, 1999 iters) 0.842; smoke-adaptive-slide (08-26, 986/2000) 0.988 — the pair the 08-26 revert message cites.",
+              "Reading: under the held-delivery gate the adaptive arm scored higher (0.988 vs 0.842); under the current ≥95 % rule no run has reached success yet and the adaptive arm tracks more of the path (0.77 vs 0.61, unfinished). probe_eval_success.py still scores held delivery — the evaluator and the online metric disagree."],
+        not_shown=["No K1/K2 runs on the current recipe; no K3wall; no MuJoCo arm. 'The fixed-step policy exploits an artifact' has not been shown with a metric — the evidence so far is the video judgement ('unphysical shove').", "Which ICF stiffness the smokes ran under (B17 gap)."],
+        where="IsaacLab contrib/trossen_mug_slide/ (env cfg L60–70 GOAL_SPEED/FINAL_GOAL, L103–210 actions/rewards; agents/rsl_rl_ppo_cfg.py L48 std); runs under logs/rsl_rl/trossen_mug_lift/*slide*; W&B rubato-trossen",
+        status="Marco: finished. Disk: last pair 08-27 (smoke7) at 0 on the ≥95 % rule; the 0.84 / 0.99 pair is on the held-delivery rule.",
+        gaps=["Which run pair is 'the result', under which success definition, with W&B links — write them here.", "The artifact the fixed policy exploits: name it and measure it in the training scene (a Part-1 metric: penetration, box/mug hop, hidden chatter).", "K3wall and K1/K2 on the final recipe; MuJoCo fixed + MuJoCo EC arms.", "Reconcile probe_eval_success.py with the online metric."])
+
+    # ------------------------------------------------------------------ B21
+    nb.experiment("B21. Pick up (lift) mug (IsaacContrib-Lift-Mug-Trossen-v0) — Marco: finished",
+        background="The stiff-contact task closest to the PI's 'Franka with box': a pinch grasp under high gain. Current recipe: the validated Franka core-lift economy (grasp-gated tracking and success), the liftv2 discovery recipe (the policy closes the gripper itself; scripted close-and-raise proves the grasp exists from the bank pose), and the per-task exploration settings restored on 08-27 after the campaign-wide setting 'bulldozed' them. CLAUDE.md 08-26: 'lift/plate = validated core economy (currently fails to discover — open)'.",
+        question="Does the lift discover a grasp at all under the current recipe and representation, and do the arms differ?",
+        design=["Episode 5 s; fixed goal (0, −0.03, 0.25); obs joint_pos, joint_vel_rel, per-pad contact forces (clip ±20), object pose, target, actions; history 5; actions arm scale 0.1, gripper 0.05; rewards action_l2 −0.001, fingers_to_object 3.0 (std 0.4, opposed-grasp gated), position_tracking 5.0 (grasp-gated ratchet), success 10 (while grasped), good_finger_contact 0.75, contact_count 0.1, early_termination −50; events: grasp bank reset with bank_fraction 0.5 (teleop-authored GRASP_BANK_POSE), reverse-curriculum anneal to 2400; PPO init_std 0.5 range (0.05, 1.5)."],
+        says=["Latest runs on disk (as logged): smoke-K3-lift (08-25, 1999 iters) Metrics/success_rate 0 while Episode_Reward/success ≈ 6.7; smoke2-K3-lift (08-26, 599) 0; the adaptive ladder run stopped at 600/1000. No lift run exists on the restored recipe (08-27).",
+              "Reading: the object-based 30-step hold gate reads 0 while the grasp-gated success reward accrues — the policy either hovers short of the gate or the gate is unreachable for a lifted mug; probe_episode_forensics.py on the best checkpoint decides it."],
+        not_shown=["No adaptive lift at 2048 envs / 1000 iterations completed on the current representation; no MuJoCo arm; no K3wall."],
+        where="IsaacLab contrib/trossen_mug_lift/ (env cfg L448–642 goal/actions/obs/rewards, L692–741 events; agents/rsl_rl_ppo_cfg.py L43 std); runs logs/rsl_rl/trossen_mug_lift/*lift*",
+        status="Marco: finished. Disk: no run on the restored recipe; every campaign-shape smoke at success 0.",
+        gaps=["The finished result: which run, which metric, W&B link.", "Run probe_episode_forensics.py on the best checkpoint to say whether it lifts and hovers or never grasps.", "Do not touch trossen_mug_lift files while Marco is editing them (CLAUDE.md)."])
+
+    # ------------------------------------------------------------------ B22
+    nb.experiment("B22. Pick up plate from the dish rack (IsaacContrib-PlatePick-Trossen-v0) — Marco: finished",
+        background="Thin-shell stiff contact: a plate in a wire rack, the CENIC dish-rack case in spirit. Current scene: rack as a raw triangle mesh (a convex decomposition loses the wire lattice), plate as 25 convex pieces (full tri–tri contact is infeasible: 3624 contacts/env, 96 s/iter), exploration uncapped to init_std 1.5 / range 3.0 because the ~90° wrist reorientation to the pre-grasp 'sits ~6 sigma from the mean and is never discovered' under the mug's jitter guard.",
+        question="Can a policy discover the wrist reorientation and lift the plate out of the rack, and how do the arms compare?",
+        design=["Inherits the lift env; rack raw mesh at (−0.08, +0.08, 0.02); plate at the TRI weld pose, convex hull per piece, friction 0.3; goal x = 0.18; fingers_to_object = rim distance (3.0, std 0.2); arm scale {0.5, 1.0, 1.5}, gripper 0.15; zero jitter, no arm scatter, no bank (PLATE_BANK_POSE unwired/unvalidated); PPO init_std 1.5 range (0.05, 3.0); ICF_MAX_RIGID_CONTACT 8192."],
+        says=["Latest run on disk (as logged): smoke-K3-plate (08-25, 1999 iters) success 0. No adaptive run on the current (hull plate / mesh rack) scene."],
+        not_shown=["Marco's plate pre-grasp and the gates it feeds are pending; PLATE_BANK_POSE is unwired."],
+        where="IsaacLab contrib/trossen_plate_rack/ (env cfg L81–134 rack/plate, L196–214 goal/rewards/actions; pose_lab.py; assets/convert_plate_rack.py); runs *plate*",
+        status="Marco: finished. Disk: one 2000-iteration K3 smoke at 0; no adaptive run on the current scene.",
+        gaps=["The finished result: run, metric, link.", "The plate pre-grasp bank: wired or not?", "Adaptive + K3wall + MuJoCo arms on the current scene."])
+
+    # ------------------------------------------------------------------ B23
+    nb.experiment("B23. Flip mug by the handle (IsaacContrib-Flip-Mug-Trossen-v0) — Marco: in progress",
+        background="The hardest of the five: pinch the handle of an inverted mug and turn it upright on the spot — a handle pinch under high gain with a large reorientation. Current state: the original spec economy on the corrected inverted spawn (the first spawn buried the mug 42 mm in the table). Also an IRL task.",
+        question="Can the policy discover the handle pinch and the flip, and does stepping matter for the handle contact?",
+        design=["Episode 7 s; spawn inverted at OBJECT_REST_Z + 0.097 + 0.001, rot (0.7071, 0.7071, 0, 0); goal = spawn spot upright (ObjectPoseSuccessCommand, UPRIGHT_MIN_COS 0.87); sensors pad_left_handle, pad_right_handle, pad_body_contact; obs = slide + object_orientation; actions as slide; rewards early_termination −50, reaching_object 0.5, flip_progress 5.0 (up-cosine ratchet, min_improvement 0.05, handle-pinch gated, FLIP_SPEED_MAX 0.75), upright_at_goal 16.0 (std 0.05), arm_retreated 2.0, arm_on_mug_body −6.0, pads_on_mug_body −6.0, table_scrape −6.0, action_rate −3e-3, action_jerk −1e-3, joint_vel −5e-4; PPO init_std 1.0 range (0.05, 2.5)."],
+        says=["Latest run on disk (as logged): smoke-K3-flip-v2 (08-26, 538 iters) success 0 on the corrected spawn. No adaptive flip run."],
+        not_shown=["Everything — the task has no positive result yet."],
+        where="IsaacLab contrib/trossen_mug_flip/ (env cfg L62–68 spawn, L78–96 sensors, L183–233 rewards; mdp.py L39); runs logs/rsl_rl/trossen_mug_flip/",
+        status="In progress (Marco).",
+        gaps=["Record here what the current attempt changes (one knob) and its video verdict.", "First adaptive flip run when the fixed one discovers the pinch."])
+
+    # ------------------------------------------------------------------ B24
+    nb.experiment("B24. Place mug on the mug tree — Marco: finished; disk: nothing",
+        background="Listed by the PI (08-25) as one of the five application tasks.",
+        question="—",
+        design="No task package, config, asset or run exists under source/, scripts/ or IsaacLabRubato (grep tree/MugTree: nothing).",
+        says="Nothing on this machine.",
+        not_shown="If it was run elsewhere (another machine, W&B only), the record here is empty.",
+        where="—",
+        status="Marco: finished. Record: absent.",
+        gaps=["Where does the mug-on-tree work live (repo/branch/machine)? Paste the task id, the asset, the run names and W&B links here."])
+
+    # ------------------------------------------------------------------ B25
+    nb.experiment("B25. Rulings in force across all tasks (representation, physics config, reward, exploration)",
+        background="Each of these was measured before being ruled; together they are the 'everything else held fixed' of the killer experiment.",
+        question="What is held constant across tasks now, and why?",
+        design=["Representation (0c535d1668, 2026-08-25): the 24 arm colliders and the plate's 25 pieces as per-piece convex hulls; only the dish rack a raw triangle mesh (full tri–tri plate contact measured 3624 contacts/env and 96 s/iter at 2048 envs — infeasible; hulls 4–5 s/iter). Mug: hull ruling pending — the tree still has mesh_approximation_name='none' (Marco editing; do not touch trossen_mug_lift files).",
+                "Physics config: contact gap 3 mm on the Newton pipeline (narrow phase is 84.5 % of the adaptive march); condim 6 torsional friction on object contacts; vendor joint velocity limits via velocity_limit_sim; MuJoCo solref (0.02, 1.0) on rig and objects (Appendix F.4: soft by default); friction mug 0.2, plate 0.3, pads 1.0, table 0.6; ICF contact via global IcfParams (ICF_CONTACT_STIFFNESS / ICF_HC_DISSIPATION — not exported by the campaign script; see B17 gap).",
+                "Reward rulings (2026-08-26, CLAUDE.md): slide = arrival/settle moving-goal economy with the tight Gaussian kernel (std 0.04) and success = tracked ≥ 95 % of steps; lift/plate = the validated core (Franka) economy; flip = original spec economy on the corrected spawn. Iterate ONE knob at a time with Marco's video sign-off — no wholesale redesigns.",
+                "Exploration (d23f9b8cdc, 2026-08-27: 'per-task settings are the law'): lift init_std 0.5 / (0.05, 1.5), arm scale 0.1, gripper 0.05; slide and plate 1.5 / (0.05, 3.0), arm {0.5, 1.0, 1.5}, gripper 0.15; flip 1.0 / (0.05, 2.5). Divergence fine −50 on physics_diverged/robot_abnormal (the policy otherwise 'learns to crush the mug until the solve breaks').",
+                "Sim2real (slide only): teacher with DR → LSTM student (distill) → finetune configs exist; lift sim2real deleted by order."],
+        says=["These are settings, not results. Every reported run must state which representation and which stiffness it ran under."],
+        not_shown=["No A/B of representation on a trained policy's success exists; the 3624-contacts number is cost, not physics."],
+        where="IsaacLab commits 0c535d1668, 3604155a43, d23f9b8cdc, bc8e951e89, 639ab761e5, 6e81bcf88b; CLAUDE.md rulings",
+        status="In force.",
+        gaps=["Mug hull: done or pending? (campaign preflight item 2)", "Pin ICF_CONTACT_STIFFNESS in the campaign script."])
+
+    # ================================================================== B28 hardware
+    nb.experiment("B28. Hardware: the Trossen WXAI, the erratic-motion question, and the IRL plan (WXAI Smooth-Policy Brief, 2026-08-28)",
+        background="Marco: 'the motion is still erratic even when behavior is learnt.' A verified-claims research brief (21 sources, 105 claims, 25 adversarially verified, 14 confirmed) answered what the literature and Trossen's own docs say; the IRL tasks are flip and slide.",
+        question="Why is learned motion jittery, what changes it, and how does the real arm consume a 30 Hz target stream?",
+        design="Fan-out search over Trossen docs/code, Isaac Lab / rsl_rl material, sim-to-real literature; only confirmed claims retained.",
+        says=["Jitter is the expected PPO artifact; the verified fixes live in the actor loss and the action space, not only in the reward: CAPS temporal/spatial regularizers (Mysore et al., ICRA 2021; PPO+CAPS on a real quadrotor 4.9 A vs 22.9 A) or the LCP gradient penalty λ_gp·E‖∇_s log π‖² with λ ≈ 0.002 (Chen et al., IROS 2025; rsl_rl ppo_rma.py; jitter 42.2 → 3.2 at comparable return; 0.01 is 'overly smooth and sluggish'). Absolute joint-position targets transferred worst in the only verified head-to-head (Aljalbout et al. 2312.03673: 100 % sim, 6 % real, max constraint violations); joint-velocity/delta targets best. Refuted: 'post-hoc filtering causes loss of control', 'an in-loop rate limiter breaks the Markov property' (Dactyl and Peng 2020 filtered targets in both sim and deployment).",
+              "Hardware control: five per-joint modes over UDP; commands hard-clipped to joint/velocity/effort limits; faults on tolerance (Trossen: tolerance 0.0 while a script is new). The host driver smooths targets by goal_time: ≤ 1 ms raw step, 1–200 ms linear, > 200 ms quintic; Trossen's own 30 Hz learned-policy path (LeRobot plugin) uses goal_time = 3/30 = 0.1 s and says to raise it 'if the arms move violently during evaluation because of the policy'. Effort limits 27 / 7 N·m (arm), 100 N gripper — our sim's 400 N gripper cap is 4× the firmware. Velocity-limit claims all failed verification (URDF 3.375/7.0 vs spec 6.28/9.42 rad/s) — measure on the arm.",
+              "Mirroring the controller: position mode is P-position → P-velocity with ki = kd = 0 (defaults kp 16/16/16/80/40/40/20; velocity kp 8/8/8/1/1/1/1 → K = 128/128/128/80/40/40/20, D = 8/8/8/1/1/1/1 in firmware units; K/D = position kp); Trossen's USD gains 664/5.5 … use the older ratio 120 and are per-degree (664 ≈ 38,000 N·m/rad, saturating 27 N·m at 0.04°). Only the ratio is recoverable; a measured step/chirp response pins the magnitude.",
+              "Applied to our tasks (synthesis, unverified): (1) play the checkpoint back with deterministic (mean) actions first — if smooth, the jitter is exploration noise (std still high under entropy 0.006 × wide action scales) and the fix is std/entropy; if still erratic, the mean policy is bang-bang; (2) delta/velocity action parameterization, one knob, judged on video; (3) CAPS or LCP in the rsl_rl actor loss at λ ≈ 0.002; (4) bring-up: goal_time 0.1 s at 30 Hz, tolerances 0, gripper cap 100 N, gains from the current cascade (ratio 16), then a step response."],
+        not_shown=["No claim survived on std/entropy schedules, deterministic vs stochastic playback, control-frequency choice, or RTX 5090 throughput. The smoothness literature has no contact-rich manipulation evidence.", "Sim-to-real needs the slide teacher/distill DR stack (B25); no policy has been deployed yet."],
+        where="artifact 'WXAI Smooth-Policy Brief' (https://claude.ai/code/artifact/52888302-d5dc-4c6e-9cac-a5dff14e7b70); text copy in the session scratchpad wxai_brief.txt; IsaacLab REAL_SETUP.md (adb661acb2)",
+        status="Brief delivered 08-28; no hardware run recorded on this machine.",
+        gaps=["Deterministic playback of the slide checkpoint (the diagnosis the brief asks for first).", "Hardware results for flip and slide: trials, success, deployment details — write them here as they happen.", "Which policy goes on the arm (arm/seed/checkpoint)."])
+
+    # ================================================================== B29 traps
+    nb.h("B29. Rules in force (each one is a measured trap, so a reviewer's question has an answer)", 1)
+    nb.tbl([["Rule", "Why (one line)"],
+            ["Run verify_contact_budgets.py before any sweep; budgets ≥ 2× demand; benches fail on dropped contacts", "a too-small budget silently drops contacts and the controller takes 50× more steps"],
+            ["March budget 4096 with per-world exhaustion flags; exhausted = failure, marked", "the 256 default silently capped tight-ε runs"],
+            ["MuJoCo solref explicit and calibrated per scene; never the ke/kd conversion", "the conversion made MuJoCo ~100× softer than k"],
+            ["Ball energy read at the last apex", "a readout mid-impact or a window max mis-states the energy"],
+            ["State the norm exactly (ℓ∞ over bodies, mean over windows)", "'mean position deviation' was wrong wording once"],
+            ["Consistency figures carry the reference-vs-itself floor row", "the solvers are not run-to-run reproducible on clutter"],
+            ["Actuated metrics: tip penetration only when the tip is within the face; lift/pitch/tip-over recorded; trace probe on anomalies", "an '18 mm penetration' was the tip riding on a rocking box"],
+            ["Identical numbers across arms = broken instrument", "the momentum probe's 23.5 on every arm was a per-world gravity bug"],
+            ["Timing benches alone on the GPU; rerun on an idle GPU", "concurrent jobs pollute wall numbers"],
+            ["Point contact (margin 0); margin variants reported separately", "a margin reads 'zero penetration' by construction"],
+            ["Every collider and every authored property audited for a Newton-side consumer", "invisible collision meshes and dead PhysX attributes both happened"],
+            ["Per-step telemetry for live pathologies, not checkpoint replay", "replays reproduced nothing during the staircase"],
+            ["Never edit a running bash script; pkill … || true; ps -o pid,user,cmd before killing an nvidia-smi PID", "queue corruption, killed shells, another user's session"],
+            ["Per-task exploration recipe is the law; one knob at a time with video sign-off; kill doomed runs", "uniform settings broke the lift; the wholesale reward overhaul broke scene behaviour"]])
