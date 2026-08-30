@@ -16,7 +16,7 @@ default, flagged.
 
 *Table 1. The run list: 35 runs — the identical seven rungs on every task
 (Marco, 2026-08-30) — each 2048 envs, seed 42, solver ICF (`--solver icf` /
-`icf-adaptive`), `physics=newton`, W&B project `rubato-trossen`, video 200
+`icf-adaptive`), `physics=newton`, W&B project `icra2027`, video 200
 frames every 300 iterations. The story: K1–K5 are the time steps a
 practitioner would plausibly guess; the claim is that no guessed rung trains
 the hard tasks, and the adaptive arm does, at the same control boundary,
