@@ -312,7 +312,7 @@ def partB(nb):
     nb.experiment("B24. Place mug on the mug tree — Marco: finished; disk: nothing",
         background="Listed by the PI (08-25) as one of the five application tasks.",
         question="—",
-        design="No task package, config, asset or run exists under source/, scripts/ or IsaacLabRubato (grep tree/MugTree: nothing).",
+        design="No task package, config, asset or run exists under source/, scripts/ or icra2027 (grep tree/MugTree: nothing).",
         says="Nothing on this machine.",
         not_shown="If it was run elsewhere (another machine, W&B only), the record here is empty.",
         where="—",

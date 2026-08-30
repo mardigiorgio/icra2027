@@ -102,12 +102,12 @@ def partD(nb):
     nb.tbl([["What", "Where", "How"],
             ["Scenes", "newton-adaptive/scripts/scenes/cenic_scenes.py, actuated_press.py", "imported by the benches"],
             ["Four-arm harness", "scripts/bench/four_arms.py", "make_arm(model, name, ...) — captured boundaries, trackers, budgets, solref, K_INIT, eq. 34 rule"],
-            ["Part-1 benches", "scripts/bench/benchmarks/part1_{workprecision, penetration, scaling, ball_energy, realtime_trace, consistency, stiffness_sweep, actuated}.py", "cd newton-adaptive; ~/Documents/code/IsaacLabRubato/.venv/bin/python -m scripts.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
+            ["Part-1 benches", "scripts/bench/benchmarks/part1_{workprecision, penetration, scaling, ball_energy, realtime_trace, consistency, stiffness_sweep, actuated}.py", "cd newton-adaptive; ~/Documents/code/icra2027/.venv/bin/python -m scripts.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
             ["Probes / certificates", "scripts/bench/probe_momentum.py, probe_determinism.py, probe_actuated_trace.py, probe_march_cost.py, verify_contact_budgets.py, verify_part1_penetration.py; part1_consistency.py --self-check", "same python; read the docstring first"],
             ["Figures / tables", "scripts/bench/part1_plots.py; part1_tables.py; part1_results_md.py; part1_scenes_figure.py", "CPU only; regenerate after any sweep"],
             ["Results write-up", "scripts/bench/results/PART1.md; tables/*.md; figures/*.pdf; PART1_LITERATURE.md", "the paper's Results I and Background are read from here"],
             ["Solvers", "newton/_src/solvers/mujoco/solver_mujoco_adaptive.py; adaptive_boundary.py; icf_warp_adaptive/icf_warp/{solver.py, solver_adaptive.py, contact_law.py, kernels_dof.py, DEVIATIONS.md}", "flags in A7 / Appendix G"],
-            ["Training (Part 2)", "IsaacLab develop: contrib/trossen_{mug_lift, mug_slide, plate_rack, mug_flip}; scripts/experiments/trossen_campaign.sh; scripts/probes/*", "VIRTUAL_ENV=~/Documents/code/IsaacLabRubato/.venv ./isaaclab.sh -p ... --solver icf|icf-adaptive|mujoco|mujoco-adaptive; ICF_MAX_RIGID_CONTACT=1024/8192; W&B + video; one knob at a time; kill doomed runs"],
+            ["Training (Part 2)", "IsaacLab develop: contrib/trossen_{mug_lift, mug_slide, plate_rack, mug_flip}; scripts/experiments/trossen_campaign.sh; scripts/probes/*", "VIRTUAL_ENV=~/Documents/code/icra2027/.venv ./isaaclab.sh -p ... --solver icf|icf-adaptive|mujoco|mujoco-adaptive; ICF_MAX_RIGID_CONTACT=1024/8192; W&B + video; one knob at a time; kill doomed runs"],
             ["Runs", "IsaacLab logs/rsl_rl/{trossen_mug_lift, trossen_mug_flip, trossen_spatula_lift}; wandb/", "run dirs map to W&B by timestamp; killed runs have no wandb-summary.json — grep output.log"],
             ["Paper package", "~/Documents/code/cenic-paper (conference_101719.tex verbatim, main.tex outline, figures/, references.bib, this notebook, tools/make_notebook.py)", "upload cenic-paper.zip to Overleaf; regenerate the notebook with PYTHONPATH=<pylib> python tools/make_notebook.py"]])
     nb.h("D4. Deadline plan (fill in)", 1)
@@ -219,7 +219,7 @@ def appendixI(nb):
     nb.title("Appendix I — Part-1 numbers, generated from the CSVs at build time")
     nb.p("Source: newton-adaptive/scripts/bench/part1_keynumbers.py run when this notebook was built; these override any number quoted by hand in Part B or Part D if they disagree.", italic=True)
     repo = os.path.expanduser("~/Documents/code/newton-adaptive")
-    py = os.path.expanduser("~/Documents/code/IsaacLabRubato/.venv/bin/python")
+    py = os.path.expanduser("~/Documents/code/icra2027/.venv/bin/python")
     try:
         out = subprocess.run([py, "scripts/bench/part1_keynumbers.py"], cwd=repo, capture_output=True, text=True, timeout=300).stdout
     except Exception as e:  # noqa: BLE001
