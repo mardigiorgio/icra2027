@@ -1,11 +1,11 @@
 # References
 
-Keys match `references.bib`. Unmarked entries are verified against the arXiv/publisher page; *check* = cited from memory, confirm before submission; *TODO* = information only Marco has.
+Keys match `references.bib`. Every entry verified against the arXiv/publisher record 2026-08-30 — none hallucinated; *TODO* = information only Marco has.
 
 ## Core method
 
 1. V. Kurtz, A. Castro. [CENIC: Convex Error-controlled Numerical Integration for Contact](https://arxiv.org/abs/2511.08771). arXiv:2511.08771, 2025. `cenic`
-2. A. M. Castro, X. Han, J. Masterjohn. [Irrotational Contact Fields](https://arxiv.org/abs/2312.03908). arXiv:2312.03908, 2023. `icf`
+2. A. M. Castro, X. Han, J. Masterjohn. [Irrotational Contact Fields](https://arxiv.org/abs/2312.03908). arXiv:2312.03908, 2023. `icf` — now also published: IEEE T-RO 41, 6176–6192, 2025 (upgrade available)
 3. A. Castro, F. Permenter, X. Han. [An Unconstrained Convex Formulation of Compliant Contact](https://arxiv.org/abs/2110.10107). IEEE T-RO 39(2), 2023. `sap`
 
 ## Contact models and dissipation
@@ -20,7 +20,7 @@ Keys match `references.bib`. Unmarked entries are verified against the arXiv/pub
 
 ## Error-controlled integration
 
-11. E. Hairer, G. Wanner. Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems. Springer, 1996. `hairer`
+11. E. Hairer, G. Wanner. Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems. Springer, 1996 (2nd ed.). `hairer`
 12. R. Tedrake and the Drake Development Team. [Drake: Model-based design and verification for robotics](https://drake.mit.edu). 2019. `drake`
 13. A. Castro. [Implicit PD control in MultibodyPlant (Drake issue #14694)](https://github.com/RobotLocomotion/drake/issues/14694). 2021. `drake14694` — stiff explicit PD on light bodies destabilizing large steps; it is a PD-stiffness issue, not an error-control one — refile or swap for the error-controlled-integrator tracking issue (#11132) if that was the intent
 
@@ -35,8 +35,8 @@ Keys match `references.bib`. Unmarked entries are verified against the arXiv/pub
 17. V. Makoviychuk et al. [Isaac Gym: High Performance GPU-Based Physics Simulation for Robot Learning](https://arxiv.org/abs/2108.10470). arXiv:2108.10470, 2021. `isaacgym`
 18. M. Mittal et al. [Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning](https://arxiv.org/abs/2511.04831). arXiv:2511.04831, 2025. `isaaclab`
 19. M. Mittal et al. Orbit: A Unified Simulation Framework for Interactive Robot Learning Environments. IEEE RA-L 8(6), 2023. `orbit`
-20. N. Rudin, D. Hoeller, P. Reist, M. Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. CoRL 2021. `rudin2021`
-21. [rsl_rl](https://github.com/leggedrobotics/rsl_rl). leggedrobotics, GitHub. `rsl_rl`
+20. N. Rudin, D. Hoeller, P. Reist, M. Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. CoRL 2021 (PMLR v164, 2022). `rudin2021`
+21. [rsl_rl](https://github.com/leggedrobotics/rsl_rl). leggedrobotics, GitHub. `rsl_rl` — maintainers now prefer: Schwarke et al., "RSL-RL: A Learning Library for Robotics Research," arXiv:2509.10771, 2025
 22. [Newton](https://github.com/newton-physics/newton). Newton Physics, GitHub. `newton`
 23. [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp). Google DeepMind, GitHub. `mujoco_warp`
 24. M. Macklin. [Warp: A high-performance Python framework for GPU simulation and graphics](https://github.com/NVIDIA/warp). NVIDIA GTC 2022. `warp`
@@ -57,7 +57,7 @@ Keys match `references.bib`. Unmarked entries are verified against the arXiv/pub
 
 ## Smooth policies and hardware
 
-33. E. Aljalbout, F. Frank, M. Karl, P. van der Smagt. [On the Role of the Action Space in Robot Manipulation Learning and Sim-to-Real Transfer](https://arxiv.org/abs/2312.03673). arXiv:2312.03673, 2023. `aljalbout2023`
+33. E. Aljalbout, F. Frank, M. Karl, P. van der Smagt. [On the Role of the Action Space in Robot Manipulation Learning and Sim-to-Real Transfer](https://arxiv.org/abs/2312.03673). arXiv:2312.03673, 2023 (also RA-L 2024). `aljalbout2023`
 34. S. Mysore, B. Mabsout, R. Mancuso, K. Saenko. [Regularizing Action Policies for Smooth Control with Reinforcement Learning](https://arxiv.org/abs/2012.06644). ICRA 2021. `caps`
-35. Z. Chen et al. [Learning Smooth Humanoid Locomotion through Lipschitz-Constrained Policies](https://arxiv.org/abs/2410.11825). arXiv:2410.11825, 2024. `lcp`
+35. Z. Chen et al. [Learning Smooth Humanoid Locomotion through Lipschitz-Constrained Policies](https://arxiv.org/abs/2410.11825). arXiv:2410.11825, 2024 (IROS 2025). `lcp`
 36. [Trossen AI documentation](https://docs.trossenrobotics.com). Trossen Robotics. `trossen`
