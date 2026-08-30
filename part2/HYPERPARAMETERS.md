@@ -11,22 +11,20 @@ default, flagged.
 | 1–7 | slide (`IsaacContrib-Slide-Mug-Trossen-v0`) | 700 | K1 → K2 → K3 → K4 → K5 → adaptive → K5wall |
 | 8–14 | lift (`IsaacContrib-Lift-Mug-Trossen-v0`) | 1000 | same |
 | 15–21 | plate (`IsaacContrib-PlatePick-Trossen-v0`) | 1000 | same |
-| 22–29 | flip (`IsaacContrib-Flip-Mug-Trossen-v0`) | 1000 | same + Kd before adaptive |
-| 30–37 | tree (`IsaacContrib-MugHang-Trossen-v0`) | 1000 | same + Kd before adaptive |
+| 22–28 | flip (`IsaacContrib-Flip-Mug-Trossen-v0`) | 1000 | same |
+| 29–35 | tree (`IsaacContrib-MugHang-Trossen-v0`) | 1000 | same |
 
-*Table 1. The run list: 37 runs, every one 2048 envs, seed 42, solver ICF
-(`--solver icf` / `icf-adaptive`), `physics=newton`, W&B project
-`rubato-trossen`, video 200 frames every 300 iterations. The story the
-ladder encodes (Marco, 2026-08-30): K1–K5 are the time steps a practitioner
-would plausibly guess; the claim is that no guessed rung trains the hard
-tasks, and the adaptive arm does, at the same control boundary, untuned.
-Kd = the task's hand-found DESIGN step (flip/tree: 1/450×15 — what it took
-to make any fixed step work); slide/lift/plate's design step equals K3.
-K5wall = fixed K5 rerun with the iteration budget matching the adaptive
-run's measured wall clock (startup excluded, from the campaign's own logs);
-skipped automatically if a donor rung is missing. `trossen_mug_rack` exists
-on disk but is out of scope (ruling 2026-08-30). MuJoCo arms are a separate
-pass, still owed to the paper.*
+*Table 1. The run list: 35 runs — the identical seven rungs on every task
+(Marco, 2026-08-30) — each 2048 envs, seed 42, solver ICF (`--solver icf` /
+`icf-adaptive`), `physics=newton`, W&B project `rubato-trossen`, video 200
+frames every 300 iterations. The story: K1–K5 are the time steps a
+practitioner would plausibly guess; the claim is that no guessed rung trains
+the hard tasks, and the adaptive arm does, at the same control boundary,
+untuned. K5wall = fixed K5 rerun with the iteration budget matching the
+adaptive run's measured wall clock (startup excluded, from the campaign's
+own logs); skipped automatically if a donor rung is missing.
+`trossen_mug_rack` exists on disk but is out of scope (ruling 2026-08-30).
+MuJoCo arms are a separate pass, still owed to the paper.*
 
 | rung | sim.dt | decimation | physics per 1/30 s boundary |
 |---|---|---|---|
@@ -35,16 +33,16 @@ pass, still owed to the paper.*
 | K3 | 1/90 | 3 | 3 steps |
 | K4 | 1/120 | 4 | 4 steps |
 | K5 | 1/150 | 5 | 5 steps |
-| Kd (flip, tree only) | 1/450 | 15 | 15 steps |
 | adaptive | 1/90 boundary seed | 3 | error-controlled march |
 | K5wall | 1/150 | 5 | budget from adaptive wall |
 
-*Table 2. The stepping ladder — uniform on every task, 30 Hz control
-everywhere. K1–K5 = n uniform subdivisions of the 1/30 s boundary. Kd is
-the flip/tree authored default (measured 2026-08-29: the flip at 1/450
-reaches 100 % deterministic true-home success by iteration 500); their
-adaptive rungs pin the boundary back to 1/90×3 via CLI override (flip also
-registers `IsaacContrib-Flip-Mug-Trossen-Adaptive-v0` with the same pin).*
+*Table 2. The stepping ladder — identical on every task, 30 Hz control
+everywhere; every rung passes explicit step overrides. Flip and tree are
+AUTHORED at 1/450×15 (the step their design phase needed — measured
+2026-08-29, the flip reaches 100 % deterministic true-home success by
+iteration 500 there), but that step never runs in the campaign; it stands
+as design-phase evidence only. Their adaptive rungs pin the boundary to
+1/90×3 like every other task's.*
 
 | PPO (shared base, lift's cfg) | value |
 |---|---|
