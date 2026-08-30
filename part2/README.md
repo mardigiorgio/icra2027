@@ -1,16 +1,15 @@
 # Part 2 — the training campaign
 
-The tasks (slide, lift, plate-from-rack, flip, mug-on-tree) are Isaac Lab task
-packages in the IsaacLab fork, branch `develop`:
-`source/isaaclab_tasks/isaaclab_tasks/contrib/trossen_{mug_slide,mug_lift,plate_rack,mug_flip}`.
-The solver is selected per run through the Newton backend (`NewtonMJWarpManager`).
+Part 2 lives in the IsaacLab fork (branch `develop`) — Marco develops it
+across machines there, so nothing is mirrored here (copies rotted within
+two days of being made; 2026-08-30).
 
-| here | what |
+| what | where |
 |---|---|
-| `trossen_campaign.sh` | the campaign, per task: K1, K2, K3, adaptive, K3wall (fixed rerun at the adaptive run's wall clock); preflight list in the header |
-| `probes/` | scene/reward/contact probes (`probe_*.py`), run from the IsaacLab root: `./isaaclab.sh -p ../icra2027/part2/probes/<probe>.py` |
-| `probes/results/` | contact-compliance calibrations (`cal_*.json`) |
+| task packages (lift, slide, plate_rack, flip, mug_rack, mug_tree) | `IsaacLab/source/isaaclab_tasks/isaaclab_tasks/contrib/trossen_*` |
+| campaign ladder (K1/K2/K3/adaptive/K3wall per task; flip adaptive override) | `IsaacLab/scripts/experiments/trossen_campaign.sh` |
+| probes (scene, reward, banks, flip FSM, calibrations) | `IsaacLab/scripts/probes/` |
+| run records | `IsaacLab/logs/rsl_rl/<task>/`, W&B project `rubato-trossen` |
 
-Run records: `IsaacLab/logs/rsl_rl/<task>/<timestamp>_<name>/` (checkpoints,
-params, videos) and the W&B project `rubato-trossen` (the project name is a
-live identifier of finished runs and is not renamed).
+Results and figures distilled for the paper land in this repo once runs
+complete.
