@@ -76,7 +76,7 @@ and tree updated 2026-08-28/29.*
 | lift | 5 s | 0.1 (all joints) | 0.05 | ±6 |
 | plate | 5 s **A** (inherits lift) | as lift **A** | as lift **A** | ±6 |
 | flip | 8 s | j0–2: 0.5, j3: 1.0, j4–5: 1.5 | 0.15 | ±6 |
-| tree | 8 s | as flip family | 0.15 **A** | ±6 |
+| tree | 8 s | j0–2: 0.5, j3–5: 1.0 | 0.05 | ±6 |
 
 *Table 5. Episodes and action spaces (joint-position offsets on the
 default pose).*
@@ -86,7 +86,7 @@ default pose).*
 | success position | within 5 cm of goal |
 | success tilt | ≤ acos(0.87) ≈ 29.5° |
 | success hold | 30 consecutive steps (slide: tracked ≥ 95 % of steps in the moving-goal band) |
-| early termination penalty | −50 (crush-the-mug divergence exploit, bc8e951e89) |
+| early termination penalty | −50 (crush-the-mug divergence exploit, bc8e951e89); flip −8, priced inside its FSM economy |
 | robot_abnormal | joint velocity > 25 rad/s |
 | other terminations | physics_diverged, time_out, object_off_table (slide/flip) |
 
