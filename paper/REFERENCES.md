@@ -1,75 +1,63 @@
-# References for the CENIC-on-GPU paper
+# References
 
-Status key: **V** = title/authors/year verified this session against the arXiv or publisher page; **M** = from memory of a well-known work, check the exact citation before submission; **TODO** = missing information only you have. "Where" = the paper section that leans on it (I = Intro, II = Background, III = Method, IV = Results I, V = Results II, VI = IRL). Every entry has a key in `references.bib`.
+Keys match `references.bib`. Unmarked entries are verified against the arXiv/publisher page; *check* = cited from memory, confirm before submission; *TODO* = information only Marco has.
 
 ## Core method
-| key | reference | where | status |
-|---|---|---|---|
-| cenic | Kurtz, V., Castro, A. **CENIC: Convex Error-controlled Numerical Integration for Contact.** arXiv:2511.08771, 2025. https://arxiv.org/abs/2511.08771 | everywhere; test cases (IV), constants (III), Fig. 8/10 layouts | V (title from the PDF) |
-| icf | Castro, A. M., Han, X., Masterjohn, J. **Irrotational Contact Fields.** arXiv:2312.03908, 2023 (rev. 2025). https://arxiv.org/abs/2312.03908 | II (contact model, Lagged friction, gliding offset), IV-stiffness (Fig. 18 protocol) | V |
-| sap | Castro, A., Permenter, F., Han, X. **An Unconstrained Convex Formulation of Compliant Contact.** IEEE T-RO 39(2), 2023; arXiv:2110.10107. https://arxiv.org/abs/2110.10107 | II (convex time stepping, closed-form resting penetration) | V (arXiv); journal volume/pages M |
 
-## Contact models, MuJoCo, dissipation
-| key | reference | where | status |
-|---|---|---|---|
-| todorov2014 | Todorov, E. **Convex and analytically-invertible dynamics with contacts and constraints: Theory and implementation in MuJoCo.** ICRA 2014. | II (soft constraints, solref/solimp) | M |
-| mujoco | Todorov, E., Erez, T., Tassa, Y. **MuJoCo: A physics engine for model-based control.** IROS 2012. | I, II | M |
-| mujoco_docs | MuJoCo documentation, *Computation → Solver parameters* (solref, solimp, refsafe). https://mujoco.readthedocs.io/en/latest/modeling.html#solver-parameters | II, Appendix F formulas (matched to mujoco_warp constraint.py) | V (the code) |
-| huntcrossley | Hunt, K. H., Crossley, F. R. E. **Coefficient of restitution interpreted as damping in vibroimpact.** J. Appl. Mech. 42(2):440–445, 1975. | II (dissipation model), IV (the d = 1 s/m assumption) | M |
-| hydroelastic | Masterjohn, J., Guoy, D., Shepherd, J., Castro, A. **Velocity Level Approximation of Pressure Field Contact Patches.** arXiv:2110.04157, 2021 (RA-L 2022). https://arxiv.org/abs/2110.04157 | II (why hydroelastic cases are out of scope) | V |
-| lelidec2024 | Le Lidec, Q., Jallet, W., Montaut, L., Laptev, I., Schmid, C., Carpentier, J. **Contact Models in Robotics: a Comparative Analysis.** arXiv:2304.06372, 2023 (T-RO 2024). https://arxiv.org/abs/2304.06372 | II, IV-consistency (short re-anchored windows) | V |
-| dojo | Howell, T. A., Le Cleac'h, S., Brüdigam, J., Chen, Q., Sun, J., Kolter, J. Z., Schwager, M., Manchester, Z. **Dojo: A Differentiable Physics Engine for Robotics.** arXiv:2203.00806, 2022. https://arxiv.org/abs/2203.00806 | II (penetration reported in mm) | V |
+1. V. Kurtz, A. Castro. [CENIC: Convex Error-controlled Numerical Integration for Contact](https://arxiv.org/abs/2511.08771). arXiv:2511.08771, 2025. `cenic`
+2. A. M. Castro, X. Han, J. Masterjohn. [Irrotational Contact Fields](https://arxiv.org/abs/2312.03908). arXiv:2312.03908, 2023. `icf`
+3. A. Castro, F. Permenter, X. Han. [An Unconstrained Convex Formulation of Compliant Contact](https://arxiv.org/abs/2110.10107). IEEE T-RO 39(2), 2023. `sap`
 
-## Error-controlled integration and reporting
-| key | reference | where | status |
-|---|---|---|---|
-| hairer | Hairer, E., Wanner, G. **Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems.** Springer, 1996. | II (step control, work-precision diagrams) | M |
-| drake | Tedrake, R. and the Drake Development Team. **Drake: Model-based design and verification for robotics.** 2019. https://drake.mit.edu | II, III (the step-size controller constants: Drake's IntegratorBase) | M (URL V) |
-| drake14694 | Drake issue #14694 (light body under high gain). https://github.com/RobotLocomotion/drake/issues/14694 | IV-actuated design | TODO: confirm the issue number/title before citing |
+## Contact models and dissipation
+
+4. E. Todorov. Convex and analytically-invertible dynamics with contacts and constraints: theory and implementation in MuJoCo. ICRA 2014. `todorov2014` — *check*
+5. E. Todorov, T. Erez, Y. Tassa. MuJoCo: A physics engine for model-based control. IROS 2012. `mujoco` — *check*
+6. [MuJoCo documentation, solver parameters](https://mujoco.readthedocs.io/en/latest/modeling.html#solver-parameters). `mujoco_docs`
+7. K. H. Hunt, F. R. E. Crossley. Coefficient of restitution interpreted as damping in vibroimpact. J. Appl. Mech. 42(2), 1975. `huntcrossley` — *check*
+8. J. Masterjohn, D. Guoy, J. Shepherd, A. Castro. [Velocity Level Approximation of Pressure Field Contact Patches](https://arxiv.org/abs/2110.04157). IEEE RA-L, 2022. `hydroelastic`
+9. Q. Le Lidec, W. Jallet, L. Montaut, I. Laptev, C. Schmid, J. Carpentier. [Contact Models in Robotics: a Comparative Analysis](https://arxiv.org/abs/2304.06372). IEEE T-RO, 2024. `lelidec2024`
+10. T. A. Howell et al. [Dojo: A Differentiable Physics Engine for Robotics](https://arxiv.org/abs/2203.00806). arXiv:2203.00806, 2022. `dojo`
+
+## Error-controlled integration
+
+11. E. Hairer, G. Wanner. Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems. Springer, 1996. `hairer` — *check*
+12. R. Tedrake and the Drake Development Team. [Drake: Model-based design and verification for robotics](https://drake.mit.edu). 2019. `drake` — *check*
+13. [Drake issue #14694](https://github.com/RobotLocomotion/drake/issues/14694). `drake14694` — *TODO: confirm number and title*
 
 ## Benchmarking physics engines
-| key | reference | where | status |
-|---|---|---|---|
-| erez2015 | Erez, T., Tassa, Y., Todorov, E. **Simulation tools for model-based robotics: Comparison of Bullet, Havok, MuJoCo, ODE and PhysX.** ICRA 2015. | IV-consistency (the consistency test), momentum drift | M |
-| simbenchmark | Kang, D., Hwangbo, J. **SimBenchmark.** 2018. https://leggedrobotics.github.io/SimBenchmark/ | IV (determinism, momentum) | M (URL) |
-| acosta2022 | Acosta, B., Yang, W., Posa, M. **Validating Robotics Simulators on Real-World Impacts.** arXiv:2110.00541, 2021 (RA-L/IROS 2022). https://arxiv.org/abs/2110.00541 | II, IV ("decreasing the timestep further did not improve prediction") | V |
+
+14. T. Erez, Y. Tassa, E. Todorov. Simulation tools for model-based robotics: comparison of Bullet, Havok, MuJoCo, ODE and PhysX. ICRA 2015. `erez2015` — *check*
+15. D. Kang, J. Hwangbo. [SimBenchmark](https://leggedrobotics.github.io/SimBenchmark/). 2018. `simbenchmark` — *check*
+16. B. Acosta, W. Yang, M. Posa. [Validating Robotics Simulators on Real-World Impacts](https://arxiv.org/abs/2110.00541). IEEE RA-L, 2022. `acosta2022`
 
 ## GPU simulation and robot learning
-| key | reference | where | status |
-|---|---|---|---|
-| isaacgym | Makoviychuk, V., et al. **Isaac Gym: High Performance GPU-Based Physics Simulation For Robot Learning.** arXiv:2108.10470, 2021. https://arxiv.org/abs/2108.10470 | I, II | V |
-| isaaclab | Mittal, M., et al. **Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning.** arXiv:2511.04831, 2025. https://arxiv.org/abs/2511.04831 | I, V (platform) | V |
-| orbit | Mittal, M., et al. **Orbit: A Unified Simulation Framework for Interactive Robot Learning Environments.** IEEE RA-L 8(6), 2023. arXiv:2301.04195 | V (platform lineage) | M |
-| rudin2021 | Rudin, N., Hoeller, D., Reist, P., Hutter, M. **Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning.** CoRL 2021; arXiv:2109.11978. | V (rsl_rl's paper) | M |
-| rsl_rl | leggedrobotics/rsl_rl (PPO implementation used for training). https://github.com/leggedrobotics/rsl_rl | V | V (URL) |
-| newton | Newton Physics. **Newton: a GPU-accelerated physics simulation engine built on NVIDIA Warp.** https://github.com/newton-physics/newton | I, III | V (URL) |
-| mujoco_warp | Google DeepMind. **MuJoCo Warp.** https://github.com/google-deepmind/mujoco_warp | III (the MuJoCo arm) | V (URL) |
-| warp | Macklin, M. **Warp: A high-performance Python framework for GPU simulation and graphics.** NVIDIA GTC 2022. https://github.com/NVIDIA/warp | III | M |
-| factory | Narang, Y., et al. **Factory: Fast Contact for Robotic Assembly.** RSS 2022; arXiv:2205.03532. https://arxiv.org/abs/2205.03532 | I (RL "exploits any inaccuracies") | V |
-| ppo | Schulman, J., Wolski, F., Dhariwal, P., Radford, A., Klimov, O. **Proximal Policy Optimization Algorithms.** arXiv:1707.06347, 2017. | V | M |
+
+17. V. Makoviychuk et al. [Isaac Gym: High Performance GPU-Based Physics Simulation for Robot Learning](https://arxiv.org/abs/2108.10470). arXiv:2108.10470, 2021. `isaacgym`
+18. M. Mittal et al. [Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning](https://arxiv.org/abs/2511.04831). arXiv:2511.04831, 2025. `isaaclab`
+19. M. Mittal et al. Orbit: A Unified Simulation Framework for Interactive Robot Learning Environments. IEEE RA-L 8(6), 2023. `orbit` — *check*
+20. N. Rudin, D. Hoeller, P. Reist, M. Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. CoRL 2021. `rudin2021` — *check*
+21. [rsl_rl](https://github.com/leggedrobotics/rsl_rl). leggedrobotics, GitHub. `rsl_rl`
+22. [Newton](https://github.com/newton-physics/newton). Newton Physics, GitHub. `newton`
+23. [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp). Google DeepMind, GitHub. `mujoco_warp`
+24. M. Macklin. [Warp: A high-performance Python framework for GPU simulation and graphics](https://github.com/NVIDIA/warp). NVIDIA GTC 2022. `warp` — *check*
+25. Y. Narang et al. [Factory: Fast Contact for Robotic Assembly](https://arxiv.org/abs/2205.03532). RSS 2022. `factory`
+26. J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov. Proximal Policy Optimization Algorithms. arXiv:1707.06347, 2017. `ppo` — *check*
 
 ## Policies exploiting simulator artifacts
-| key | reference | where | status |
-|---|---|---|---|
-| lehman2018 | Lehman, J., Clune, J., Misevic, D., et al. **The Surprising Creativity of Digital Evolution.** arXiv:1803.03453, 2018. https://arxiv.org/abs/1803.03453 | I (motivation) | V |
-| cheney2013 | Cheney, N., MacCurdy, R., Clune, J., Lipson, H. **Unshackling evolution: evolving soft robots with multiple materials and a powerful generative encoding.** GECCO 2013. | I (creatures gaming an adaptive-δt heuristic) | M |
 
-## Approach and curriculum (Part 2)
-| key | reference | where | status |
-|---|---|---|---|
-| florensa2017 | Florensa, C., Held, D., Wulfmeier, M., Zhang, M., Abbeel, P. **Reverse Curriculum Generation for Reinforcement Learning.** CoRL 2017; arXiv:1707.05300. https://arxiv.org/abs/1707.05300 | V (grasp bank / reverse curriculum) | V |
-| pavlichenko2023 | Pavlichenko, D., Behnke, S. **Deep Reinforcement Learning of Dexterous Pre-Grasp Manipulation for Human-Like Functional Categorical Grasping.** IEEE CASE 2023. https://www.ais.uni-bonn.de/papers/CASE_2023_Pavlichenko.pdf | V (pre-grasp) | V |
+27. J. Lehman et al. [The Surprising Creativity of Digital Evolution](https://arxiv.org/abs/1803.03453). arXiv:1803.03453, 2018. `lehman2018`
+28. N. Cheney, R. MacCurdy, J. Clune, H. Lipson. Unshackling evolution: evolving soft robots with multiple materials and a powerful generative encoding. GECCO 2013. `cheney2013` — *check*
 
-## Reward machinery (Part 2)
-| key | reference | where | status |
-|---|---|---|---|
-| demograsp | Yuan, H., Huang, Z., Wang, Y., Mao, C., Xu, C., Lu, Z. **DemoGrasp: Universal Dexterous Grasping from a Single Demonstration.** arXiv:2509.22149, 2025. https://arxiv.org/abs/2509.22149 | V | V |
-| dexsuite | dexsuite / the PI's fork (progress ratchet, contact gating, cross-solver evaluation). | V | TODO: repository URL and citation form from you |
+## Curriculum and reward machinery
 
-## Smooth policies and hardware (VI)
-| key | reference | where | status |
-|---|---|---|---|
-| aljalbout2023 | Aljalbout, E., Frank, F., Karl, M., van der Smagt, P. **On the Role of the Action Space in Robot Manipulation Learning and Sim-to-Real Transfer.** arXiv:2312.03673, 2023. https://arxiv.org/abs/2312.03673 | VI (action parameterization) | V |
-| caps | Mysore, S., Mabsout, B., Mancuso, R., Saenko, K. **Regularizing Action Policies for Smooth Control with Reinforcement Learning.** ICRA 2021; arXiv:2012.06644. https://arxiv.org/abs/2012.06644 | VI (CAPS) | V |
-| lcp | Chen, Z., et al. **Learning Smooth Humanoid Locomotion through Lipschitz-Constrained Policies.** arXiv:2410.11825, 2024. https://arxiv.org/abs/2410.11825 | VI (gradient penalty in rsl_rl) | V |
-| trossen | Trossen Robotics, **Trossen AI / WidowX AI documentation** (control modes, goal_time, effort limits). https://docs.trossenrobotics.com | VI | V (URL) |
+29. C. Florensa, D. Held, M. Wulfmeier, M. Zhang, P. Abbeel. [Reverse Curriculum Generation for Reinforcement Learning](https://arxiv.org/abs/1707.05300). CoRL 2017. `florensa2017`
+30. D. Pavlichenko, S. Behnke. [Deep Reinforcement Learning of Dexterous Pre-Grasp Manipulation for Human-Like Functional Categorical Grasping](https://www.ais.uni-bonn.de/papers/CASE_2023_Pavlichenko.pdf). IEEE CASE 2023. `pavlichenko2023`
+31. H. Yuan et al. [DemoGrasp: Universal Dexterous Grasping from a Single Demonstration](https://arxiv.org/abs/2509.22149). arXiv:2509.22149, 2025. `demograsp`
+32. dexsuite, the PI's fork. `dexsuite` — *TODO: URL and citation form*
+
+## Smooth policies and hardware
+
+33. E. Aljalbout, F. Frank, M. Karl, P. van der Smagt. [On the Role of the Action Space in Robot Manipulation Learning and Sim-to-Real Transfer](https://arxiv.org/abs/2312.03673). arXiv:2312.03673, 2023. `aljalbout2023`
+34. S. Mysore, B. Mabsout, R. Mancuso, K. Saenko. [Regularizing Action Policies for Smooth Control with Reinforcement Learning](https://arxiv.org/abs/2012.06644). ICRA 2021. `caps`
+35. Z. Chen et al. [Learning Smooth Humanoid Locomotion through Lipschitz-Constrained Policies](https://arxiv.org/abs/2410.11825). arXiv:2410.11825, 2024. `lcp`
+36. [Trossen AI documentation](https://docs.trossenrobotics.com). Trossen Robotics. `trossen`
