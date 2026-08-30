@@ -1,6 +1,6 @@
 # Part 2 — every hyperparameter of the training campaign
 
-Sources: the synced IsaacLab `develop` tree (43a781e4bf, 2026-08-30): per-task
+Sources: the synced IsaacLab `develop` tree (3e985eae29, 2026-08-30): per-task
 `trossen_*/trossen_*_env_cfg.py` and `agents/rsl_rl_ppo_cfg.py`,
 `scripts/experiments/trossen_campaign.sh`, `flip_fsm_core.py`,
 `hang_fsm_core.py`, `trossen_mug_lift/mdp.py`. **A** = assumed/inherited
@@ -17,7 +17,7 @@ default, flagged.
 *Table 1. The run list: 35 runs — the identical seven rungs on every task
 (Marco, 2026-08-30) — each 2048 envs, seed 42, solver ICF (`--solver icf` /
 `icf-adaptive`), `physics=newton`, W&B project `icra2027`, video 200
-frames every 300 iterations. The story: K1–K5 are the time steps a
+frames every 300 env steps (~12.5 iterations). The story: K1–K5 are the time steps a
 practitioner would plausibly guess; the claim is that no guessed rung trains
 the hard tasks, and the adaptive arm does, at the same control boundary,
 untuned. K5wall = fixed K5 rerun with the iteration budget matching the
@@ -37,7 +37,9 @@ MuJoCo arms are a separate pass, still owed to the paper.*
 | K5wall | 1/150 | 5 | budget from adaptive wall |
 
 *Table 2. The stepping ladder — identical on every task, 30 Hz control
-everywhere; every rung passes explicit step overrides. Flip and tree are
+everywhere; the K rungs pass explicit step overrides, K5wall inherits
+K5's, and the adaptive rung pins flip/tree explicitly (slide/lift/plate
+adaptive runs on the authored 1/90×3 default). Flip and tree are
 AUTHORED at 1/450×15 (the step their design phase needed — measured
 2026-08-29, the flip reaches 100 % deterministic true-home success by
 iteration 500 there), but that step never runs in the campaign; it stands
@@ -74,7 +76,7 @@ and tree updated 2026-08-28/29.*
 |---|---|---|---|---|
 | slide | 6 s | j0–2: 0.5, j3: 1.0, j4–5: 1.5 | 0.15 | ±6 |
 | lift | 5 s | 0.1 (all joints) | 0.05 | ±6 |
-| plate | 5 s **A** (inherits lift) | as lift **A** | as lift **A** | ±6 |
+| plate | 5 s (inherits lift) | j0–2: 0.5, j3: 1.0, j4–5: 1.5 | 0.15 | ±6 |
 | flip | 8 s | j0–2: 0.5, j3: 1.0, j4–5: 1.5 | 0.15 | ±6 |
 | tree | 8 s | j0–2: 0.5, j3–5: 1.0 | 0.05 | ±6 |
 
@@ -85,8 +87,8 @@ default pose).*
 |---|---|
 | success position | within 5 cm of goal |
 | success tilt | ≤ acos(0.87) ≈ 29.5° |
-| success hold | 30 consecutive steps (slide: tracked ≥ 95 % of steps in the moving-goal band) |
-| early termination penalty | −50 (crush-the-mug divergence exploit, bc8e951e89); flip −8, priced inside its FSM economy |
+| success hold | 30 consecutive steps (slide: tracked ≥ 95 % of steps against the FINAL target's gates) |
+| early termination penalty | −50 (crush-the-mug divergence exploit, bc8e951e89); flip −8, priced inside its FSM economy; tree prices robot_abnormal ONLY — divergence exits unpriced (open) |
 | robot_abnormal | joint velocity > 25 rad/s |
 | other terminations | physics_diverged, time_out, object_off_table (slide/flip) |
 
@@ -97,12 +99,13 @@ default pose).*
 | slide | reaching 0.5 (std 0.2) · goal tracking 5.0 (gaussian std 0.04 on the 0.20 m/s moving goal, FINAL_GOAL (0.285, 0)) · table scrape −2 · action rate −3e-3 · jerk −1e-3 · joint vel −5e-4 · early term −50 |
 | lift | fingers_to_object 3.0 · position_tracking 5.0 · success 10 · good_finger_contact 0.75 · contact_count 0.1 · action_l2 −0.001 · early term −50 |
 | plate | lift's economy with plate-specific overrides (weight 3.0 term re-pointed; see cfg) |
-| flip | 7-stage FSM economy (`flip_fsm_core`): stage buckets (0,1,2,3,3,4,4), SUCCESS_BONUS 90, grasp latch past horizontal (cos 0), upright cos 0.87, strict PBRS at γ 0.99; rotation-path bank + tosspath banks; far-field action penalties |
-| tree | staged hang FSM (`hang_fsm_core`): STAGE_C 4.0 potential per rung, SUCCESS_BONUS 200, persistence-gated advancement with regression, strict PBRS at γ 0.99 |
+| flip | 7-stage FSM economy (`flip_fsm_core`): stage buckets (0,1,2,3,3,4,4), SUCCESS_BONUS 90, grasp latch past horizontal (cos 0), upright cos 0.87, no PBRS term by design (income = one-shot milestones + a positive-only ratchet); rotation-path bank + tosspath banks; far-field action penalties |
+| tree | staged hang FSM (`hang_fsm_core`): STAGE_C 4.0 potential per rung, paid success bonus 100 (the FSM's 200 constant guards the anti-farming assert only), persistence-gated advancement with regression, shaping = plain Φ-difference (the γ form deliberately removed 2026-08-28) |
 
-*Table 7. Reward economies — the staged tasks are potential-based
-(milestones one-shot, Φ = STAGE_C·stage + φ_stage), so the table names the
-economy's constants rather than flattening the FSM into fake term weights.*
+*Table 7. Reward economies — the staged tasks name their FSM constants
+rather than flattening into fake term weights. Tree shapes on the plain
+difference of Φ = STAGE_C·stage + φ_stage; flip pays one-shot milestones
+and a positive-only ratchet with no potential term at all.*
 
 | solver / contact | value |
 |---|---|
@@ -112,7 +115,7 @@ economy's constants rather than flattening the FSM into fake term weights.*
 | ICF contact cap | plate 8192, all others 1024 (`ICF_MAX_RIGID_CONTACT`, exported per task by the campaign) |
 | adaptive tolerance | solver default ε = 1e-3 **A** (no NEWTON_ADAPTIVE_TOL export); seed δt = the task's sim.dt |
 | MuJoCo-terms authoring (scenes) | condim 6, solref (0.02, 1.0) = MuJoCo default τ 20 ms; friction mug 0.2, plate 0.3, pads 1.0, table 0.6 |
-| collision representation | per-piece convex hulls everywhere; only the dishrack a raw tri mesh (ruling 2026-08-25); rack task adds hull/bay/cage variants via RACK_COLLISION |
+| collision representation | mug = raw per-piece TRIANGLE meshes in all four mug tasks (`mesh_approximation_name="none"`, fixed by decision in the shipped scene pass); plate = per-piece convex hulls; dishrack = raw tri mesh; tree = capsule branches + hull trunk; rack task adds mesh/hull/bay/cage variants via RACK_COLLISION |
 
 *Table 8. Solver-side settings. The **A** rows are defaults reaching the
 runs implicitly — decide whether to export them explicitly before the
@@ -125,4 +128,6 @@ drain (up to 5 min), 5 launch attempts per run with stall detection (no
 `$CAMPAIGN_LOG_DIR` (default /tmp/trossen_campaign), TROSSEN_RAILS=1.
 Preflight, per its header: coefficient probe exits 0, mug convexified,
 flip settle+reward smokes passed, GOAL_SPEED confirmed (0.20 committed),
-GPU free.
+GPU free. K5wall inherits K5's step overrides (fixed 2026-08-30 after
+launch — the live campaign hands over to `trossen_campaign_resume.sh` at
+the slide adaptive/K5wall boundary; no wrong K5wall run executed).
