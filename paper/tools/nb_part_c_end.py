@@ -52,7 +52,7 @@ def partD(nb):
     nb.h("D1. Fact bank — measured numbers with their source (Part 1 re-runnable; Part 2 / campaign as logged)", 1)
     nb.tbl([["Fact", "Value", "Source"],
             ["Cheapest artifact-free, hard clutter, 64 scenes (wall per simulated s)", "MuJoCo fixed 2 ms 0.57; MuJoCo EC ε=1e-3 1.9; ICF EC ε=1e-2 2.3; ICF fixed 1 ms 4.1", "figures/artifacts.pdf; tables/results_tables.md"],
-            ["Fixed ICF at 10 ms, hard clutter", "ejects 1.6 % (2.8 cm/step vs 2.5 cm radius); max pen 27.8 mm", "part1_penetration_hard-clutter.csv"],
+            ["Fixed ICF at 10 ms, hard clutter", "no ejections on the corrected scene; max pen 4.1 mm = 1.8x the impact depth", "part1_penetration_hard-clutter.csv"],
             ["Mean penetration hard clutter 10/5/2/1 ms (µm)", "ICF 226/34.6/8.4/6.4; MuJoCo 336/100/17/6.6; model 6.4", "tables/results_tables.md"],
             ["Work-precision hard, N=1, ε=1e-1..1e-6 (s per sim-s)", "ICF EC 0.38/0.60/1.35/2.89/7.91/18.2; MuJoCo EC 0.092/0.30/1.04/2.92/5.63/13.8", "tables/results_tables.md"],
             ["Work-precision hard, N=1024", "ICF EC 15/23.8/49.3/115/343/856; MuJoCo EC 0.47/1.54/5.02/15.8/37.8/88.4", "tables/results_tables.md"],
@@ -76,7 +76,7 @@ def partD(nb):
             ["Actuated: box", "ICF lift ≤ 0, pitch ≤ 0.02 rad/s, 0.280 m (0.235 at K_p=1e2). MuJoCo lift 2–21 mm (≤1e4), 4–9 (1e5), 10–58 (1e6); pitch 0.7–3.4 rad/s; tip over box at 1e2; EC ε=1e-4 still 1.7–10 mm", "part1_actuated.csv; tables/actuated_trace.md"],
             ["Actuated: chatter at K_p=1e5 (tip–box rel. vel. RMS)", "ICF 0/0.083/0.20/0.27 m/s at 10/5/2/1 ms; MuJoCo 0.36 at 1 ms; ICF EC 0.08 (ε ≤ 1e-3), 0.26 (1e-4)", "part1_actuated.csv"],
             ["MuJoCo direct solref", "exact compliance at k=1e5 for δt ≤ 2 ms; launches at ≥ 5 ms (ω·δt ≲ 2)", "tables/mujoco_stiffness_probe.md"],
-            ["Soft-clutter MuJoCo calibration", "τ=24 ms is 1.37× the model (ratio 0.73); documented, not rerun", "part1_stiffness_sweep.csv"],
+            ["Soft-clutter MuJoCo calibration", "τ=31.8 ms measured anchor; ratio 1.00 at k=10³ on every line", "part1_stiffness_sweep.csv"],
             ["Contact demand", "hard ~520/world ICF, ~380 MuJoCo; soft ~280/290", "verify_contact_budgets.py"],
             ["Plate representation", "tri–tri 3624 contacts/env, 96 s/iter at 2048 envs; hulls 4–5 s/iter", "IsaacLab 0c535d1668"],
             ["Slide, latest pairs (as logged)", "current rule (tracked ≥ 95 %): K3 0 (tracked 0.61, 1999 it), adaptive 0 (0.77 at 501/1000); previous held-delivery gate: K3 0.842 / adaptive 0.988", "logs/rsl_rl/trossen_mug_lift/smoke7-*, smoke-*"],
@@ -174,7 +174,7 @@ def appendixF(nb):
     nb.h("F4. What each arm uses", 1)
     nb.tbl([["Scene", "solref", "Why", "Calibration"],
             ["Hard clutter (k = 10⁵)", "(2.4 ms, 1)", "reference = MuJoCo's default and safety rule; τ so a 65 g sphere sinks m g/k", "6.3 µm vs 6.4 at δt = 1 ms"],
-            ["Soft clutter (k = 10³)", "(24 ms, 1)", "scaled 1/√k", "1.37× too stiff (impedance) — documented"],
+            ["Soft clutter (k = 10³)", "(31.8 ms, 1)", "measured anchor", "ratio 1.00 at k = 10³"],
             ["Ball (k = 10³, zero dissipation)", "(−2.24·10³, 0) direct", "reference cannot take ζ = 0", "rest 1.01 mm vs 0.98; energy within 0.03 % at δt ≤ 1 ms"],
             ["Actuated push (k = 10⁵)", "(2.4 ms, 1)", "same as hard clutter", "box sits 0.04–0.05× m g/(4k) at 1 ms — mass scaling"],
             ["Training scenes (rig, mug, plate)", "(20 ms, 1) MuJoCo default, condim 6", "as authored in IsaacLab assets.py/env cfgs", "clamped to 22 ms at 1/90 s; ~150 N/m per 65 g — NEVER stiff; state this in the paper's Part-2 setup"]])
@@ -182,7 +182,7 @@ def appendixF(nb):
     nb.bl(["Say: MuJoCo's stiffness is a time constant per effective mass, clamped to the step; at the learner's step it cannot represent k ≳ 10³ N/m per 65 g body; position-only error control does not see the softening.",
            "Say: the direct format removes the clamp but is only stable for ω δt ≲ 2 — 'turn refsafe off' is not a fix.",
            "Don't say: 'MuJoCo dissipates every impact' (retracted) or 'MuJoCo cannot be stiff' (it can at δt ≤ τ/2).",
-           "State the soft-clutter 1.37× offset, the mass scaling, and the training scenes' default solref, one sentence each."])
+           "State the effective-mass scaling and the training scenes' default solref, one sentence each (the soft-clutter offset is gone: measured anchor)."])
 
 
 def appendixG(nb):
@@ -218,9 +218,8 @@ def appendixI(nb):
     nb.pagebreak()
     nb.title("Appendix I — Part-1 numbers, generated from the CSVs at build time")
     nb.p("Source: newton-adaptive/scripts/bench/part1_keynumbers.py run when this notebook was built; these override any number quoted by hand in Part B or Part D if they disagree.", italic=True)
-    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    repo = os.path.join(os.path.dirname(root), "newton-adaptive")
-    py = os.path.join(root, ".venv", "bin", "python")
+    repo = os.path.expanduser("~/Documents/code/newton-adaptive")
+    py = os.path.expanduser("~/Documents/code/IsaacLabRubato/.venv/bin/python")
     try:
         out = subprocess.run([py, "scripts/bench/part1_keynumbers.py"], cwd=repo, capture_output=True, text=True, timeout=300).stdout
     except Exception as e:  # noqa: BLE001

@@ -51,7 +51,7 @@ def partA(nb):
     nb.p("What 'goes wrong' looks like (all measured in this project):", bold=True)
     nb.bl(["Softening: the solver realizes a much lower stiffness than the model asks for (MuJoCo at 10 ms caps near 10³ N/m when the model says 10⁵; B3).",
            "Penetration: bodies sink far deeper than the model's resting depth (B6).",
-           "Passthrough / ejection: a body moving 2.8 cm per step with a 2.5 cm radius sees its first contact past its centre and is launched (fixed ICF at 10 ms ejects 1.6 % on hard clutter; B6).",
+           "Passthrough / ejection: a body moving 2.8 cm per step with a 2.5 cm radius sees its first contact past its centre and can be launched — the mechanism behind the retired pre-fix ejections; on the corrected scene no arm ejects at any setting (B6).",
            "Instability: an explicit joint gain diverges when √(K_p/m)·δt ≳ 2 (MuJoCo at K_p = 10⁵ for δt ≥ 5 ms; B12).",
            "Hidden chatter: a stiff PD driven by a held 100 Hz target kicks its fingertip 300 N per step; at 10 ms the step integrates the rattle away and the policy never sees it (B12).",
            "Hopping/rocking: MuJoCo's pushed box lifts 2–58 mm and pitches at 1–3 rad/s where the physics says it slides flat (B12).",
