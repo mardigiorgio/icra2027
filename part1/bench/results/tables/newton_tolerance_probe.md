@@ -1,6 +1,6 @@
 # Fixed-ICF Newton tolerance: cost and accuracy (hard clutter, δt = 10 ms and 1 ms under a 0.1 s boundary)
 
-Hypothesis tested: the paper's fixed-step tolerance 1e-8 is below float32 resolution and pins every step at the 100-iteration cap. Result: wall is flat across 1e-5…1e-8 at 64, 1024 and 4096 worlds and penetration is unchanged — refuted; the tolerance stays at the paper's value.
+Hypothesis tested: the paper's fixed-step tolerance 1e-8 is below float32 resolution and pins every step at the 100-iteration cap. Result: at δt = 10 ms and at 1024/4096 worlds, wall moves ≤ 5 % across 1e-5…1e-8; the 64-world 1 ms cells rise ~30 % (322 → 417 ms/boundary), so the cap is not the binding cost there. Mean penetration at 1 ms is stable (6.5–6.7 µm); the 10 ms cells scatter (218–364 µm — chaotic scene). Refuted at the scales the benches run at; the tolerance stays at the paper's value.
 
 ## 64 worlds
 

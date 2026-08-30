@@ -24,7 +24,7 @@
 | hard, 1024 | ICF fixed step | 6.31 | 10.4 | 21.3 | 38.3 |
 | hard, 1024 | MuJoCo fixed step | 0.183 | 0.387 | 1.04 | 2.11 |
 
-## Penetration and ejections — 64 worlds, 200 boundaries
+## Penetration and ejections — 64 worlds, 2 s horizon (20 boundaries)
 
 | scene | arm | setting | mean [µm] | max [mm] | p95 [µm] | ejected | wall/boundary [ms] |
 |---|---|---|---|---|---|---|---|

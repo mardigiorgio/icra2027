@@ -41,7 +41,7 @@ Sources: **P** CENIC paper · **MJ** MuJoCo default · **ICF** icf_warp default 
 | impedance | solimp (0.9, 0.95, 1 mm, 0.5, 2) | — | MJ |
 | refsafe | on (τ ≥ 2 δt) | — | MJ |
 
-*Table 3. Contact parameters per solver. The models differ by design; MuJoCo's τ is calibrated so a resting 65 g sphere sinks m g/k at δt = 1 ms, the same depth ICF gives with k exactly. MuJoCo's stiffness scales with effective mass and is clamped by refsafe (stiffness sweep); the ball is undamped in both. The clutters' dissipation is our assumption (sensitivity recorded). The training scenes use MuJoCo's elliptic cone with impratio 10; measured effect on hard-clutter penetration ≤ 15 % at matched knobs, no ejections either way (`mujoco_cone_probe.md`).*
+*Table 3. Contact parameters per solver. The models differ by design; MuJoCo's τ is calibrated so a resting 65 g sphere sinks m g/k at δt = 1 ms, the same depth ICF gives with k exactly. MuJoCo's stiffness scales with effective mass and is clamped by refsafe (stiffness sweep); the ball is undamped in both. The clutters' dissipation is our assumption (sensitivity recorded). The training scenes use MuJoCo's elliptic cone with impratio 10; the cone probe at matched knobs moves hard-clutter mean penetration by −27…+8 % and the max by −30…+45 % (a chaotic 64-world scene — run-to-run noise rides on these), no ejections either way (`mujoco_cone_probe.md`).*
 
 | setting | MuJoCo | ICF |
 |---|---|---|
@@ -69,7 +69,7 @@ Sources: **P** CENIC paper · **MJ** MuJoCo default · **ICF** icf_warp default 
 
 | bench | worlds | horizon | repeats | knob |
 |---|---|---|---|---|
-| work-precision | 1 · 1024 | 2 s | 3 · 1 | ε 10⁻¹…10⁻⁶ · δt 10…1 ms |
+| work-precision | 1 · 1024 | 2 s | 3 | ε 10⁻¹…10⁻⁶ · δt 10…1 ms |
 | penetration | 64 | 2 s | 1 | same |
 | scaling | 2⁶…2¹³ | 0.2 + 2 s | 3 | δt 10 ms · ε 10⁻³ |
 | trace | 64 · 1 | 5 s | 1 | — |
@@ -77,7 +77,7 @@ Sources: **P** CENIC paper · **MJ** MuJoCo default · **ICF** icf_warp default 
 | stiffness | 1 | 3 s | 1 | k 10³…10⁸ |
 | ball | 1 | 10 s | 1 | δt ladder · ε |
 | actuated | 1 | 80 cells | 1 | δt · ε |
-| throughput | 64…4096 | 2 s | 1 | ε 10⁻³ · δt 1 ms |
+| throughput | 64…4096 | 4.2 s | 1 | ε 10⁻³ · δt 1 ms |
 
 *Table 6. Bench protocol. Wall time is the per-boundary median with the first two boundaries excluded, captured graphs, idle GPU. Artifact = ejection or max penetration > v√(m/k) (2.27 mm hard, 22.7 mm soft). Consistency windows restart from the same solver's 0.1 ms reference. Timeout 100 s per simulated second (P).*
 
@@ -86,7 +86,7 @@ Sources: **P** CENIC paper · **MJ** MuJoCo default · **ICF** icf_warp default 
 1. Different contact models by design, each at its own calibrated compliance.
 2. Dissipation laws differ (ζ = 1 vs d = 1 s/m); d is assumed.
 3. ICF relaxes its inner tolerance under error control (eq. 34); MuJoCo does not.
-4. Friction cones differ (pyramidal vs regularized round); MuJoCo's cone choice moves penetration ≤ 15 % (probe).
+4. Friction cones differ (pyramidal vs regularized round); the cone choice moves clutter penetration by tens of percent on the chaotic scene (probe).
 5. Joint PD implicit in ICF, stiffness-explicit in MuJoCo's implicitfast.
 6. Different narrowphases; both point contact, margin 0.
 7. A 1 µs floor and a 0.1 minimum shrink exist in our controllers, not in Alg. 1; measured floor occupancy is zero to ε = 10⁻⁶ (2/6950 attempts in one cell).

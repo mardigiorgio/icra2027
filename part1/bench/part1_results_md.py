@@ -74,7 +74,7 @@ def workprecision():
 
 
 def penetration():
-    out = ["\n## Penetration and ejections — 64 worlds, 200 boundaries\n",
+    out = ["\n## Penetration and ejections — 64 worlds, 2 s horizon (20 boundaries)\n",
            "| scene | arm | setting | mean [µm] | max [mm] | p95 [µm] | ejected | wall/boundary [ms] |", "|---|---|---|---|---|---|---|---|"]
     for scene in ("soft-clutter", "hard-clutter"):
         rs = rows(f"part1_penetration_{scene}.csv")

@@ -36,7 +36,7 @@ def partC(nb):
                     ("Actuated stiff contact", ["Stability map; the pushed box; what 10 ms hides (B12)"], ["figures/actuated.pdf, actuated_chatter.pdf"])]:
         section(nb, t, q, e)
     nb.h("V. Results II — application", 1)
-    section(nb, "Protocol", ["Ladder K1/K2/K3, K3wall, adaptive; held-fixed set; success gates; representation (B17, B25)"], ["trossen_campaign.sh; probe_campaign_coefficients.py"])
+    section(nb, "Protocol", ["Ladder K1–K5, adaptive, K5wall; held-fixed set; success gates; representation (B17, B25)"], ["trossen_campaign.sh; probe_campaign_coefficients.py"])
     for task, ref in [("Slide mug across table", "B20"), ("Pick up mug (lift)", "B21"), ("Pick up dish from dish rack (plate)", "B22"), ("Mug on tree", "B24"), ("Flip mug by handle", "B23")]:
         section(nb, task, [f"Which arm trains a working policy; which fails or exploits what — with the metric and the video frame ({ref})", "Wall per iteration at matched accuracy; per-world accepted-substep counts"], ["W&B: ____", "video: ____", "run dir: ____"], notes=4)
     nb.h("VI. Real-robot experiments (Trossen WXAI)", 1)
@@ -51,33 +51,33 @@ def partD(nb):
     nb.title("Part D — Fact bank, decisions, repo map, plan")
     nb.h("D1. Fact bank — measured numbers with their source (Part 1 re-runnable; Part 2 / campaign as logged)", 1)
     nb.tbl([["Fact", "Value", "Source"],
-            ["Cheapest artifact-free, hard clutter, 64 scenes (wall per simulated s)", "MuJoCo fixed 2 ms 0.57; MuJoCo EC ε=1e-3 1.9; ICF EC ε=1e-2 2.3; ICF fixed 1 ms 4.1", "figures/artifacts.pdf; tables/results_tables.md"],
+            ["Cheapest artifact-free, hard clutter, 64 scenes (wall per simulated s)", "MuJoCo fixed 2 ms 0.57; MuJoCo EC ε=1e-2 0.67; ICF EC ε=1e-2 1.97; ICF fixed 2 ms 2.48", "figures/artifacts.pdf; tables/results_tables.md"],
             ["Fixed ICF at 10 ms, hard clutter", "no ejections on the corrected scene; max pen 4.1 mm = 1.8x the impact depth", "part1_penetration_hard-clutter.csv"],
-            ["Mean penetration hard clutter 10/5/2/1 ms (µm)", "ICF 226/34.6/8.4/6.4; MuJoCo 336/100/17/6.6; model 6.4", "tables/results_tables.md"],
-            ["Work-precision hard, N=1, ε=1e-1..1e-6 (s per sim-s)", "ICF EC 0.38/0.60/1.35/2.89/7.91/18.2; MuJoCo EC 0.092/0.30/1.04/2.92/5.63/13.8", "tables/results_tables.md"],
-            ["Work-precision hard, N=1024", "ICF EC 15/23.8/49.3/115/343/856; MuJoCo EC 0.47/1.54/5.02/15.8/37.8/88.4", "tables/results_tables.md"],
-            ["Fixed levels hard N=1 / N=1024 (10,5,2,1 ms)", "ICF 0.20/0.29/0.59/1.13 and 7.5/10.9/20.9/38.2; MuJoCo 0.064/0.125/0.34/0.66 and 0.18/0.39/1.04/2.11", "tables/results_tables.md"],
+            ["Mean penetration hard clutter 10/5/2/1 ms (µm)", "ICF 18.4/17.0/9.3/9.0; MuJoCo 385/116/21.6/7.7; model 6.4", "tables/results_tables.md"],
+            ["Work-precision hard, N=1, ε=1e-1..1e-6 (s per sim-s)", "ICF EC 0.30/0.55/1.17/3.29/9.27/25.4; MuJoCo EC 0.093/0.30/1.04/2.81/5.78/15.2", "tables/results_tables.md"],
+            ["Work-precision hard, N=1024", "ICF EC 11.5/21.9/45.8/129/422/1130; MuJoCo EC 0.51/1.61/5.25/15.6/37.2/91", "tables/results_tables.md"],
+            ["Fixed levels hard N=1 / N=1024 (10,5,2,1 ms)", "ICF 0.185/0.29/0.58/1.07 and 6.31/10.4/21.3/38.3; MuJoCo 0.065/0.124/0.34/0.63 and 0.18/0.39/1.04/2.11", "tables/results_tables.md"],
             ["March cost hard ε=1e-3", "ICF 736 iters/sim-s at 3.1 ms; MuJoCo 699 at 2.1 ms", "tables/march_cost.md"],
             ["MuJoCo realized-stiffness cap", "~1e3 N/m at 10 ms; 1e5 at 1 ms; EC ε=1e-3 no recovery (17× at 1e5); ε=1e-5 recovers to the 1 ms level", "part1_stiffness_sweep.csv"],
             ["ICF realized stiffness", "k to 1e7 at 10 ms/1 ms/ε=1e-3/1e-5 (0.99); 0.87 at 1e8", "part1_stiffness_sweep.csv"],
-            ["Ball, ICF fixed", "first order from 0.1 ms: −30.0/−16.3/−6.25/−3.17 % at 100/50/20/10 µs; 11 rebounds ≤ 0.1 ms; rest by 10 s at ≥ 1 ms", "part1_ball_energy.csv (last apex)"],
+            ["Ball, ICF fixed", "first order from 0.1 ms: −30.0/−16.3/−6.25/−3.17 % at 100/50/20/10 µs; 11 rebounds ≤ 50 µs (12 at 0.1 ms); rest by 10 s at ≥ 1 ms", "part1_ball_energy.csv (last apex)"],
             ["Ball, MuJoCo fixed (direct undamped)", "−7.1 % 10 ms; −7.3 % 5 ms; +0.78 % 2 ms; −0.02 % 1 ms; ≤ 0.004 % below; 10 rebounds", "part1_ball_energy.csv"],
             ["Ball, MuJoCo error control", "+0.8 % ε ≥ 1e-2; +57/+22/+13/+4.0 % at 1e-3..1e-6 — OPEN DEFECT", "part1_ball_energy.csv; probe_ball_ec_energy.log"],
             ["Ball, ICF error control", "~−100 % ε ≥ 1e-4; −51 % at 1e-5 (budget-exhausted, 11 rebounds); exhausted at 1e-6", "part1_ball_energy.csv"],
-            ["Wall per world per 100 ms boundary, 2^13 hard", "MuJoCo fixed 11 µs; MuJoCo EC 270 µs; ICF fixed 620 µs; ICF EC 1.5 ms (per boundary: 90.7 / 2190 / 5060 / 12,700 ms)", "tables/results_tables.md"],
-            ["ICF/MuJoCo per-world cost at 2^13", "~55× fixed; ~6× EC; Newton tolerance 1e-5..1e-8 changes wall < 5 %", "tables/newton_tolerance_probe.md"],
+            ["Wall per world per 100 ms boundary, 2^13 hard", "MuJoCo fixed 11 µs; MuJoCo EC 279 µs; ICF fixed 484 µs; ICF EC 1.35 ms (per boundary: 90.8 / 2290 / 3960 / 11,100 ms)", "tables/results_tables.md"],
+            ["ICF/MuJoCo per-world cost at 2^13", "~44× fixed; ~4.9× EC; Newton tolerance 1e-5..1e-8 moves wall ≤ 5 % at 1024–4096 worlds (+30 % in the 64-world 1 ms cells)", "tables/newton_tolerance_probe.md"],
             ["Real-time trace, 5 s drop, 64 scenes", "ICF EC ε=1e-2 ~10 % RT in impacts, > 100 % settled; ~half the cost of fixed ICF 1 ms", "figures/realtime_trace_n64.pdf"],
-            ["Consistency floor (reference vs itself)", "soft 11 µm ICF / 0.2 µm MuJoCo; hard 0.62 / 0.28 mm", "part1_consistency_*.csv"],
-            ["Consistency soft", "first order both; ICF EC ~2× less deviation than fixed ICF at equal cost; MuJoCo EC on its fixed line", "part1_consistency_soft-clutter.csv"],
-            ["Consistency hard", "~O(δt^0.7); tight end within 2–4× of the floor; ICF EC ε=1e-3 measures 5.6 mm", "part1_consistency_hard-clutter.csv"],
+            ["Consistency floor (reference vs itself)", "soft 4.7 µm ICF / 0.4 µm MuJoCo; hard 1.8 / 0.4 mm", "part1_consistency_*.csv"],
+            ["Consistency soft", "first order both; ICF EC at parity with fixed ICF at equal cost; MuJoCo EC 2–3× below its fixed line at tight ε", "part1_consistency_soft-clutter.csv"],
+            ["Consistency hard", "~O(δt^0.7); tight end within 2–4× of the floor; ICF EC ε=1e-3 measures 5.1 mm", "part1_consistency_hard-clutter.csv"],
             ["Determinism", "ball bit-exact; clutter not reproducible: ICF mm within 0.3 s (soft), both cm within 0.5 s (hard); MuJoCo µm on soft", "tables/determinism_probe.md"],
-            ["Momentum, zero-g head-on", "all arms ≤ 1e-5 (ICF ≤ 1e-7; EC exact)", "tables/momentum_probe.md"],
+            ["Momentum, zero-g head-on", "all arms ≤ 1e-5 (ICF ≤ 1.1e-7; EC exact)", "tables/momentum_probe.md"],
             ["Actuated: stability", "ICF 40/40; MuJoCo unstable in 6 (K_p=1e5 δt ≥ 5 ms; 1e6 δt ≥ 2 ms & ε=0.1)", "part1_actuated.csv"],
-            ["Actuated: box", "ICF lift ≤ 0, pitch ≤ 0.02 rad/s, 0.280 m (0.235 at K_p=1e2). MuJoCo lift 2–21 mm (≤1e4), 4–9 (1e5), 10–58 (1e6); pitch 0.7–3.4 rad/s; tip over box at 1e2; EC ε=1e-4 still 1.7–10 mm", "part1_actuated.csv; tables/actuated_trace.md"],
+            ["Actuated: box", "ICF lift ≤ 0, pitch ≤ 0.02 rad/s, 0.280 m (0.235 at K_p=1e2). MuJoCo lift 2–21 mm (≤1e4), 3.8–21 (1e5), 10–58 (1e6); pitch 0.7–3.4 rad/s; tip over box at 1e2; EC ε=1e-4 still 1.7–10 mm", "part1_actuated.csv; tables/actuated_trace.md"],
             ["Actuated: chatter at K_p=1e5 (tip–box rel. vel. RMS)", "ICF 0/0.083/0.20/0.27 m/s at 10/5/2/1 ms; MuJoCo 0.36 at 1 ms; ICF EC 0.08 (ε ≤ 1e-3), 0.26 (1e-4)", "part1_actuated.csv"],
             ["MuJoCo direct solref", "exact compliance at k=1e5 for δt ≤ 2 ms; launches at ≥ 5 ms (ω·δt ≲ 2)", "tables/mujoco_stiffness_probe.md"],
             ["Soft-clutter MuJoCo calibration", "τ=31.8 ms measured anchor; ratio 1.00 at k=10³ on every line", "part1_stiffness_sweep.csv"],
-            ["Contact demand", "hard ~520/world ICF, ~380 MuJoCo; soft ~280/290", "verify_contact_budgets.py"],
+            ["Contact demand", "hard ~500–520/world ICF, ~380 MuJoCo; soft ~280 / ~256–290 (two probe-era readings; re-measure before quoting)", "verify_contact_budgets.py"],
             ["Plate representation", "tri–tri 3624 contacts/env, 96 s/iter at 2048 envs; hulls 4–5 s/iter", "IsaacLab 0c535d1668"],
             ["Slide, latest pairs (as logged)", "current rule (tracked ≥ 95 %): K3 0 (tracked 0.61, 1999 it), adaptive 0 (0.77 at 501/1000); previous held-delivery gate: K3 0.842 / adaptive 0.988", "logs/rsl_rl/trossen_mug_lift/smoke7-*, smoke-*"],
             ["Lift / plate / flip smokes (as logged)", "success_rate 0 in every campaign-shape smoke (lift Episode_Reward/success ≈ 6.7)", "logs/rsl_rl"],
@@ -90,9 +90,9 @@ def partD(nb):
            "☐ Soft-clutter MuJoCo τ offset: state or rerun (B3)",
            "☐ MuJoCo-EC energy gain: fix SolverMuJoCoAdaptive or report as open (B4)",
            "☐ δt_max = 0.1 s on clutter (paper) vs 10 ms boundary in RL — how to present",
-           "☐ Which Part-1 figures fit the page budget (14 exist)",
+           "☐ Which Part-1 figures fit the page budget (24 PDFs exist)",
            "☐ Speed section: the missing before/after probe on a paper scene (Appendix G)",
-           "☐ Per task: which run pair is the result, under which success definition (B20–B23); K3wall runs; MuJoCo arms; ICF stiffness pinned in the campaign",
+           "☐ Per task: which run pair is the result, under which success definition (B20–B23); K5wall runs; MuJoCo arms; ICF stiffness pinned in the campaign",
            "☐ Mug-on-tree: where it lives (B24)",
            "☐ Does the paper make a near-rigid-regime claim for Part 2 at all (the training scenes use MuJoCo's default soft solref and a global ICF stiffness — Appendix F.4, B25)?",
            "☐ Determinism: how many seeds per comparison (single-seed differences are inside the run-to-run noise)",
@@ -100,12 +100,12 @@ def partD(nb):
            "☐ GitHub push (auth broken, D14) — nothing this week is pushed"])
     nb.h("D3. Repo map and how to re-run", 1)
     nb.tbl([["What", "Where", "How"],
-            ["Scenes", "newton-adaptive/scripts/scenes/cenic_scenes.py, actuated_press.py", "imported by the benches"],
-            ["Four-arm harness", "scripts/bench/four_arms.py", "make_arm(model, name, ...) — captured boundaries, trackers, budgets, solref, K_INIT, eq. 34 rule"],
-            ["Part-1 benches", "scripts/bench/benchmarks/part1_{workprecision, penetration, scaling, ball_energy, realtime_trace, consistency, stiffness_sweep, actuated}.py", "cd newton-adaptive; ~/Documents/code/icra2027/.venv/bin/python -m scripts.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
-            ["Probes / certificates", "scripts/bench/probe_momentum.py, probe_determinism.py, probe_actuated_trace.py, probe_march_cost.py, verify_contact_budgets.py, verify_part1_penetration.py; part1_consistency.py --self-check", "same python; read the docstring first"],
-            ["Figures / tables", "scripts/bench/part1_plots.py; part1_tables.py; part1_results_md.py; part1_scenes_figure.py", "CPU only; regenerate after any sweep"],
-            ["Results write-up", "scripts/bench/results/PART1.md; tables/*.md; figures/*.pdf; PART1_LITERATURE.md", "the paper's Results I and Background are read from here"],
+            ["Scenes", "icra2027/part1/scenes/cenic_scenes.py, actuated_press.py", "imported by the benches"],
+            ["Four-arm harness", "part1/bench/four_arms.py", "make_arm(model, name, ...) — captured boundaries, trackers, budgets, solref, K_INIT, eq. 34 rule"],
+            ["Part-1 benches", "part1/bench/benchmarks/part1_{workprecision, penetration, scaling, ball_energy, realtime_trace, consistency, stiffness_sweep, actuated}.py", "cd icra2027; ~/Documents/code/icra2027/.venv/bin/python -m part1.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
+            ["Probes / certificates", "part1/bench/probe_momentum.py, probe_determinism.py, probe_actuated_trace.py, probe_march_cost.py, verify_contact_budgets.py, verify_part1_penetration.py; part1_consistency.py --self-check", "same python; read the docstring first"],
+            ["Figures / tables", "part1/bench/part1_plots.py; part1_tables.py; part1_results_md.py; part1_scenes_figure.py", "CPU only; regenerate after any sweep"],
+            ["Results write-up", "part1/bench/results/PART1.md; tables/*.md; figures/*.pdf; PART1_LITERATURE.md", "the paper's Results I and Background are read from here"],
             ["Solvers", "newton/_src/solvers/mujoco/solver_mujoco_adaptive.py; adaptive_boundary.py; icf_warp_adaptive/icf_warp/{solver.py, solver_adaptive.py, contact_law.py, kernels_dof.py, DEVIATIONS.md}", "flags in A7 / Appendix G"],
             ["Training (Part 2)", "IsaacLab develop: contrib/trossen_{mug_lift, mug_slide, plate_rack, mug_flip}; scripts/experiments/trossen_campaign.sh; scripts/probes/*", "VIRTUAL_ENV=~/Documents/code/icra2027/.venv ./isaaclab.sh -p ... --solver icf|icf-adaptive|mujoco|mujoco-adaptive; ICF_MAX_RIGID_CONTACT=1024/8192; W&B + video; one knob at a time; kill doomed runs"],
             ["Runs", "IsaacLab logs/rsl_rl/{trossen_mug_lift, trossen_mug_flip, trossen_spatula_lift}; wandb/", "run dirs map to W&B by timestamp; killed runs have no wandb-summary.json — grep output.log"],
@@ -139,7 +139,7 @@ def partE(nb):
             ["ICF / CENIC", "irrotational contact fields, the convex compliant-contact formulation (Castro et al.); CENIC = ICF + error-controlled step doubling (Kurtz & Castro); in our code ICF = icf_warp_adaptive"],
             ["Near-rigid regime", "the stiff-contact regime where ICF's regularization scales as 1/δt² and CENIC's mechanism bites; whether the training scenes are in it is an open decision"],
             ["Fixed arm / error-controlled (EC, adaptive) arm", "same solver with a fixed δt or with the per-world controller; four arms = 2 solvers × 2"],
-            ["Wall-matched arm (K3wall)", "a fixed-step arm run for the wall-clock budget of the EC arm"],
+            ["Wall-matched arm (K5wall)", "a fixed-step arm at K5's step, run for the wall-clock budget of the EC arm"],
             ["Matched accuracy", "wall-time comparisons only between artifact-free settings"],
             ["Work-precision", "wall time per simulated second vs requested accuracy (or vs measured error, B9)"],
             ["Self-consistency / floor row", "deviation from the solver's own fine-step reference after restarted windows; the reference vs itself = the noise floor"],
@@ -213,15 +213,17 @@ def appendixH(nb):
 
 
 def appendixI(nb):
-    """Part-1 numbers generated from the CSVs at build time (newton-adaptive/scripts/bench/part1_keynumbers.py)."""
+    """Part-1 numbers generated from the CSVs at build time (icra2027/part1/bench/part1_keynumbers.py)."""
     import subprocess, os
     nb.pagebreak()
     nb.title("Appendix I — Part-1 numbers, generated from the CSVs at build time")
-    nb.p("Source: newton-adaptive/scripts/bench/part1_keynumbers.py run when this notebook was built; these override any number quoted by hand in Part B or Part D if they disagree.", italic=True)
-    repo = os.path.expanduser("~/Documents/code/newton-adaptive")
+    nb.p("Source: icra2027/part1/bench/part1_keynumbers.py run when this notebook was built; these override any number quoted by hand in Part B or Part D if they disagree.", italic=True)
+    repo = os.path.expanduser("~/Documents/code/icra2027")
     py = os.path.expanduser("~/Documents/code/icra2027/.venv/bin/python")
     try:
-        out = subprocess.run([py, "scripts/bench/part1_keynumbers.py"], cwd=repo, capture_output=True, text=True, timeout=300).stdout
+        out = subprocess.run([py, "part1/bench/part1_keynumbers.py"], cwd=repo, capture_output=True, text=True, timeout=300).stdout
+        if not out.strip():
+            raise RuntimeError("part1_keynumbers.py produced no output — Appendix I would be silently empty")
     except Exception as e:  # noqa: BLE001
         nb.p(f"(key numbers unavailable: {e})"); return
     table = []

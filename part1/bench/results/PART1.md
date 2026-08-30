@@ -9,7 +9,7 @@ Regenerate everything with
 
 | arm | integrator | accuracy knob |
 |---|---|---|
-| MuJoCo, fixed step | `SolverMuJoCo`, n substeps per 10 ms boundary | δt = 10 ms / n |
+| MuJoCo, fixed step | `SolverMuJoCo`, n substeps per boundary (100 ms clutter, 10 ms ball/actuated) | δt = boundary / n |
 | MuJoCo, error control | `SolverMuJoCoAdaptive` — CENIC's first-order step doubling on MuJoCo's convex solver, per-world Drake step selection | ε_acc |
 | ICF, fixed step | `SolverICF` (icf_warp), Newton collision pipeline per substep | δt |
 | ICF, error control (CENIC) | `SolverICFAdaptive` — the same controller over ICF, two geometry queries per step | ε_acc |
@@ -39,21 +39,21 @@ Table III (0.1 s on clutter), and a single deterministic initial condition:
 The clutter drop starts from a 4 × 5 lattice above the bin, alternate layers
 staggered by half the column spacing, every body jittered by ±1.5 cm in xy
 and ±5 mm in z and every cube tilted by a random rotation, under a fixed
-seed (7). Dissipation: kd = 0.02·k for MuJoCo, Hunt–Crossley d = 10 s/m for
+seed (7). Dissipation: kd = 0.02·k for MuJoCo, Hunt–Crossley d = 1 s/m for
 ICF (0 for the ball). Stiffness, dissipation and stiction reach the two
 backends differently and each scene sets both: ICF from
 `IcfParams.contact_stiffness / contact_hc_dissipation /
 contact_stiction_tolerance`; MuJoCo from an explicit contact solref per
 scene. MuJoCo's contact is a soft constraint whose stiffness scales as
 1/(τ²ζ²) and whose time constant τ is clamped to ≥ 2δt; Newton's `ke`/`kd`
-→ solref conversion sets ζ from kd (3.16 for the clutters' kd = 0.02 k; 1.0
+→ solref conversion sets ζ from kd (3.16 hard / 0.32 soft for kd = 0.02 k; 1.0
 for the ball that asked for kd = 0), which made MuJoCo ~100× softer than
 the requested k and critically damped the ball — our configuration, not
 MuJoCo. Each scene therefore carries `mujoco_solref`. The clutters use
 the reference format (τ, ζ): τ = 2.4 ms at k = 10⁵ N/m (calibrated so a
-resting sphere sinks by the model's m·g/k) and 24 ms at k = 10³ N/m (scaled
-as 1/√k; the realized stiffness there is 1.37× the model — the reference
-format's impedance is not exactly ∝ 1/τ² — and is reported as such), ζ = 1,
+resting sphere sinks by the model's m·g/k) and 31.8 ms at k = 10³ N/m
+(calibrated at its own anchor — the reference format's impedance is not
+exactly ∝ 1/τ², so each stiffness gets its own τ; realized ratio 1.00), ζ = 1,
 and MuJoCo's refsafe clamp τ ≥ 2δt, so at δt > τ/2 the contact is softer by
 MuJoCo's own design. The reference format admits no zero damping ratio
 (ζ = 0 diverges), so the ball — which asks for zero dissipation — uses
@@ -72,7 +72,7 @@ specified in~\cite{cenic}; the values above are this work's definition.
   10 ms on the ball; the first attempt is k_Init·δt_max = 0.1·δt_max.
   Error control never steps past a boundary.
 * GPU, not CPU: N = 1 is the single-scene setting and sits near the
-  launch-latency floor (~1–3 ms per boundary); N = 1024 is the regime robot
+  launch-latency floor; N = 1024 is the regime robot
   learning runs in. Both are reported.
 * Only the point-contact test cases are reproduced; cylinder, gripper and
   Franka use hydroelastic contact and an inverse-dynamics controller.
@@ -114,11 +114,12 @@ as `contact-overflow`, never as a data point.
   threshold line. A separate practical wall budget (1 h per run) bounds the
   N = 1024 sweeps; a run killed by it is `budget`, drawn as +, and is not a
   timeout.
-  The error-controlled arms run with a 4096-substep march budget (δt floor
-  2.4 µs); a run in which any world ever exhausted it is marked
+  The error-controlled arms run with a 65536-substep march budget on this
+  bench (4096 on the ball and actuated; controller floor δt_min = 1 µs); a
+  run in which any world ever exhausted it is marked
   `budget-exhausted` and treated as a failure — none did.
-* **Penetration vs wall** (ours): 64 worlds, 200 boundaries after a 20-boundary
-  warm-up; ground penetration read from model geometry and verified against
+* **Penetration vs wall** (ours): 64 worlds, 2 s horizon (20 boundaries, no
+  warm-up — the first impacts are part of the measurement); ground penetration read from model geometry and verified against
   an independent recomputation on the final scene and budgets
   (`verify_part1_penetration.py`: model structure, plane, rotation
   convention, live evolution, timing stability — all pass); ejections past
@@ -126,17 +127,17 @@ as `contact-overflow`, never as a data point.
   Timing and metric passes are separate subprocesses (no host sync in the
   timed loop).
 * **Wall vs worlds**: 2⁶ … 2¹³ worlds, fixed arms at δt = 10 ms, error control
-  at ε = 10⁻³, median and p90 of per-boundary wall over 100 boundaries.
+  at ε = 10⁻³, median and p90 of per-boundary wall over a 2 s timed window
+  (0.2 s warm-up excluded).
 * **Energy convergence** (paper Fig. 8): fixed arms at δt from 10 ms to 10 µs;
   % change of total energy after 10 s; rebounds counted as boundary-sampled
   upward velocity sign flips.
 * **Table I analog**: real-time rate = 100 / (wall per simulated second) at
-  N = 1; artifact = any ejection, or max ground penetration above 10× the
-  scene's single-object static penetration m·g/k — the compliance the
-  contact model itself prescribes (6.5 µm on hard clutter at k = 10⁵ N/m,
-  0.65 mm on soft clutter at k = 10³ N/m, 65 g objects) — in the 64-world
-  run. A few static depths is the model; tens of them is the step. The
-  criterion is ours; Table I of~\cite{cenic} judged artifacts visually.
+  N = 1; artifact = any ejection, or max ground penetration above the
+  model's own impact depth v·√(m/k) (2.27 mm on hard clutter, 22.7 mm on
+  soft, 65 g objects at the 2.8 m/s drop speed) — in the 64-world run.
+  Up to the impact depth the model made the depth; above it the step did.
+  The criterion is ours; Table I of~\cite{cenic} judged artifacts visually.
 
 ## Captions (LaTeX, ICRA style — paste with the PDFs in `figures/`; `\cite{cenic}` = Kurtz & Castro, arXiv:2511.08771)
 
@@ -153,7 +154,7 @@ settling under error control.}
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{figures/workprecision.pdf}
 \caption{Work-precision plots for soft and hard clutter, error control on
-positions ($\mathbf{S}=\mathbf{I}$), $\delta t_{\max} = 10$\,ms. Wall times
+positions ($\mathbf{S}=\mathbf{I}$), $\delta t_{\max} = 0.1$\,s. Wall times
 are normalized to one simulated second; top row a single scene, bottom row
 1024 scenes in parallel on one GPU. Dotted levels are fixed-step
 integration at $\delta t = 10$\,ms and $1$\,ms. Lower is better. A cross
@@ -214,16 +215,16 @@ resolution.}
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{figures/realtime_trace_n64.pdf}
-\caption{Real-time rate, solver steps per 10\,ms and cumulative wall time
-along a 5\,s hard-clutter drop, 64 scenes. Fixed step pays the same at
-every step; error control pays during the impacts and coasts at
-$\delta t_{\max}$ once the pile settles, so at artifact-free quality it is
-the cheapest way to simulate the horizon.}
+\caption{Real-time rate, solver steps per 100\,ms boundary and cumulative
+wall time along a 5\,s hard-clutter drop, 64 scenes. Fixed step takes the
+same number of substeps at every boundary; error control pays during the
+impacts and coasts at coarse steps once the pile settles, so at
+artifact-free quality it is the cheapest way to simulate the horizon.}
 \end{figure}
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{figures/scaling_hard-clutter.pdf}
-\caption{Wall time per 10\,ms step versus number of parallel scenes
+\caption{Wall time per 100\,ms boundary versus number of parallel scenes
 ($2^6$--$2^{13}$) on hard clutter; fixed step at $\delta t = 10$\,ms, error
 control at $\varepsilon_{acc} = 10^{-3}$; median of three runs, band the
 spread.}
@@ -311,9 +312,9 @@ control only the impacts. (a) Hard clutter, 64 scenes: wall time per
 simulated second at the learner's coarse setting (hatched; an artifact by
 the criterion of Fig.~\ref{fig:story_step}b) and at the cheapest
 artifact-free setting of each arm (solid) -- the matched-accuracy cost.
-(b) Cumulative wall time along a 5\,s drop: fixed step pays the same at
-every step; error control pays during the impacts (shaded) and coasts at
-$\delta t_{\max}$ once the pile settles.}
+(b) Cumulative wall time along a 5\,s drop: fixed step takes the same
+number of substeps at every boundary; error control pays during the
+impacts (shaded) and coasts at coarse steps once the pile settles.}
 \label{fig:story_cost}
 \end{figure*}
 
@@ -331,9 +332,9 @@ cost: position deviation from a $\delta t = 0.1$\,ms reference of the same
 model after 0.1\,s windows restarted from the reference ($\ell_\infty$ over
 bodies, mean over 20 windows, 8 scenes); hollow markers are the reference
 restarted against itself, the instrument's floor. Both fixed arms converge
-at first order; ICF error control gives about half the deviation of fixed
-ICF at the same cost; MuJoCo error control lands on its own fixed-step
-line.}
+at first order; ICF error control sits on fixed ICF's line (parity at
+matched cost); MuJoCo error control undercuts its own fixed-step line by
+2--3$\times$ at tight $\varepsilon_{acc}$.}
 \label{fig:story_convergence}
 \end{figure*}
 
@@ -394,13 +395,13 @@ penetration relative to the resting depth m·g/k. Hard clutter, 64 scenes:
   control sits at 6.3–7.5 µm from ε = 10⁻² on, MuJoCo error control needs
   ε = 10⁻⁴ (7.5 µm; 19 µm at 10⁻³, 131 µm at 10⁻²).
 * Soft clutter: no ejections anywhere; ICF's max penetration stays at
-  ≤ 0.4× the 22.7 mm impact depth and its mean at the model's resting
+  ≤ 0.41× the 22.7 mm impact depth and its mean at the model's resting
   0.64 mm (0.65–0.68 mm) at every δt and ε. MuJoCo's max rides at the
   bound itself (0.7–1.04×; the ε = 10⁻² and 10⁻³ EC rows cross it by 1–4 %,
   within the bound's own approximation — the artifact flag straddles there
   and the binary call carries no information on this scene), and its mean
-  rests 1.5–1.7× the model (0.96–1.09 mm; 3.6 mm = 5.5× under EC at
-  ε = 10⁻¹).
+  rests 1.5–2.25× the model (0.96–1.44 mm; the EC rows at ε = 10⁻² and
+  10⁻³ sit 2.25× and 1.77× above it; 3.6 mm = 5.5× at ε = 10⁻¹).
 
 ### Work-precision (`figures/workprecision.pdf`, `figures/speed_bars.pdf`)
 
@@ -421,7 +422,8 @@ N = 1 rows are 3-trial medians; no timeouts, no budget exhaustion.
 ### Error control pays only when something happens (`figures/realtime_trace_n64.pdf`)
 
 Real-time rate, solver steps per boundary and cumulative wall along a 5 s
-hard-clutter drop, 64 scenes. Fixed step's rate is flat by construction;
+hard-clutter drop, 64 scenes. Fixed step's substep count is flat by
+construction (its per-boundary wall still eases ~3× as the pile settles);
 error control at ε = 10⁻² starts at ~10 % real time during the impacts and
 climbs past 100 % once the pile settles, taking ~10 steps per 100 ms where
 fixed 1 ms takes 100. Over the 5 s, ICF error control at ε = 10⁻² costs
@@ -436,7 +438,9 @@ neither a mid-impact instant nor an earlier flight enters the number.
 * Fixed ICF converges at first order once the impact is resolved (from
   δt = 0.1 ms each halving of δt halves the loss: −30 %, −16 %, −6.2 %,
   −3.2 % at 100, 50, 20, 10 µs) and rebounds 11 times in 10 s at δt ≤
-  0.1 ms, the count~\cite{cenic} states for this scene. At δt ≥ 1 ms the
+  50 µs (12 at 0.1 ms), the count~\cite{cenic} states for this scene —
+  intermediate steps overcount (13 at 0.2 ms, 21 at 0.5 ms: chatter at a
+  barely-resolved impact reads as extra sign flips). At δt ≥ 1 ms the
   ball comes to rest within the run.
 * MuJoCo's undamped direct-format constraint keeps the ball's energy to
   within 0.03 % at every δt ≤ 1 ms (−0.02 % at 1 ms, −0.004 % at 0.5 ms,
@@ -451,7 +455,7 @@ neither a mid-impact instant nor an earlier flight enters the number.
   stated as such.
 * MuJoCo error control at ε ≥ 10⁻² stays at δt_max = 10 ms (+0.8 %, 9
   rebounds). At ε ≤ 10⁻³ it **gains** energy, about 5 % per impact (+57 %
-  after ten bounces at ε = 10⁻³; +22 %, +13 %, +4.0 % at 10⁻⁴, 10⁻⁵,
+  after nine bounces at ε = 10⁻³; +22 %, +13 %, +4.0 % at 10⁻⁴, 10⁻⁵,
   10⁻⁶), while fixed MuJoCo at the same steps conserves: the gain is in our
   adaptive wrapper's step changes through the undamped constraint, not in
   MuJoCo's step. Open defect of the `SolverMuJoCoAdaptive` arm, reported as
@@ -470,7 +474,8 @@ tables in `tables/results_tables.md`.
   saturate from 2¹⁰ worlds.
 * Under point contact our ICF step costs ~44× MuJoCo's per world at 2¹³
   worlds (fixed step) and ~5× under error control. Not the Newton tolerance
-  (10⁻⁵…10⁻⁸ changes wall by < 5 %, `tables/newton_tolerance_probe.md`): it
+  (10⁻⁵…10⁻⁸ changes wall by ≤ 5 % at 1024–4096 worlds, though up to +30 %
+  in the 64-world 1 ms cells, `tables/newton_tolerance_probe.md`): it
   is the cost of resolving stiff point contact to the model's compliance
   with a convex Newton solve, and a batch pays for its slowest world.
 * Run-to-run spread over the three trials: ≤ 2 % for fixed MuJoCo, ≤ 8 %
@@ -505,13 +510,16 @@ soft, 150 / 94 mm hard after 1 s). Two training runs with the same seed are
 therefore not the same run under clutter contact on either backend, and any
 comparison against a reference trajectory has this noise as its floor: the
 consistency bench measures that floor as its reference-restart row (exactly
-zero on the ball for both backends) and its self-check asserts the floor is
-deterministic and ≥ 10× below the coarsest knob's deviation.
+zero on the ball for both backends) and its self-check asserts the floor's
+magnitude reproduces within 10× run to run (exact determinism is not a
+property this system has) and sits ≥ 10× below the coarsest knob's
+deviation.
 
 ### Momentum (`tables/momentum_probe.md`)
 
 Two spheres collide head-on with gravity off: every arm conserves the pair's
-linear momentum to ≤ 10⁻⁵ (ICF ≤ 10⁻⁷, exactly under error control) — the
+linear momentum to ≤ 10⁻⁵ (ICF ≤ 1.1×10⁻⁷ fixed, exactly zero under error
+control) — the
 per-world step controller injects none.
 
 ### Self-consistency (`figures/consistency.pdf`)
@@ -534,15 +542,16 @@ a few × of the floor is not a step-size measurement. Idle GPU, one run.
   under error control the requested ε tracks the measured deviation
   (ICF: 1.8 mm at ε = 10⁻³, 0.15 mm at 10⁻⁵). At matched cost the two
   ICF modes are close (ε = 10⁻³: 1.8 mm at 0.89 s vs fixed 1 ms 1.3 mm at
-  1.06 s; ε = 10⁻⁴: 0.64 mm at 2.0 s vs fixed 0.5 ms 0.62 mm at 1.9 s),
-  and MuJoCo error control lands on its own fixed-step line as well
-  (ε = 10⁻⁴: 79 µm at 0.37 s, between fixed 1 ms at 0.41 s and 0.5 ms at
-  0.77 s): on this bench error control matches, and does not beat, the
-  fixed ladder — its saving is elsewhere (the settled phase,
-  `figures/realtime_trace_n64.pdf`).
+  1.06 s; ε = 10⁻⁴: 0.64 mm at 2.0 s vs fixed 0.5 ms 0.62 mm at 1.9 s):
+  for ICF, error control matches, and does not beat, the fixed ladder on
+  this bench — its saving is elsewhere (the settled phase,
+  `figures/realtime_trace_n64.pdf`). MuJoCo error control undercuts its
+  own fixed line at tight ε (ε = 10⁻⁴: 79 µm at 0.37 s, where the fixed
+  ladder's cost–deviation line gives ~0.21 mm — a 2.6× win, growing to
+  ~3× at 10⁻⁵).
 * Hard clutter (chaotic, floor 0.4–1.8 mm mean): the coarse end is a
   step-size measurement — ICF 21 mm at 10 ms → 9.2 mm at 1 ms → 5.6 mm at
-  0.5 ms, MuJoCo 8.4 → 2.6 → 1.4 mm, MuJoCo at 2.5–3× lower cost for the
+  0.5 ms, MuJoCo 8.4 → 2.6 → 1.4 mm, MuJoCo at 1.8–2.7× lower cost for the
   same δt; the requested ε is not the measured deviation there (ICF 5.1 mm
   at ε = 10⁻³, amplified by the pile). The tight end sits within 2–3× of
   the floor (ICF ε = 10⁻⁵: 3.7 mm at 13.5 s; MuJoCo ε = 10⁻⁵: 1.0 mm at
@@ -568,17 +577,19 @@ boundary as a policy's would be. Data in `part1_actuated.csv` (80 cells:
   (lift 19 cm).
 * **The pushed box.** ICF slides it flat at every gain, step and tolerance:
   lift ≤ 0 (it stays at its 25 µm resting depth, m·g/(4k) exactly), pitch
-  rate ≤ 0.02 rad/s, vertical velocity ≤ 0.2 mm/s, displacement 0.280 m as
+  rate ≤ 0.02 rad/s, vertical velocity ≤ 0.4 mm/s (the K_p = 10⁶ cells;
+  < 0.2 below), displacement 0.280 m as
   commanded for K_p ≥ 10³ (0.235 m at K_p = 10², where the 100 N/m
   controller cannot exceed friction until it lags 5 cm). MuJoCo's box rocks
   and hops in every stable cell — lift 2–21 mm and pitch rate 0.7–3.4 rad/s
-  at K_p ≤ 10⁴, 4–9 mm at 10⁵, 10–58 mm at 10⁶, with the tip climbing onto
+  at K_p ≤ 10⁴, 3.8–21 mm at 10⁵ (the 21 mm cell is EC ε = 10⁻²),
+  10–58 mm at 10⁶, with the tip climbing onto
   the box at K_p = 10² (δt = 5, 2 ms) — and error control does not remove
   it (ε = 10⁻⁴: 1.7–10 mm). A 10 cm cube pushed at mid-height with μ = 0.5
   slides flat (tipping needs the push above its top face); the hop is a
   sliding-contact behaviour of the soft constraint (`tables/actuated_trace.md`:
   with the push frozen neither backend moves the box).
-* **Tip penetration.** ICF ≤ 0.25 mm at every cell against a quasi-static
+* **Tip penetration.** ICF ≤ 0.41 mm at every cell against a quasi-static
   push depth of 49 µm (the maximum is the ramming impact, 0.3 m/s into a
   1 kg box). MuJoCo ≤ 0.6 mm where its box stays near flat (K_p ≥ 10⁴,
   δt ≤ 2 ms); at K_p ≤ 10³ the reading (up to 11 mm) is the horizontal
@@ -586,7 +597,7 @@ boundary as a policy's would be. Data in `part1_actuated.csv` (80 cells:
 * **Resolved chatter under held targets.** At K_p ≥ 10⁵ each 3 mm target
   step is a ≥ 300 N kick on the 0.1 kg tip. Both solvers resolve the
   resulting tip–box chatter as the step shrinks — ICF 0 at 10 ms, 0.08 m/s
-  RMS at 5 ms, 0.20 at 2 ms, 0.27 at 1 ms for K_p = 10⁵ (0.36 at 10⁶);
+  RMS at 5 ms, 0.20 at 2 ms, 0.27 at 1 ms for K_p = 10⁵ (0.28–0.30 at 10⁶);
   MuJoCo 0.36 at 1 ms — and the 10 ms step integrates it away entirely:
   a policy trained at 10 ms never sees the contact its own gains excite.
   ICF error control at ε ≤ 10⁻³ sits at the 5 ms level (0.08) and resolves

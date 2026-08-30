@@ -10,43 +10,43 @@ Keys match `references.bib`. Unmarked entries are verified against the arXiv/pub
 
 ## Contact models and dissipation
 
-4. E. Todorov. Convex and analytically-invertible dynamics with contacts and constraints: theory and implementation in MuJoCo. ICRA 2014. `todorov2014` — *check*
-5. E. Todorov, T. Erez, Y. Tassa. MuJoCo: A physics engine for model-based control. IROS 2012. `mujoco` — *check*
+4. E. Todorov. Convex and analytically-invertible dynamics with contacts and constraints: theory and implementation in MuJoCo. ICRA 2014. `todorov2014`
+5. E. Todorov, T. Erez, Y. Tassa. MuJoCo: A physics engine for model-based control. IROS 2012. `mujoco`
 6. [MuJoCo documentation, solver parameters](https://mujoco.readthedocs.io/en/latest/modeling.html#solver-parameters). `mujoco_docs`
-7. K. H. Hunt, F. R. E. Crossley. Coefficient of restitution interpreted as damping in vibroimpact. J. Appl. Mech. 42(2), 1975. `huntcrossley` — *check*
+7. K. H. Hunt, F. R. E. Crossley. Coefficient of restitution interpreted as damping in vibroimpact. J. Appl. Mech. 42(2), 1975. `huntcrossley`
 8. J. Masterjohn, D. Guoy, J. Shepherd, A. Castro. [Velocity Level Approximation of Pressure Field Contact Patches](https://arxiv.org/abs/2110.04157). IEEE RA-L, 2022. `hydroelastic`
 9. Q. Le Lidec, W. Jallet, L. Montaut, I. Laptev, C. Schmid, J. Carpentier. [Contact Models in Robotics: a Comparative Analysis](https://arxiv.org/abs/2304.06372). IEEE T-RO, 2024. `lelidec2024`
 10. T. A. Howell et al. [Dojo: A Differentiable Physics Engine for Robotics](https://arxiv.org/abs/2203.00806). arXiv:2203.00806, 2022. `dojo`
 
 ## Error-controlled integration
 
-11. E. Hairer, G. Wanner. Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems. Springer, 1996. `hairer` — *check*
-12. R. Tedrake and the Drake Development Team. [Drake: Model-based design and verification for robotics](https://drake.mit.edu). 2019. `drake` — *check*
-13. [Drake issue #14694](https://github.com/RobotLocomotion/drake/issues/14694). `drake14694` — *TODO: confirm number and title*
+11. E. Hairer, G. Wanner. Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems. Springer, 1996. `hairer`
+12. R. Tedrake and the Drake Development Team. [Drake: Model-based design and verification for robotics](https://drake.mit.edu). 2019. `drake`
+13. A. Castro. [Implicit PD control in MultibodyPlant (Drake issue #14694)](https://github.com/RobotLocomotion/drake/issues/14694). 2021. `drake14694` — stiff explicit PD on light bodies destabilizing large steps; it is a PD-stiffness issue, not an error-control one — refile or swap for the error-controlled-integrator tracking issue (#11132) if that was the intent
 
 ## Benchmarking physics engines
 
-14. T. Erez, Y. Tassa, E. Todorov. Simulation tools for model-based robotics: comparison of Bullet, Havok, MuJoCo, ODE and PhysX. ICRA 2015. `erez2015` — *check*
-15. D. Kang, J. Hwangbo. [SimBenchmark](https://leggedrobotics.github.io/SimBenchmark/). 2018. `simbenchmark` — *check*
+14. T. Erez, Y. Tassa, E. Todorov. Simulation tools for model-based robotics: comparison of Bullet, Havok, MuJoCo, ODE and PhysX. ICRA 2015. `erez2015`
+15. D. Kang, J. Hwangbo. [SimBenchmark](https://leggedrobotics.github.io/SimBenchmark/). 2018. `simbenchmark`
 16. B. Acosta, W. Yang, M. Posa. [Validating Robotics Simulators on Real-World Impacts](https://arxiv.org/abs/2110.00541). IEEE RA-L, 2022. `acosta2022`
 
 ## GPU simulation and robot learning
 
 17. V. Makoviychuk et al. [Isaac Gym: High Performance GPU-Based Physics Simulation for Robot Learning](https://arxiv.org/abs/2108.10470). arXiv:2108.10470, 2021. `isaacgym`
 18. M. Mittal et al. [Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning](https://arxiv.org/abs/2511.04831). arXiv:2511.04831, 2025. `isaaclab`
-19. M. Mittal et al. Orbit: A Unified Simulation Framework for Interactive Robot Learning Environments. IEEE RA-L 8(6), 2023. `orbit` — *check*
-20. N. Rudin, D. Hoeller, P. Reist, M. Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. CoRL 2021. `rudin2021` — *check*
+19. M. Mittal et al. Orbit: A Unified Simulation Framework for Interactive Robot Learning Environments. IEEE RA-L 8(6), 2023. `orbit`
+20. N. Rudin, D. Hoeller, P. Reist, M. Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. CoRL 2021. `rudin2021`
 21. [rsl_rl](https://github.com/leggedrobotics/rsl_rl). leggedrobotics, GitHub. `rsl_rl`
 22. [Newton](https://github.com/newton-physics/newton). Newton Physics, GitHub. `newton`
 23. [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp). Google DeepMind, GitHub. `mujoco_warp`
-24. M. Macklin. [Warp: A high-performance Python framework for GPU simulation and graphics](https://github.com/NVIDIA/warp). NVIDIA GTC 2022. `warp` — *check*
+24. M. Macklin. [Warp: A high-performance Python framework for GPU simulation and graphics](https://github.com/NVIDIA/warp). NVIDIA GTC 2022. `warp`
 25. Y. Narang et al. [Factory: Fast Contact for Robotic Assembly](https://arxiv.org/abs/2205.03532). RSS 2022. `factory`
-26. J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov. Proximal Policy Optimization Algorithms. arXiv:1707.06347, 2017. `ppo` — *check*
+26. J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov. Proximal Policy Optimization Algorithms. arXiv:1707.06347, 2017. `ppo`
 
 ## Policies exploiting simulator artifacts
 
 27. J. Lehman et al. [The Surprising Creativity of Digital Evolution](https://arxiv.org/abs/1803.03453). arXiv:1803.03453, 2018. `lehman2018`
-28. N. Cheney, R. MacCurdy, J. Clune, H. Lipson. Unshackling evolution: evolving soft robots with multiple materials and a powerful generative encoding. GECCO 2013. `cheney2013` — *check*
+28. N. Cheney, R. MacCurdy, J. Clune, H. Lipson. Unshackling evolution: evolving soft robots with multiple materials and a powerful generative encoding. GECCO 2013. `cheney2013`
 
 ## Curriculum and reward machinery
 
