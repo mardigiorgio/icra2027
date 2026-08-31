@@ -253,7 +253,7 @@ def stiffness_sweep() -> None:
     rows = [r for r in _rows("part1_stiffness_sweep.csv") if r["k_N_per_m"] == 1e5]
     if not rows:
         return
-    direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct solref, literal k)")
+    direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct-stiffness form)")
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.6), sharey=True, constrained_layout=True)
     tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
 
@@ -273,11 +273,11 @@ def stiffness_sweep() -> None:
                 # MuJoCo DIED in these cells: the sphere was launched off the
                 # floor. Big crosses at the top edge, named in the legend.
                 ax.plot(bad, [top * 2.0] * len(bad), ls="none", marker="x", ms=11, mew=2.6, color=st["color"],
-                        label="MuJoCo (direct) UNSTABLE: sphere launched")
+                        label="MuJoCo (direct-stiffness) UNSTABLE: sphere launched")
         return top
 
     styles = dict(STYLE)
-    styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (reference solref)")
+    styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (time-constant form)")
     styles["mujoco-direct"] = direct_style
     ax = axes[0]
     draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles, scale=1e3)
