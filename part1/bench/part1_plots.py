@@ -698,7 +698,18 @@ def stiffness_sweep() -> None:
     variants = {}
     for r in rows:
         variants.setdefault((r["arm"], _knob_label(r)), []).append((r["k_N_per_m"], r["ratio"]))
-    for (arm, lab), pts in sorted(variants.items()):
+    # ICF's four configurations coincide to the pixel (that IS the finding),
+    # so drawn separately three of them exist only in the legend. Collapse
+    # them into ONE labeled line; MuJoCo's four genuinely separate curves
+    # keep their own entries.
+    icf_variants = {k: v for k, v in variants.items() if k[0] in ("icf", "icf-adaptive")}
+    other_variants = {k: v for k, v in variants.items() if k[0] not in ("icf", "icf-adaptive")}
+    if icf_variants:
+        pts = sorted(next(iter(sorted(icf_variants.items())))[1])
+        st = dict(STYLE["icf-adaptive"])
+        st["label"] = "ICF & ICF EC (CENIC) — all steps and tolerances coincide"
+        ax.plot([p[0] for p in pts], [p[1] for p in pts], ms=5, lw=2.2, **st)
+    for (arm, lab), pts in sorted(other_variants.items()):
         pts.sort()
         st = dict(STYLE[arm])
         st["label"] = f"{STYLE[arm]['label']}, {lab}"
