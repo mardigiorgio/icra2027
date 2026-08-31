@@ -26,7 +26,7 @@ def partC(nb):
     section(nb, "Speed optimizations (contribution 3)", ["Each mechanism in force in the ICF and MuJoCo arms, with a before/after number (Appendix G)", "The one probe still missing"], ["ledger copy in template_extras/", "tables/march_cost.md"])
     nb.h("IV. Results I — pure solver (trimmed 2026-08-31 to the four core experiments, B30)", 1)
     for t, q, e in [("Setup", ["Paper's vs assumed parameters (B2)", "MuJoCo calibration: two measured anchors, no single k (B13, B3, B30)"], ["part1/scenes/cenic_scenes.py", "renders in part1/bench/results/figures/"]),
-                    ("Exp 1 — Realized stiffness", ["What each solver realizes at 10 ms / 1 ms / EC (B3); ICF lines collapsed to one legend entry"], ["figures/stiffness_sweep.pdf; render scene_stiffness"]),
+                    ("Exp 1 — Penetration vs step and vs tolerance", ["One calibrated system (k = 1e5), equality by convergence; MuJoCo in both code forms: clamped reference solref vs unstable literal-k direct solref (B31)"], ["figures/stiffness_sweep.pdf; render scene_stiffness"]),
                     ("Exp 2 — Work-precision at matched tolerance", ["Cost vs requested accuracy at N=1 and N=1024; per-attempt cost (B5, B15)"], ["figures/workprecision.pdf; render scenes_clutter"]),
                     ("Exp 3 — Wall time vs number of worlds", ["Per-world cost at 2^13; the ICF/MuJoCo ratio (B8)"], ["figures/scaling_hard-clutter.pdf; render scene_hard_clutter"]),
                     ("Exp 4 — Actuated PD push + heterogeneous-gain throughput", ["Stability map; the pushed box; what 10 ms hides; the one throughput plot CENIC wins (B12)"], ["figures/actuated.pdf, actuated_scaling.pdf; render scene_actuated"])]:
