@@ -312,9 +312,12 @@ control only the impacts. (a) Hard clutter, 64 scenes: wall time per
 simulated second at the learner's coarse setting (hatched; an artifact by
 the criterion of Fig.~\ref{fig:story_step}b) and at the cheapest
 artifact-free setting of each arm (solid) -- the matched-accuracy cost.
-(b) Cumulative wall time along a 5\,s drop: fixed step takes the same
-number of substeps at every boundary; error control pays during the
-impacts (shaded) and coasts at coarse steps once the pile settles.}
+(b) Cumulative wall time along a 5\,s drop, both error-controlled arms
+at matched $\varepsilon_{acc} = 10^{-3}$ and both fixed arms at 1\,ms:
+fixed step takes the same number of substeps at every boundary; error
+control pays during the impacts (shaded) and coasts at coarse steps once
+the pile settles (ICF EC 0.82$\times$ its fixed arm over this horizon;
+at the artifact-free-sufficient $10^{-2}$ it reaches 0.47$\times$).}
 \label{fig:story_cost}
 \end{figure*}
 

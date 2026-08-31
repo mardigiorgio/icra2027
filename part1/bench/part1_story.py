@@ -162,7 +162,10 @@ def story_cost() -> None:
     for r in rows:
         key = (r["arm"], r["accuracy"] if r["accuracy"] != "" else r["dt_s"])
         series.setdefault(key, []).append((r["t_s"], r["wall_ms"], r["iters"]))
-    want = [("icf", 1e-3), ("icf-adaptive", 1e-2), ("mujoco", 1e-3), ("mujoco-adaptive", 1e-3)]
+    # Matched tolerances (2026-08-31): both EC arms at eps=1e-3, both fixed
+    # arms at 1 ms — a mixed-eps panel is a reviewer target and the 1e-3
+    # ICF-EC rows exist in the CSV.
+    want = [("icf", 1e-3), ("icf-adaptive", 1e-3), ("mujoco", 1e-3), ("mujoco-adaptive", 1e-3)]
     for arm, knob in want:
         pts = sorted(series.get((arm, knob), []))
         if not pts:
