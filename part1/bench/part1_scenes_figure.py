@@ -92,10 +92,12 @@ class _Scene:
                 self.edges.append((0, 0, 0, edge))
                 self.lws.append(lw)
 
-    def draw(self, ax):
+    def draw(self, ax, zorder=None):
         coll = Poly3DCollection(
             self.polys, facecolors=self.colors, edgecolors=self.edges, linewidths=self.lws, zsort="average"
         )
+        if zorder is not None:
+            coll.set_zorder(zorder)
         ax.add_collection3d(coll)
 
 
@@ -182,10 +184,15 @@ def render_stiffness() -> None:
     plane, gridded and shaded so it reads as a ball and not a flat disc."""
     fig = plt.figure(figsize=(3.4, 3.0), constrained_layout=True)
     ax = fig.add_subplot(projection="3d")
+    # ground in its own collection, always behind the ball: average-depth
+    # sorting inside one collection lets a near ground tile paint over a body
+    G = _Scene()
+    G.box(np.array([0, 0, -0.002]), np.array([0.10, 0.10, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
     S = _Scene()
-    S.box(np.array([0, 0, -0.002]), np.array([0.10, 0.10, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
     S.sphere(np.array([0, 0, SWEEP_R + 0.002]), SWEEP_R, "#31a354", nu=24, nv=14, edge=0.35, lw=0.35)
-    S.draw(ax)
+    ax.computed_zorder = False
+    G.draw(ax, zorder=1)
+    S.draw(ax, zorder=2)
     ax.set_xlim(-0.10, 0.10)
     ax.set_ylim(-0.10, 0.10)
     ax.set_zlim(0, 0.10)
@@ -202,8 +209,11 @@ def render_actuated() -> None:
     travels sideways; the dragged fingertip presses the box and slides it."""
     fig = plt.figure(figsize=(5.4, 3.2), constrained_layout=True)
     ax = fig.add_subplot(projection="3d")
+    # ground in its own collection, always behind the bodies (see
+    # render_stiffness): a near ground tile must never overpaint a box face
+    G = _Scene()
+    G.box(np.array([-0.02, 0, -0.002]), np.array([0.14, 0.11, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
     S = _Scene()
-    S.box(np.array([-0.02, 0, -0.002]), np.array([0.14, 0.11, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
     S.box(np.array([0, 0, BOX_HALF]), np.array([BOX_HALF] * 3), np.eye(3), "#3182bd", shade=True, edge=0.55, lw=0.6)
     # the instant BEFORE contact: tip fully descended, spring stretched to a
     # commanded point at the box face -- nothing overlaps the box, so every
@@ -213,10 +223,11 @@ def render_actuated() -> None:
     x_tip = -0.105
     tip = np.array([x_tip, 0.0, BOX_HALF])
     S.sphere(tip, TIP_R, "#e6550d", edge=0.3, lw=0.3)
-    S.draw(ax)
     # bodies keep their internal depth sort; every line/label is an
     # annotation and always paints on top
     ax.computed_zorder = False
+    G.draw(ax, zorder=1)
+    S.draw(ax, zorder=2)
     grey = "#555555"
     target = np.array([-BOX_HALF - 0.006, 0.0, BOX_HALF])
     # the commanded point's fixed path: descend beside the box, then sideways
