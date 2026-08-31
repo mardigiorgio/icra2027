@@ -30,3 +30,8 @@ wandb/
 experiments/*/logs/
 archive/*/logs/
 nohup.out
+
+# platform-era content, untracked 2026-08-31: repo is paper/doc + part1 + venv recipe
+archive/
+tools/
+isaacsim-editor

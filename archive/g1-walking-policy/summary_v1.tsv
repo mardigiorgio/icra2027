@@ -1,4 +1,0 @@
-run	task	solver	seed	rc	minutes
-g1v1-teacher-fixed-s42-r1	Isaac-Velocity-Flat-G1-v1	mujoco	42	0	23
-g1v1-distill-fixed-s42-r1	Velocity-G1-Distillation-v1	mujoco	42	0	26
-g1v1-finetune-fixed-s42-r1	Velocity-G1-Student-Finetune-v1	mujoco	42	0	85

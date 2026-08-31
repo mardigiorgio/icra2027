@@ -1,3 +1,0 @@
-run	task	solver	seed	rc	minutes
-g1-flat-fixed-s42-r1	Isaac-Velocity-Flat-G1	mujoco	42	0	14
-g1-flat-adaptive-s42-r1	Isaac-Velocity-Flat-G1	mujoco-adaptive	42	1	142

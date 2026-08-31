@@ -1,1445 +1,0 @@
-
-pytorch2.10.0+cu128:ëÇ
-ë
-obs
-val_0	unsqueezenode_unsqueeze"	UnsqueezeJV
-	namespaceI: rsl_rl.models.rnn_model._OnnxRNNModel/unsqueeze: aten.unsqueeze.defaultJe
-pkg.torch.onnx.class_hierarchyC['rsl_rl.models.rnn_model._OnnxRNNModel', 'aten.unsqueeze.default']Jå
-pkg.torch.onnx.fx_noder%unsqueeze : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%obs, 0), kwargs = {})J/
-pkg.torch.onnx.name_scopes['', 'unsqueeze']J›
-pkg.torch.onnx.stack_traceæFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-˝
-h_in
-val_0
-val_2
-val_0val_3node_Slice_3"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˝
-c_in
-val_0
-val_2
-val_0val_4node_Slice_4"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-â	
-rnn.weight_ih_l0
-val_0
-val_1
-val_0val_5node_Slice_5"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-â	
-rnn.weight_ih_l0
-val_1
-val_7
-val_0val_8node_Slice_8"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-å	
-rnn.weight_ih_l0
-val_7
-val_11
-val_0val_12node_Slice_12"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_ih_l0
-val_11
-val_15
-val_0val_16node_Slice_16"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_hh_l0
-val_0
-val_1
-val_0val_17node_Slice_17"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_hh_l0
-val_1
-val_7
-val_0val_19node_Slice_19"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-å	
-rnn.weight_hh_l0
-val_7
-val_11
-val_0val_22node_Slice_22"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_hh_l0
-val_11
-val_15
-val_0val_25node_Slice_25"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ë	
-val_5
-val_16
-val_8
-val_12val_26node_Concat_26"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ì	
-val_17
-val_25
-val_19
-val_22val_27node_Concat_27"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˚
-val_26
-val_0val_28node_Unsqueeze_28"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˚
-val_27
-val_0val_29node_Unsqueeze_29"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˜	
-	unsqueeze
-val_28
-val_29
-val_51
- 
-val_3
-val_4val_52val_53val_54node_LSTM_52"LSTM*
-hidden_sizeÄ†*
-	direction"forward†*
-input_forget †*
-layout †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-á	
-val_52val_55node_Transpose_53"	Transpose*
-perm@ @@@†Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ä	
-val_55
-val_67val_68node_Reshape_66"Reshape*
-	allowzero †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-Ä	
-h_in
-val_2
-val_58
-val_0val_69node_Slice_67"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-Ä	
-c_in
-val_2
-val_58
-val_0val_70node_Slice_68"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_ih_l1
-val_0
-val_1
-val_0val_71node_Slice_69"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_ih_l1
-val_1
-val_7
-val_0val_73node_Slice_71"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-å	
-rnn.weight_ih_l1
-val_7
-val_11
-val_0val_76node_Slice_74"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_ih_l1
-val_11
-val_15
-val_0val_79node_Slice_77"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_hh_l1
-val_0
-val_1
-val_0val_80node_Slice_78"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ã	
-rnn.weight_hh_l1
-val_1
-val_7
-val_0val_82node_Slice_80"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-å	
-rnn.weight_hh_l1
-val_7
-val_11
-val_0val_85node_Slice_83"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_hh_l1
-val_11
-val_15
-val_0val_88node_Slice_86"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ì	
-val_71
-val_79
-val_73
-val_76val_89node_Concat_87"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ì	
-val_80
-val_88
-val_82
-val_85val_90node_Concat_88"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˚
-val_89
-val_0val_91node_Unsqueeze_89"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˚
-val_90
-val_0val_92node_Unsqueeze_90"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˚	
-val_68
-val_91
-val_92
-val_114
- 
-val_69
-val_70val_115val_116val_117node_LSTM_113"LSTM*
-hidden_sizeÄ†*
-	direction"forward†*
-input_forget †*
-layout †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ä	
-val_115val_118node_Transpose_114"	Transpose*
-perm@ @@@†Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-val_118
-val_67val_128node_Reshape_124"Reshape*
-	allowzero †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-É	
-h_in
-val_58
-val_60
-val_0val_129node_Slice_125"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-É	
-c_in
-val_58
-val_60
-val_0val_130node_Slice_126"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_ih_l2
-val_0
-val_1
-val_0val_131node_Slice_127"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_ih_l2
-val_1
-val_7
-val_0val_133node_Slice_129"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-é	
-rnn.weight_ih_l2
-val_7
-val_11
-val_0val_136node_Slice_132"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-è	
-rnn.weight_ih_l2
-val_11
-val_15
-val_0val_139node_Slice_135"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_hh_l2
-val_0
-val_1
-val_0val_140node_Slice_136"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ç	
-rnn.weight_hh_l2
-val_1
-val_7
-val_0val_142node_Slice_138"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-é	
-rnn.weight_hh_l2
-val_7
-val_11
-val_0val_145node_Slice_141"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-è	
-rnn.weight_hh_l2
-val_11
-val_15
-val_0val_148node_Slice_144"SliceJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ô	
-val_131
-val_139
-val_133
-val_136val_149node_Concat_145"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ô	
-val_140
-val_148
-val_142
-val_145val_150node_Concat_146"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˛
-val_149
-val_0val_151node_Unsqueeze_147"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-˛
-val_150
-val_0val_152node_Unsqueeze_148"	UnsqueezeJi
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-Ä
-
-val_128
-val_151
-val_152
-val_174
- 
-val_129
-val_130val_175val_176val_177node_LSTM_171"LSTM*
-hidden_sizeÄ†*
-	direction"forward†*
-input_forget †*
-layout †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ä	
-val_175val_178node_Transpose_172"	Transpose*
-perm@ @@@†Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-â	
-val_178
-val_67getitemnode_lstm__0"Reshape*
-	allowzero †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ä	
-val_53
-val_116
-val_176h_outnode_lstm__1"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-ä	
-val_54
-val_117
-val_177c_outnode_lstm__2"Concat*
-axis †Ji
-	namespace\: rsl_rl.models.rnn_model._OnnxRNNModel/rnn: torch.nn.modules.rnn.LSTM/lstm: aten.lstm.inputJ{
-pkg.torch.onnx.class_hierarchyY['rsl_rl.models.rnn_model._OnnxRNNModel', 'torch.nn.modules.rnn.LSTM', 'aten.lstm.input']J©
-pkg.torch.onnx.fx_nodeé%lstm : [num_users=3] = call_function[target=torch.ops.aten.lstm.input](args = (%unsqueeze, [%h_in, %c_in], [%p_rnn_weight_ih_l0, %p_rnn_weight_hh_l0, %p_rnn_bias_ih_l0, %p_rnn_bias_hh_l0, %p_rnn_weight_ih_l1, %p_rnn_weight_hh_l1, %p_rnn_bias_ih_l1, %p_rnn_bias_hh_l1, %p_rnn_weight_ih_l2, %p_rnn_weight_hh_l2, %p_rnn_bias_ih_l2, %p_rnn_bias_hh_l2], True, 3, 0.0, False, False, False), kwargs = {})J1
-pkg.torch.onnx.name_scopes['', 'rnn', 'lstm']J¸
-pkg.torch.onnx.stack_trace›File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 216, in forward
-    x, (h, c) = self.rnn(x.unsqueeze(0), (h_in, c_in))
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/rnn.py", line 1141, in forward
-    result = _VF.lstm(
-Ÿ
-getitem
-val_0squeezenode_squeeze"SqueezeJN
-	namespaceA: rsl_rl.models.rnn_model._OnnxRNNModel/squeeze: aten.squeeze.dimJ_
-pkg.torch.onnx.class_hierarchy=['rsl_rl.models.rnn_model._OnnxRNNModel', 'aten.squeeze.dim']Jà
-pkg.torch.onnx.fx_noden%squeeze : [num_users=1] = call_function[target=torch.ops.aten.squeeze.dim](args = (%getitem, 0), kwargs = {})J-
-pkg.torch.onnx.name_scopes['', 'squeeze']Jª
-pkg.torch.onnx.stack_traceúFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 217, in forward
-    x = x.squeeze(0)
-Æ	
-squeeze
-mlp.0.weight
-
-mlp.0.biaslinearnode_linear"Gemm*
-beta  Ä?†*
-transB†*
-alpha  Ä?†*
-transA †Jì
-	namespaceÖ: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.0: torch.nn.modules.linear.Linear/linear: aten.linear.defaultJû
-pkg.torch.onnx.class_hierarchy|['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.linear.Linear', 'aten.linear.default']J®
-pkg.torch.onnx.fx_nodeç%linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%squeeze, %p_mlp_0_weight, %p_mlp_0_bias), kwargs = {})J<
-pkg.torch.onnx.name_scopes['', 'mlp', 'mlp.0', 'linear']Jé
-pkg.torch.onnx.stack_traceÔFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
-    return F.linear(input, self.weight, self.bias)
-º
-linearval_192node_Elu_186"Elu*
-alpha  Ä?†Jé
-	namespaceÄ: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.1: torch.nn.modules.activation.ELU/elu: aten.elu.defaultJú
-pkg.torch.onnx.class_hierarchyz['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.activation.ELU', 'aten.elu.default']JÖ
-pkg.torch.onnx.fx_nodek%elu : [num_users=1] = call_function[target=torch.ops.aten.elu.default](args = (%linear, 1.0), kwargs = {})J9
-pkg.torch.onnx.name_scopes['', 'mlp', 'mlp.1', 'elu']Jë
-pkg.torch.onnx.stack_traceÚFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/activation.py", line 616, in forward
-    return F.elu(input, self.alpha, self.inplace)
-¥	
-val_192
-mlp.2.weight
-
-mlp.2.biaslinear_1node_linear_1"Gemm*
-beta  Ä?†*
-transB†*
-alpha  Ä?†*
-transA †Jï
-	namespaceá: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.2: torch.nn.modules.linear.Linear/linear_1: aten.linear.defaultJû
-pkg.torch.onnx.class_hierarchy|['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.linear.Linear', 'aten.linear.default']J¶
-pkg.torch.onnx.fx_nodeã%linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%elu, %p_mlp_2_weight, %p_mlp_2_bias), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'mlp', 'mlp.2', 'linear_1']Jé
-pkg.torch.onnx.stack_traceÔFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
-    return F.linear(input, self.weight, self.bias)
-∆
-linear_1val_196node_Elu_190"Elu*
-alpha  Ä?†Jê
-	namespaceÇ: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.3: torch.nn.modules.activation.ELU/elu_1: aten.elu.defaultJú
-pkg.torch.onnx.class_hierarchyz['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.activation.ELU', 'aten.elu.default']Jâ
-pkg.torch.onnx.fx_nodeo%elu_1 : [num_users=1] = call_function[target=torch.ops.aten.elu.default](args = (%linear_1, 1.0), kwargs = {})J;
-pkg.torch.onnx.name_scopes['', 'mlp', 'mlp.3', 'elu_1']Jë
-pkg.torch.onnx.stack_traceÚFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/activation.py", line 616, in forward
-    return F.elu(input, self.alpha, self.inplace)
-∂	
-val_196
-mlp.4.weight
-
-mlp.4.biaslinear_2node_linear_2"Gemm*
-beta  Ä?†*
-transB†*
-alpha  Ä?†*
-transA †Jï
-	namespaceá: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.4: torch.nn.modules.linear.Linear/linear_2: aten.linear.defaultJû
-pkg.torch.onnx.class_hierarchy|['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.linear.Linear', 'aten.linear.default']J®
-pkg.torch.onnx.fx_nodeç%linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%elu_1, %p_mlp_4_weight, %p_mlp_4_bias), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'mlp', 'mlp.4', 'linear_2']Jé
-pkg.torch.onnx.stack_traceÔFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
-    return F.linear(input, self.weight, self.bias)
-∆
-linear_2val_200node_Elu_194"Elu*
-alpha  Ä?†Jê
-	namespaceÇ: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.5: torch.nn.modules.activation.ELU/elu_2: aten.elu.defaultJú
-pkg.torch.onnx.class_hierarchyz['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.activation.ELU', 'aten.elu.default']Jâ
-pkg.torch.onnx.fx_nodeo%elu_2 : [num_users=1] = call_function[target=torch.ops.aten.elu.default](args = (%linear_2, 1.0), kwargs = {})J;
-pkg.torch.onnx.name_scopes['', 'mlp', 'mlp.5', 'elu_2']Jë
-pkg.torch.onnx.stack_traceÚFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/activation.py", line 616, in forward
-    return F.elu(input, self.alpha, self.inplace)
-µ	
-val_200
-mlp.6.weight
-
-mlp.6.biasactionsnode_linear_3"Gemm*
-beta  Ä?†*
-transB†*
-alpha  Ä?†*
-transA †Jï
-	namespaceá: rsl_rl.models.rnn_model._OnnxRNNModel/mlp: rsl_rl.modules.mlp.MLP/mlp.6: torch.nn.modules.linear.Linear/linear_3: aten.linear.defaultJû
-pkg.torch.onnx.class_hierarchy|['rsl_rl.models.rnn_model._OnnxRNNModel', 'rsl_rl.modules.mlp.MLP', 'torch.nn.modules.linear.Linear', 'aten.linear.default']J®
-pkg.torch.onnx.fx_nodeç%linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%elu_2, %p_mlp_6_weight, %p_mlp_6_bias), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'mlp', 'mlp.6', 'linear_3']Jé
-pkg.torch.onnx.stack_traceÔFile "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/models/rnn_model.py", line 218, in forward
-    out = self.mlp(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/rsl_rl/modules/mlp.py", line 94, in forward
-    x = layer(x)
-  File "/home/mdigiorgio/Documents/code/isaac-rubato/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
-    return F.linear(input, self.weight, self.bias)
-main_graph*]Ä;Brnn.weight_ih_l0j
-locationpolicy.onnx.dataj
-offset164352j
-length241664p*_ÄÄBrnn.weight_hh_l0j
-locationpolicy.onnx.dataj
-offset930304j
-length1048576p*`ÄÄBrnn.weight_ih_l1j
-locationpolicy.onnx.dataj
-offset1978880j
-length1048576p*`ÄÄBrnn.weight_hh_l1j
-locationpolicy.onnx.dataj
-offset3027456j
-length1048576p*`ÄÄBrnn.weight_ih_l2j
-locationpolicy.onnx.dataj
-offset4076032j
-length1048576p*`ÄÄBrnn.weight_hh_l2j
-locationpolicy.onnx.dataj
-offset5124608j
-length1048576p*ZÄÄBmlp.0.weightj
-locationpolicy.onnx.dataj
-offset406016j
-length262144p*PÄB
-mlp.0.biasj
-locationpolicy.onnx.dataj
-offset512j
-length1024p*ZÄÄBmlp.2.weightj
-locationpolicy.onnx.dataj
-offset668160j
-length262144p*QÄB
-mlp.2.biasj
-locationpolicy.onnx.dataj
-offset1536j
-length1024p*YÄÄBmlp.4.weightj
-locationpolicy.onnx.dataj
-offset33280j
-length131072p*MÄB
-mlp.4.biasj
-locationpolicy.onnx.dataj
-offset0j
-length512p*UÄBmlp.6.weightj
-locationpolicy.onnx.dataj
-offset2560j
-length6144p*BB
-mlp.6.biasJ0¨>Ù=@=œ\Ñ>(Uæ…¸ÜΩÖ¢Ω˝=^º∏h=y√>˙’æ ﬂ}>Sç>*Bval_7J       *Bval_11J       *Bval_15J       *OÄBval_51j
-locationpolicy.onnx.dataj
-offset8704j
-length8192p*&Bval_67J                     *QÄBval_114j
-locationpolicy.onnx.dataj
-offset16896j
-length8192p*QÄBval_174j
-locationpolicy.onnx.dataj
-offset25088j
-length8192p*Bval_0J        *Bval_1J       *Bval_2J       *Bval_58J       *Bval_60J       ZΩ
-obs
-
-
-;"=
-/pkg.torch.export.graph_signature.InputSpec.kind
-USER_INPUT"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"(
-!pkg.torch.onnx.original_node_nameobsZƒ
-h_in
-
-
-
-Ä"=
-/pkg.torch.export.graph_signature.InputSpec.kind
-USER_INPUT"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone")
-!pkg.torch.onnx.original_node_nameh_inZƒ
-c_in
-
-
-
-Ä"=
-/pkg.torch.export.graph_signature.InputSpec.kind
-USER_INPUT"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone")
-!pkg.torch.onnx.original_node_namec_inbâ
-actions
-
-
-"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"-
-!pkg.torch.onnx.original_node_namelinear_3bç
-h_out
-
-
-
-Ä"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT".
-!pkg.torch.onnx.original_node_name	getitem_1bç
-c_out
-
-
-
-Ä"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT".
-!pkg.torch.onnx.original_node_name	getitem_2jŸ
-rnn.weight_ih_l0
-	
-Ä
-;"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_ih_l0j⁄
-rnn.weight_hh_l0
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_hh_l0j⁄
-rnn.weight_ih_l1
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_ih_l1j⁄
-rnn.weight_hh_l1
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_hh_l1j⁄
-rnn.weight_ih_l2
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_ih_l2j⁄
-rnn.weight_hh_l2
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"7
-!pkg.torch.onnx.original_node_namep_rnn_weight_hh_l2j“
-mlp.0.weight
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"3
-!pkg.torch.onnx.original_node_namep_mlp_0_weightj…
-
-mlp.0.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"1
-!pkg.torch.onnx.original_node_namep_mlp_0_biasj“
-mlp.2.weight
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"3
-!pkg.torch.onnx.original_node_namep_mlp_2_weightj…
-
-mlp.2.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"1
-!pkg.torch.onnx.original_node_namep_mlp_2_biasj“
-mlp.4.weight
-
-
-Ä
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"3
-!pkg.torch.onnx.original_node_namep_mlp_4_weightj…
-
-mlp.4.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"1
-!pkg.torch.onnx.original_node_namep_mlp_4_biasj—
-mlp.6.weight
-	
-
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"3
-!pkg.torch.onnx.original_node_namep_mlp_6_weightj»
-
-mlp.6.bias
-
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"1
-!pkg.torch.onnx.original_node_namep_mlp_6_biasjW
-val_7
-
-
-"B
-$pkg.onnxscript.optimizer.folded_from['h_in', 'val_1', 'val_6']jY
-val_11
-
-
-"C
-$pkg.onnxscript.optimizer.folded_from['h_in', 'val_1', 'val_10']jY
-val_15
-
-
-"C
-$pkg.onnxscript.optimizer.folded_from['h_in', 'val_1', 'val_14']jÚ
-val_51
-	
-
-Ä"÷
-$pkg.onnxscript.optimizer.folded_from≠['h_in', 'rnn.bias_hh_l0', 'rnn.bias_ih_l0', 'val_0', 'val_1', 'val_10', 'val_14', 'val_30', 'val_31', 'val_32', 'val_33', 'val_34', 'val_35', 'val_36', 'val_37', 'val_38', 'val_39', 'val_40', 'val_41', 'val_42', 'val_43', 'val_44', 'val_45', 'val_46', 'val_47', 'val_48', 'val_49', 'val_50', 'val_6']j 
-val_67
-
-
-"≥
-$pkg.onnxscript.optimizer.folded_fromä['val_0', 'val_2', 'val_55', 'val_56', 'val_57', 'val_58', 'val_59', 'val_60', 'val_61', 'val_62', 'val_63', 'val_64', 'val_65', 'val_66']jÅ
-val_114
-	
-
-Ä"‰
-$pkg.onnxscript.optimizer.folded_fromª['h_in', 'rnn.bias_hh_l1', 'rnn.bias_ih_l1', 'val_0', 'val_1', 'val_10', 'val_100', 'val_101', 'val_102', 'val_103', 'val_104', 'val_105', 'val_106', 'val_107', 'val_108', 'val_109', 'val_110', 'val_111', 'val_112', 'val_113', 'val_14', 'val_6', 'val_93', 'val_94', 'val_95', 'val_96', 'val_97', 'val_98', 'val_99']jà
-val_174
-	
-
-Ä"Î
-$pkg.onnxscript.optimizer.folded_from¬['h_in', 'rnn.bias_hh_l2', 'rnn.bias_ih_l2', 'val_0', 'val_1', 'val_10', 'val_14', 'val_153', 'val_154', 'val_155', 'val_156', 'val_157', 'val_158', 'val_159', 'val_160', 'val_161', 'val_162', 'val_163', 'val_164', 'val_165', 'val_166', 'val_167', 'val_168', 'val_169', 'val_170', 'val_171', 'val_172', 'val_173', 'val_6']j
-val_0
-
-
-jE
-val_1
-
-
-"0
-$pkg.onnxscript.optimizer.folded_from['h_in']j
-val_2
-
-
-j
-val_58
-
-
-j
-val_60
-
-
-j
-	unsqueeze
-
-
-
-;j
-val_3
-
-
-
-Äj
-val_4
-
-
-
-Äj
-val_5
-	
-Ä
-;j
-val_8
-	
-Ä
-;j
-val_12
-	
-Ä
-;j
-val_16
-	
-Ä
-;j
-val_17
-
-
-Ä
-Äj
-val_19
-
-
-Ä
-Äj
-val_22
-
-
-Ä
-Äj
-val_25
-
-
-Ä
-Äj
-val_26
-	
-Ä
-;j
-val_27
-
-
-Ä
-Äj
-val_28
-
-
-Ä
-;j
-val_29
-
-
-Ä
-Äj!
-val_52
-
-
-
-
-Äj
-val_53
-
-
-
-Äj
-val_54
-
-
-
-Äj!
-val_55
-
-
-
-
-Äj
-val_68
-
-
-
-Äj
-val_69
-
-
-
-Äj
-val_70
-
-
-
-Äj
-val_71
-
-
-Ä
-Äj
-val_73
-
-
-Ä
-Äj
-val_76
-
-
-Ä
-Äj
-val_79
-
-
-Ä
-Äj
-val_80
-
-
-Ä
-Äj
-val_82
-
-
-Ä
-Äj
-val_85
-
-
-Ä
-Äj
-val_88
-
-
-Ä
-Äj
-val_89
-
-
-Ä
-Äj
-val_90
-
-
-Ä
-Äj
-val_91
-
-
-Ä
-Äj
-val_92
-
-
-Ä
-Äj"
-val_115
-
-
-
-
-Äj
-val_116
-
-
-
-Äj
-val_117
-
-
-
-Äj"
-val_118
-
-
-
-
-Äj
-val_128
-
-
-
-Äj
-val_129
-
-
-
-Äj
-val_130
-
-
-
-Äj
-val_131
-
-
-Ä
-Äj
-val_133
-
-
-Ä
-Äj
-val_136
-
-
-Ä
-Äj
-val_139
-
-
-Ä
-Äj
-val_140
-
-
-Ä
-Äj
-val_142
-
-
-Ä
-Äj
-val_145
-
-
-Ä
-Äj
-val_148
-
-
-Ä
-Äj
-val_149
-
-
-Ä
-Äj
-val_150
-
-
-Ä
-Äj
-val_151
-
-
-Ä
-Äj
-val_152
-
-
-Ä
-Äj"
-val_175
-
-
-
-
-Äj
-val_176
-
-
-
-Äj
-val_177
-
-
-
-Äj"
-val_178
-
-
-
-
-Äj
-getitem
-
-
-
-Äj
-squeeze
-	
-
-Äj
-linear
-	
-
-Äj
-val_192
-	
-
-Äj
-linear_1
-	
-
-Äj
-val_196
-	
-
-Äj
-linear_2
-	
-
-Äj
-val_200
-	
-
-ÄÇ∏	
-0pkg.torch.export.ExportedProgram.graph_signatureÉ	
-# inputs
-p_rnn_weight_ih_l0: PARAMETER target='rnn.weight_ih_l0'
-p_rnn_weight_hh_l0: PARAMETER target='rnn.weight_hh_l0'
-p_rnn_bias_ih_l0: PARAMETER target='rnn.bias_ih_l0'
-p_rnn_bias_hh_l0: PARAMETER target='rnn.bias_hh_l0'
-p_rnn_weight_ih_l1: PARAMETER target='rnn.weight_ih_l1'
-p_rnn_weight_hh_l1: PARAMETER target='rnn.weight_hh_l1'
-p_rnn_bias_ih_l1: PARAMETER target='rnn.bias_ih_l1'
-p_rnn_bias_hh_l1: PARAMETER target='rnn.bias_hh_l1'
-p_rnn_weight_ih_l2: PARAMETER target='rnn.weight_ih_l2'
-p_rnn_weight_hh_l2: PARAMETER target='rnn.weight_hh_l2'
-p_rnn_bias_ih_l2: PARAMETER target='rnn.bias_ih_l2'
-p_rnn_bias_hh_l2: PARAMETER target='rnn.bias_hh_l2'
-p_mlp_0_weight: PARAMETER target='mlp.0.weight'
-p_mlp_0_bias: PARAMETER target='mlp.0.bias'
-p_mlp_2_weight: PARAMETER target='mlp.2.weight'
-p_mlp_2_bias: PARAMETER target='mlp.2.bias'
-p_mlp_4_weight: PARAMETER target='mlp.4.weight'
-p_mlp_4_bias: PARAMETER target='mlp.4.bias'
-p_mlp_6_weight: PARAMETER target='mlp.6.weight'
-p_mlp_6_bias: PARAMETER target='mlp.6.bias'
-obs: USER_INPUT
-h_in: USER_INPUT
-c_in: USER_INPUT
-
-# outputs
-linear_3: USER_OUTPUT
-getitem_1: USER_OUTPUT
-getitem_2: USER_OUTPUT
-Ç8
-2pkg.torch.export.ExportedProgram.range_constraints{}B
- 

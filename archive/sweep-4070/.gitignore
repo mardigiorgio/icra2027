@@ -1,7 +1,0 @@
-# Per-machine run artifacts -- completion lives in the W&B ledger, not in git.
-status/
-joblogs/
-wandb/
-logs/
-sweep.out
-summary.tsv

@@ -9,12 +9,9 @@ their results, the Part 2 training campaign, and the paper package.
 | path | what |
 |---|---|
 | `install/`, `pyproject.toml`, `uv.lock` | the platform: Isaac Sim 6.0 wheels, cu128 torch, the `newton-adaptive` fork installed editable; `install/install.sh` builds `.venv` |
-| `isaacsim-editor` | opens the Isaac Sim editor on the Newton stack |
 | `part1/` | pure-solver experiments (four configurations: MuJoCo / MuJoCo EC / ICF / ICF EC): scenes, benches, results, figures, tables, `results/PART1.md` |
 | `part2/` | the training campaign: `trossen_campaign.sh`, probes, calibration results, run ledger |
 | `paper/` | IEEE template (`conference_101719.tex` verbatim), `main.tex` outline, `figures/`, `references.bib`, the working notebook and its generator (`tools/make_notebook.py`) |
-| `tools/` | sweep harness (`icra_sweep`), policy export, W&B helpers, `rename_repo.sh`, `migrate_part1.sh` |
-| `archive/` | pre-CENIC experiment records (G1 walking, ANYmal transfer, PPO sweeps, early trossen studies); untracked checkpoints live there too |
 
 Code that must live inside the forks stays there: the task packages
 (`IsaacLab/source/isaaclab_tasks/isaaclab_tasks/contrib/trossen_*`) and the

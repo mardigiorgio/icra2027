@@ -1,9 +1,0 @@
-# W&B local run cache (offline + online)
-wandb/
-# stray local copy of the shared adaptive telemetry log
-newton_adaptive.log
-__pycache__/
-
-# training run logs (per-experiment + top-level)
-logs/
-*/logs/
