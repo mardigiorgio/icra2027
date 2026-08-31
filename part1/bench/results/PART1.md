@@ -187,7 +187,10 @@ the depth; a ring marks a setting that ejected a body from the bin; a star
 marks the cheapest artifact-free setting of each arm. Bottom: mean
 penetration relative to the model's resting depth $mg/k$. Every point is
 labeled with its $\delta t$ (fixed step) or $\varepsilon_{acc}$ (error
-control).}
+control). Each arm is judged against the SAME model-side depths
+($v\sqrt{m/k}$, $mg/k$); for MuJoCo these are calibration targets (solref
+anchored at $\delta t = 1$\,ms), so its deviations at other steps are
+realized-compliance drift by its own clamp semantics, disclosed as such.}
 \label{fig:artifacts}
 \end{figure*}
 
@@ -240,7 +243,12 @@ up to $10^7$\,N/m at $\delta t = 10$\,ms, 1\,ms and under error control at
 $\varepsilon_{acc} = 10^{-3}$ alike; MuJoCo's soft constraint is clamped to
 $\tau \ge 2\delta t$ and floors at $k \approx 10^3$\,N/m (10\,ms) and
 $10^5$\,N/m (1\,ms), and its error control at $\varepsilon_{acc} = 10^{-3}$
-does not recover the clamp.}
+does not recover the clamp. MuJoCo's deviation from $mg/k$ is
+quantitatively predicted by its own refsafe clamp
+($(\tau_{\mathrm{eff}}/\tau_{\mathrm{cal}})^2 \approx 69\times$ at
+10\,ms vs 57--60$\times$ measured): it is the model's documented
+$\delta t$-dependence, not integration error — the figure compares the
+two models' realized compliance under equal requested stiffness.}
 \label{fig:stiffness}
 \end{figure}
 
