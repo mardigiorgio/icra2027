@@ -810,6 +810,11 @@ def actuated() -> None:
                 ax.plot(bad, [1.0] * len(bad), ls="none", marker="x", ms=8, mew=2, color=STYLE[arm]["color"], transform=ax.get_xaxis_transform(), clip_on=False)
         ax.set_xscale("log"); ax.set_yscale("log")
         ax.set_xlabel("K_p (N/m)"); ax.set_ylabel(ylab); ax.grid(True, which="both", alpha=0.3)
+    # Both ICF arms clip to the plot floor in the lift panel (lift <= 0):
+    # one visible line, two legend entries — say so IN the panel so the
+    # legend never claims a curve the eye cannot find.
+    axes[0].annotate("ICF & CENIC: no lift\n(both at plot floor)", xy=(0.04, 0.08),
+                     xycoords="axes fraction", fontsize=6, color=STYLE["icf-adaptive"]["color"])
     axes[0].legend(fontsize=6)
     k = rows[0]["k"]; v = rows[0]["slide_speed"]
     _save(fig, "actuated")
