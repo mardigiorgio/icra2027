@@ -153,26 +153,30 @@ def _save(fig, out):
     print(f"wrote figures/{out}.png/.pdf")
 
 
-ALL_SPECS = [("soft-clutter", "(a) Soft clutter"), ("hard-clutter", "(b) Hard clutter"), ("ball", "(c) Bouncing ball")]
+ALL_SPECS = [("soft-clutter", "Soft clutter"), ("hard-clutter", "Hard clutter"), ("ball", "Bouncing ball")]
 
 
 def render(specs, out) -> None:
     """A render shows ONLY the scenes the figure it accompanies plots: one
     row per scene, its initial and settled states SIDE BY SIDE (stacked
-    panels made a tall image that viewers squash to fit a page)."""
+    panels made a tall image that viewers squash to fit a page). The scene
+    name is centered over its row; panels carry only their times."""
     nrow = len(specs)
     fig = plt.figure(figsize=(6.6, 3.0 * nrow), constrained_layout=True)
+    subfigs = fig.subfigures(nrow, 1) if nrow > 1 else [fig]
     for row, (scene, title) in enumerate(specs):
+        sf = subfigs[row]
+        sf.suptitle(title, fontsize=9)
         model = build_model(1, scene=scene)
         arm = make_arm(model, "icf-adaptive", scene=scene, tol=1e-3, max_substeps=4096)
         s0, s1, ctrl = model.state(), model.state(), model.control()
-        ax = fig.add_subplot(nrow, 2, 2 * row + 1, projection="3d")
+        ax = sf.add_subplot(1, 2, 1, projection="3d")
         _draw_state(ax, model, s0, scene)
-        ax.set_title(title + "\nt = 0", fontsize=7.5)
+        ax.set_title("t = 0", fontsize=7.5)
         t_end = 0.45 if scene == "ball" else 1.5
         for _ in range(int(round(t_end / DT_OUTER))):
             s0, s1 = arm.boundary(s0, s1, ctrl)
-        ax = fig.add_subplot(nrow, 2, 2 * row + 2, projection="3d")
+        ax = sf.add_subplot(1, 2, 2, projection="3d")
         _draw_state(ax, model, s0, scene)
         ax.set_title(f"t = {t_end:g} s (ICF error control, ε = 10⁻³)", fontsize=7.5)
     # No baked-in caption: the LaTeX caption in PART1.md carries the description.
