@@ -254,7 +254,7 @@ def stiffness_sweep() -> None:
     if not rows:
         return
     direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct solref, literal k)")
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), sharey=True, constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.6), sharey=True, constrained_layout=True)
     tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
 
     def draw(ax, arms, xkey, styles):
@@ -270,20 +270,18 @@ def stiffness_sweep() -> None:
                 ax.plot([p[0] for p in ok], [p[1] for p in ok], ms=5, **st)
                 top = max(top, max(p[1] for p in ok))
             if bad:
-                ax.plot(bad, [top * 2.0] * len(bad), ls="none", marker="x", ms=7, mew=1.8, color=st["color"],
-                        label=st["label"] + " (unstable)" if not ok else None)
-                ax.annotate("unstable: sphere launched", xy=(min(bad), top * 2.0), fontsize=6,
-                            color=st["color"], ha="right", va="center", xytext=(min(bad) * 0.8, top * 2.0))
+                # MuJoCo DIED in these cells: the sphere was launched off the
+                # floor. Big crosses at the top edge, named in the legend.
+                ax.plot(bad, [top * 2.0] * len(bad), ls="none", marker="x", ms=11, mew=2.6, color=st["color"],
+                        label="MuJoCo (direct) UNSTABLE: sphere launched")
         return top
 
     styles = dict(STYLE)
     styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (reference solref)")
     styles["mujoco-direct"] = direct_style
     ax = axes[0]
-    top = draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles)
-    ax.axvline(tau / 2.0, color="k", lw=0.8, ls=":")
-    ax.annotate("refsafe clamp bites\n(2δt > τ)", xy=(tau / 2.0, top), fontsize=6, ha="left", va="top",
-                xytext=(tau / 2.0 * 1.15, top))
+    draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles)
+    ax.axvline(tau / 2.0, color="k", lw=0.8, ls=":", label="refsafe clamp onset (δt = τ/2)")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("Fixed step δt (s)")
@@ -298,7 +296,8 @@ def stiffness_sweep() -> None:
     for ax in axes:
         ax.axhline(1.0, color="k", lw=0.8, ls=":")
         ax.grid(True, which="both", alpha=0.3)
-        ax.legend(fontsize=6)
+    # one legend for the whole figure, out of the data's way
+    fig.legend(loc="outside lower center", ncol=3, fontsize=6.5, frameon=False)
     _save(fig, "stiffness_sweep")
 
 
