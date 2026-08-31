@@ -253,52 +253,67 @@ def stiffness_sweep() -> None:
     rows = [r for r in _rows("part1_stiffness_sweep.csv") if r["k_N_per_m"] == 1e5]
     if not rows:
         return
-    direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct solref, literal k)")
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), sharey=True, constrained_layout=True)
-    tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
+    C = {"icf": "#2980b9", "mujoco": "#c0392b", "mujoco-direct": "#8e44ad",
+         "icf-adaptive": "#27ae60", "mujoco-adaptive": "#e67e22"}
+    M = {"icf": "o", "mujoco": "s", "mujoco-direct": "v", "icf-adaptive": "D", "mujoco-adaptive": "^"}
+    UNSTABLE_Y = 200.0
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.8), sharey=True, constrained_layout=True)
 
-    def draw(ax, arms, xkey, styles):
-        top = 1.0
-        for arm in arms:
-            pts = sorted((r[xkey], r["ratio"], r.get("unstable") in (True, "True")) for r in rows if r["arm"] == arm and r[xkey] != "")
-            if not pts:
-                continue
-            st = dict(styles[arm])
-            ok = [(x, y) for x, y, u in pts if not u]
-            bad = [x for x, _, u in pts if u]
-            if ok:
-                ax.plot([p[0] for p in ok], [p[1] for p in ok], ms=5, **st)
-                top = max(top, max(p[1] for p in ok))
-            if bad:
-                ax.plot(bad, [top * 2.0] * len(bad), ls="none", marker="x", ms=7, mew=1.8, color=st["color"],
-                        label=st["label"] + " (unstable)" if not ok else None)
-                ax.annotate("unstable: sphere launched", xy=(min(bad), top * 2.0), fontsize=6,
-                            color=st["color"], ha="right", va="center", xytext=(min(bad) * 0.8, top * 2.0))
-        return top
+    def series(arm, xkey, scale=1.0):
+        pts = sorted((r[xkey] * scale, r["ratio"], r.get("unstable") in (True, "True"))
+                     for r in rows if r["arm"] == arm and r[xkey] != "")
+        ok = [(x, y) for x, y, u in pts if not u]
+        bad = [x for x, _, u in pts if u]
+        return ok, bad
 
-    styles = dict(STYLE)
-    styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (reference solref)")
-    styles["mujoco-direct"] = direct_style
+    def draw(ax, arm, xkey, scale=1.0, ls="-"):
+        ok, bad = series(arm, xkey, scale)
+        if ok:
+            ax.plot([p[0] for p in ok], [p[1] for p in ok], color=C[arm], marker=M[arm], ms=6, lw=1.8, ls=ls)
+        if bad:
+            ax.plot(bad, [UNSTABLE_Y] * len(bad), ls="none", marker="x", ms=9, mew=2.2, color=C[arm])
+        return ok, bad
+
+    fs = 8.5
+    # ---- panel (a): fixed step, in milliseconds ----
     ax = axes[0]
-    top = draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles)
-    ax.axvline(tau / 2.0, color="k", lw=0.8, ls=":")
-    ax.annotate("refsafe clamp bites\n(2δt > τ)", xy=(tau / 2.0, top), fontsize=6, ha="left", va="top",
-                xytext=(tau / 2.0 * 1.15, top))
+    draw(ax, "icf", "dt_s", 1e3)
+    draw(ax, "mujoco", "dt_s", 1e3, ls="--")
+    ok_d, bad_d = draw(ax, "mujoco-direct", "dt_s", 1e3, ls="-.")
+    ax.axhline(1.0, color="k", lw=1.0, ls=":")
+    # what the reader must take away, written where it happens
+    ax.annotate("all three agree here:\nsame physical system", xy=(0.75, 1.0), xytext=(0.55, 4.5),
+                fontsize=fs - 1, ha="left", arrowprops=dict(arrowstyle="-", lw=0.7, color="#555555"))
+    ax.text(6.5, 3.9, "standard MuJoCo:\ncontact goes soft\n(safety clamp)", fontsize=fs - 1, color=C["mujoco"], ha="center")
+    ax.text(6.9, UNSTABLE_Y * 0.42, "literal-k MuJoCo:\nsphere launched", fontsize=fs - 1, color=C["mujoco-direct"], ha="center")
+    ax.text(10.5, 1.25, "ICF", fontsize=fs, color=C["icf"], ha="left", weight="bold")
+    ax.text(10.5, 57, "MuJoCo\n(standard)", fontsize=fs - 1, color=C["mujoco"], ha="left", va="center")
+    ax.text(2.1, 0.72, "MuJoCo (literal k)", fontsize=fs - 1, color=C["mujoco-direct"], ha="right")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("Fixed step δt (s)")
-    ax.set_ylabel("Resting penetration / (m g / k)")
-    ax.set_title("(a) Fixed step", fontsize=8)
+    ax.set_xticks([0.5, 1, 2, 5, 10], ["0.5", "1", "2", "5", "10"])
+    ax.set_xlim(0.42, 22)
+    ax.set_xlabel("timestep (milliseconds)", fontsize=fs)
+    ax.set_title("(a) Fixed timestep: coarser →", fontsize=fs + 0.5)
+    # ---- panel (b): error control ----
     ax = axes[1]
-    draw(ax, ["icf-adaptive", "mujoco-adaptive"], "accuracy", styles)
+    draw(ax, "icf-adaptive", "accuracy")
+    draw(ax, "mujoco-adaptive", "accuracy")
+    ax.axhline(1.0, color="k", lw=1.0, ls=":")
+    ax.text(6e-2, 23, "MuJoCo error control: still too soft,\na position test cannot see it", fontsize=fs - 1,
+            color=C["mujoco-adaptive"], ha="left")
+    ax.text(6e-2, 1.25, "CENIC: correct at every tolerance", fontsize=fs - 1, color=C["icf-adaptive"], ha="left")
     ax.set_xscale("log")
-    ax.invert_xaxis()  # tighter tolerance to the right
-    ax.set_xlabel("Requested tolerance ε (m), tightening →")
-    ax.set_title("(b) Error control", fontsize=8)
+    ax.invert_xaxis()
+    ax.set_xticks([1e-1, 1e-2, 1e-3, 1e-4, 1e-5], ["10⁻¹", "10⁻²", "10⁻³", "10⁻⁴", "10⁻⁵"])
+    ax.set_xlabel("requested tolerance ε   (stricter →)", fontsize=fs)
+    ax.set_title("(b) Error control: asking for more accuracy →", fontsize=fs + 0.5)
     for ax in axes:
-        ax.axhline(1.0, color="k", lw=0.8, ls=":")
-        ax.grid(True, which="both", alpha=0.3)
-        ax.legend(fontsize=6)
+        ax.set_yticks([1, 10, 100], ["1×\n(correct)", "10×\ntoo deep", "100×\ntoo deep"])
+        ax.tick_params(labelsize=fs - 1)
+        ax.grid(True, which="major", axis="y", alpha=0.25)
+        ax.set_ylim(0.55, 420)
+    axes[0].set_ylabel("how deep the sphere sinks,\nrelative to what physics dictates", fontsize=fs)
     _save(fig, "stiffness_sweep")
 
 
