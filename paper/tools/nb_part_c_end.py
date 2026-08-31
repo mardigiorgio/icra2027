@@ -24,17 +24,14 @@ def partC(nb):
     section(nb, "Inner steps between fixed boundaries", ["Per world / per batch / on the host (A7)", "Landing on the boundary; δt_min/init/max", "Exhausted or diverged worlds"], ["solver docstrings (A7)", "four_arms.py", "a schematic figure — NOT MADE"])
     section(nb, "Error estimate and step selection on the device", ["Three solves, two queries (A5, A7)", "Newton tolerance rule (B14)", "Contact budgets (B16)"], ["tables/newton_tolerance_probe.md", "PART1.md 'Contact budgets'"])
     section(nb, "Speed optimizations (contribution 3)", ["Each mechanism in force in the ICF and MuJoCo arms, with a before/after number (Appendix G)", "The one probe still missing"], ["ledger copy in template_extras/", "tables/march_cost.md"])
-    nb.h("IV. Results I — pure solver", 1)
-    for t, q, e in [("Setup", ["Paper's vs assumed parameters (B2)", "MuJoCo calibration and the soft-clutter offset (B13, B3)"], ["cenic_scenes.py", "figures/scenes.pdf"]),
-                    ("Realized stiffness", ["What each solver realizes at 10 ms / 1 ms / EC (B3)"], ["figures/stiffness_sweep.pdf"]),
-                    ("Energy convergence", ["Orders; the honest ordering; the MuJoCo-EC gain (B4)"], ["figures/ball_energy.pdf, ball_workprecision.pdf"]),
-                    ("Work-precision", ["Cost vs requested accuracy; per-attempt cost (B5, B15)"], ["figures/workprecision.pdf, speed_bars.pdf; tables/part1_table1.md"]),
-                    ("Contact artifacts vs cost", ["Cheapest artifact-free per arm; who ejects (B6)"], ["figures/artifacts.pdf"]),
-                    ("Error control pays when something happens", ["Where the saving is (B7)"], ["figures/realtime_trace_n64.pdf"]),
-                    ("Measured error vs cost", ["The floor; where EC beats fixed at matched measured error (B9, B10)"], ["figures/consistency.pdf; tables/determinism_probe.md"]),
-                    ("Wall vs worlds", ["Per-world cost at 2^13; the ICF/MuJoCo ratio (B8)"], ["figures/scaling_per_world_hard-clutter.pdf"]),
-                    ("Actuated stiff contact", ["Stability map; the pushed box; what 10 ms hides (B12)"], ["figures/actuated.pdf, actuated_chatter.pdf"])]:
+    nb.h("IV. Results I — pure solver (trimmed 2026-08-31 to the four core experiments, B30)", 1)
+    for t, q, e in [("Setup", ["Paper's vs assumed parameters (B2)", "MuJoCo calibration: two measured anchors, no single k (B13, B3, B30)"], ["part1/scenes/cenic_scenes.py", "renders in part1/bench/results/figures/"]),
+                    ("Exp 1 — Realized stiffness", ["What each solver realizes at 10 ms / 1 ms / EC (B3); ICF lines collapsed to one legend entry"], ["figures/stiffness_sweep.pdf; render scene_stiffness"]),
+                    ("Exp 2 — Work-precision at matched tolerance", ["Cost vs requested accuracy at N=1 and N=1024; per-attempt cost (B5, B15)"], ["figures/workprecision.pdf; render scenes_clutter"]),
+                    ("Exp 3 — Wall time vs number of worlds", ["Per-world cost at 2^13; the ICF/MuJoCo ratio (B8)"], ["figures/scaling_hard-clutter.pdf; render scene_hard_clutter"]),
+                    ("Exp 4 — Actuated PD push + heterogeneous-gain throughput", ["Stability map; the pushed box; what 10 ms hides; the one throughput plot CENIC wins (B12)"], ["figures/actuated.pdf, actuated_scaling.pdf; render scene_actuated"])]:
         section(nb, t, q, e)
+    nb.p("Retired from Results I by the 2026-08-31 trim (B30): energy convergence, artifacts vs cost, real-time trace, consistency. Numbers stay quotable from the CSVs (D1, Appendix I); the benches are deleted.", italic=True)
     nb.h("V. Results II — application", 1)
     section(nb, "Protocol", ["Ladder K1–K5, adaptive, K5wall; held-fixed set; success gates; representation (B17, B25)"], ["trossen_campaign.sh; probe_campaign_coefficients.py"])
     for task, ref in [("Slide mug across table", "B20"), ("Pick up mug (lift)", "B21"), ("Pick up dish from dish rack (plate)", "B22"), ("Mug on tree", "B24"), ("Flip mug by handle", "B23")]:
@@ -90,7 +87,7 @@ def partD(nb):
            "☐ Soft-clutter MuJoCo τ offset: state or rerun (B3)",
            "☐ MuJoCo-EC energy gain: fix SolverMuJoCoAdaptive or report as open (B4)",
            "☐ δt_max = 0.1 s on clutter (paper) vs 10 ms boundary in RL — how to present",
-           "☐ Which Part-1 figures fit the page budget (24 PDFs exist)",
+           "☑ Which Part-1 figures fit the page budget — RESOLVED 2026-08-31 (B30): the four core figures plus their renders, nothing else",
            "☐ Speed section: the missing before/after probe on a paper scene (Appendix G)",
            "☐ Per task: which run pair is the result, under which success definition (B20–B23); K5wall runs; MuJoCo arms; ICF stiffness pinned in the campaign",
            "☐ Mug-on-tree: where it lives (B24)",
@@ -102,14 +99,14 @@ def partD(nb):
     nb.tbl([["What", "Where", "How"],
             ["Scenes", "icra2027/part1/scenes/cenic_scenes.py, actuated_press.py", "imported by the benches"],
             ["Four-arm harness", "part1/bench/four_arms.py", "make_arm(model, name, ...) — captured boundaries, trackers, budgets, solref, K_INIT, eq. 34 rule"],
-            ["Part-1 benches", "part1/bench/benchmarks/part1_{workprecision, penetration, scaling, ball_energy, realtime_trace, consistency, stiffness_sweep, actuated}.py", "cd icra2027; ~/Documents/code/icra2027/.venv/bin/python -m part1.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
-            ["Probes / certificates", "part1/bench/probe_momentum.py, probe_determinism.py, probe_actuated_trace.py, probe_march_cost.py, verify_contact_budgets.py, verify_part1_penetration.py; part1_consistency.py --self-check", "same python; read the docstring first"],
-            ["Figures / tables", "part1/bench/part1_plots.py; part1_tables.py; part1_results_md.py; part1_scenes_figure.py", "CPU only; regenerate after any sweep"],
+            ["Part-1 benches (post-trim, B30)", "part1/bench/benchmarks/part1_{stiffness_sweep, workprecision, scaling, actuated, actuated_scaling}.py", "cd icra2027; ~/Documents/code/icra2027/.venv/bin/python -m part1.bench.benchmarks.part1_<name> [--scene ...]; timing benches alone on the GPU; one subprocess per config"],
+            ["Probes / certificates", "part1/bench/probe_{momentum, determinism, actuated_trace, march_cost, floor_occupancy, mujoco_cone}.py, verify_contact_budgets.py", "same python; read the docstring first"],
+            ["Figures / renders", "part1/bench/part1_plots.py (workprecision/scaling/stiffness_sweep/actuated/actuated_scaling); part1_scenes_figure.py (all renders + the two schematics)", "plots CPU only; the scene renders settle on the GPU; regenerate after any sweep"],
             ["Results write-up", "part1/bench/results/PART1.md; tables/*.md; figures/*.pdf; PART1_LITERATURE.md", "the paper's Results I and Background are read from here"],
             ["Solvers", "newton/_src/solvers/mujoco/solver_mujoco_adaptive.py; adaptive_boundary.py; icf_warp_adaptive/icf_warp/{solver.py, solver_adaptive.py, contact_law.py, kernels_dof.py, DEVIATIONS.md}", "flags in A7 / Appendix G"],
             ["Training (Part 2)", "IsaacLab develop: contrib/trossen_{mug_lift, mug_slide, plate_rack, mug_flip}; scripts/experiments/trossen_campaign.sh; scripts/probes/*", "VIRTUAL_ENV=~/Documents/code/icra2027/.venv ./isaaclab.sh -p ... --solver icf|icf-adaptive|mujoco|mujoco-adaptive; ICF_MAX_RIGID_CONTACT=1024/8192; W&B + video; one knob at a time; kill doomed runs"],
             ["Runs", "IsaacLab logs/rsl_rl/{trossen_mug_lift, trossen_mug_flip, trossen_spatula_lift}; wandb/", "run dirs map to W&B by timestamp; killed runs have no wandb-summary.json — grep output.log"],
-            ["Paper package", "~/Documents/code/cenic-paper (conference_101719.tex verbatim, main.tex outline, figures/, references.bib, this notebook, tools/make_notebook.py)", "upload cenic-paper.zip to Overleaf; regenerate the notebook with PYTHONPATH=<pylib> python tools/make_notebook.py"]])
+            ["Paper package", "icra2027/paper (main.tex outline, figures/, references.bib, this notebook, tools/make_notebook.py); the P1 deliverable is the Drive doc 'P1_core_experiments' (Part 1 folder)", "regenerate the notebook with PYTHONPATH=<pylib> python paper/tools/make_notebook.py from the icra2027 root"]])
     nb.h("D4. Deadline plan (fill in)", 1)
     nb.tbl([["Day", "Sections to write", "Runs to launch / watch", "Done?"], ["Sat 08-30", "", "", "☐"], ["Sun 08-31", "", "", "☐"], ["Mon 09-01 (deadline)", "", "", "☐"]])
 
