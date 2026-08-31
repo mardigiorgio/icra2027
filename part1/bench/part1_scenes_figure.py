@@ -123,27 +123,37 @@ def _draw_state(ax, model, state, scene):
     ax.view_init(elev=24, azim=-58)
 
 
-def main() -> None:
-    fig = plt.figure(figsize=(9.6, 5.6), constrained_layout=True)
-    specs = [("soft-clutter", "(a) Soft clutter"), ("hard-clutter", "(b) Hard clutter"), ("ball", "(c) Bouncing ball")]
+ALL_SPECS = [("soft-clutter", "(a) Soft clutter"), ("hard-clutter", "(b) Hard clutter"), ("ball", "(c) Bouncing ball")]
+
+
+def render(specs, out) -> None:
+    """A render shows ONLY the scenes the figure it accompanies plots."""
+    ncol = len(specs)
+    fig = plt.figure(figsize=(3.2 * ncol, 5.6), constrained_layout=True)
     for col, (scene, title) in enumerate(specs):
         model = build_model(1, scene=scene)
         arm = make_arm(model, "icf-adaptive", scene=scene, tol=1e-3, max_substeps=4096)
         s0, s1, ctrl = model.state(), model.state(), model.control()
-        ax = fig.add_subplot(2, 3, col + 1, projection="3d")
+        ax = fig.add_subplot(2, ncol, col + 1, projection="3d")
         _draw_state(ax, model, s0, scene)
         ax.set_title(title + "\nt = 0", fontsize=7.5)
         t_end = 0.45 if scene == "ball" else 1.5
         for _ in range(int(round(t_end / DT_OUTER))):
             s0, s1 = arm.boundary(s0, s1, ctrl)
-        ax = fig.add_subplot(2, 3, col + 4, projection="3d")
+        ax = fig.add_subplot(2, ncol, col + 1 + ncol, projection="3d")
         _draw_state(ax, model, s0, scene)
         ax.set_title(f"t = {t_end:g} s (ICF error control, ε = 10⁻³)", fontsize=7.5)
     # No baked-in caption: the LaTeX caption in PART1.md carries the description.
     os.makedirs(FIG, exist_ok=True)
     for ext in ("png", "pdf"):
-        fig.savefig(os.path.join(FIG, f"scenes.{ext}"), dpi=200, bbox_inches="tight")
-    print("wrote figures/scenes.png/.pdf")
+        fig.savefig(os.path.join(FIG, f"{out}.{ext}"), dpi=200, bbox_inches="tight")
+    print(f"wrote figures/{out}.png/.pdf")
+
+
+def main() -> None:
+    render(ALL_SPECS, "scenes")
+    render([s for s in ALL_SPECS if "clutter" in s[0]], "scenes_clutter")
+    render([s for s in ALL_SPECS if s[0] == "hard-clutter"], "scene_hard_clutter")
 
 
 if __name__ == "__main__":
