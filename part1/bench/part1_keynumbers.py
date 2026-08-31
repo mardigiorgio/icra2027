@@ -78,12 +78,14 @@ def scaling(scene):
 
 
 def stiffness():
-    rows = [r for r in P._rows("part1_stiffness_sweep.csv") if r.get("finite") in (True, "True")]
-    print("\n### realized stiffness: penetration / (m g/k) vs requested k\n")
-    keys = sorted({(r["arm"], _lab(r)) for r in rows})
-    for arm, lab in keys:
-        pts = sorted((r["k_N_per_m"], r["ratio"]) for r in rows if r["arm"] == arm and _lab(r) == lab)
-        print(f"- {arm} {lab}: " + ", ".join(f"{k:.0e}: {v:.2f}" for k, v in pts))
+    rows = P._rows("part1_stiffness_sweep.csv")
+    print("\n### stiffness experiment (one calibrated system per k): penetration / (m g/k) vs dt and vs eps\n")
+    for k in (1e5, 1e3):
+        for arm in ("icf", "mujoco", "mujoco-direct", "icf-adaptive", "mujoco-adaptive"):
+            pts = sorted((r["dt_s"] if r["dt_s"] != "" else r["accuracy"], r["ratio"], r.get("unstable") in (True, "True"))
+                         for r in rows if r["arm"] == arm and r["k_N_per_m"] == k)
+            if pts:
+                print(f"- k={k:.0e} {arm}: " + ", ".join(f"{x:g}: " + ("UNSTABLE" if u else f"{v:.2f}") for x, v, u in pts))
 
 
 def actuated():
