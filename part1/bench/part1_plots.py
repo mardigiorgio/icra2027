@@ -257,10 +257,10 @@ def stiffness_sweep() -> None:
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.6), sharey=True, constrained_layout=True)
     tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
 
-    def draw(ax, arms, xkey, styles):
+    def draw(ax, arms, xkey, styles, scale=1.0):
         top = 1.0
         for arm in arms:
-            pts = sorted((r[xkey], r["ratio"], r.get("unstable") in (True, "True")) for r in rows if r["arm"] == arm and r[xkey] != "")
+            pts = sorted((r[xkey] * scale, r["ratio"], r.get("unstable") in (True, "True")) for r in rows if r["arm"] == arm and r[xkey] != "")
             if not pts:
                 continue
             st = dict(styles[arm])
@@ -280,11 +280,12 @@ def stiffness_sweep() -> None:
     styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (reference solref)")
     styles["mujoco-direct"] = direct_style
     ax = axes[0]
-    draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles)
-    ax.axvline(tau / 2.0, color="k", lw=0.8, ls=":", label="refsafe clamp onset (δt = τ/2)")
-    ax.set_xscale("log")
+    draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles, scale=1e3)
+    ax.axvline(tau / 2.0 * 1e3, color="k", lw=0.8, ls=":", label="refsafe clamp onset (δt = τ/2)")
     ax.set_yscale("log")
-    ax.set_xlabel("Fixed step δt (s)")
+    ax.set_xticks([0.5, 1, 2, 5, 10], ["0.5", "1", "2", "5", "10"])
+    ax.set_xlim(0.0, 10.7)
+    ax.set_xlabel("Fixed step δt (ms)")
     ax.set_ylabel("Resting penetration / (m g / k)")
     ax.set_title("(a) Fixed step", fontsize=8)
     ax = axes[1]
