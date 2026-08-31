@@ -155,20 +155,22 @@ ALL_SPECS = [("soft-clutter", "(a) Soft clutter"), ("hard-clutter", "(b) Hard cl
 
 
 def render(specs, out) -> None:
-    """A render shows ONLY the scenes the figure it accompanies plots."""
-    ncol = len(specs)
-    fig = plt.figure(figsize=(3.2 * ncol, 5.6), constrained_layout=True)
-    for col, (scene, title) in enumerate(specs):
+    """A render shows ONLY the scenes the figure it accompanies plots: one
+    row per scene, its initial and settled states SIDE BY SIDE (stacked
+    panels made a tall image that viewers squash to fit a page)."""
+    nrow = len(specs)
+    fig = plt.figure(figsize=(6.6, 3.0 * nrow), constrained_layout=True)
+    for row, (scene, title) in enumerate(specs):
         model = build_model(1, scene=scene)
         arm = make_arm(model, "icf-adaptive", scene=scene, tol=1e-3, max_substeps=4096)
         s0, s1, ctrl = model.state(), model.state(), model.control()
-        ax = fig.add_subplot(2, ncol, col + 1, projection="3d")
+        ax = fig.add_subplot(nrow, 2, 2 * row + 1, projection="3d")
         _draw_state(ax, model, s0, scene)
         ax.set_title(title + "\nt = 0", fontsize=7.5)
         t_end = 0.45 if scene == "ball" else 1.5
         for _ in range(int(round(t_end / DT_OUTER))):
             s0, s1 = arm.boundary(s0, s1, ctrl)
-        ax = fig.add_subplot(2, ncol, col + 1 + ncol, projection="3d")
+        ax = fig.add_subplot(nrow, 2, 2 * row + 2, projection="3d")
         _draw_state(ax, model, s0, scene)
         ax.set_title(f"t = {t_end:g} s (ICF error control, ε = 10⁻³)", fontsize=7.5)
     # No baked-in caption: the LaTeX caption in PART1.md carries the description.
@@ -198,46 +200,52 @@ def render_actuated() -> None:
     is moved: a virtual spring (the PD's P term, stiffness K_p) stretched
     between the fingertip and a commanded point that first descends and then
     travels sideways; the dragged fingertip presses the box and slides it."""
-    fig = plt.figure(figsize=(4.8, 3.4), constrained_layout=True)
+    fig = plt.figure(figsize=(5.4, 3.2), constrained_layout=True)
     ax = fig.add_subplot(projection="3d")
     S = _Scene()
-    S.box(np.array([0.02, 0, -0.002]), np.array([0.17, 0.12, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
+    S.box(np.array([-0.02, 0, -0.002]), np.array([0.14, 0.11, 0.002]), np.eye(3), "#eeeeee", 1.0, tiles=4)
     S.box(np.array([0, 0, BOX_HALF]), np.array([BOX_HALF] * 3), np.eye(3), "#3182bd", shade=True, edge=0.55, lw=0.6)
-    tip = np.array([-(BOX_HALF + TIP_R), 0.0, BOX_HALF])
+    # the instant BEFORE contact: tip fully descended, spring stretched to a
+    # commanded point at the box face -- nothing overlaps the box, so every
+    # spatial relation (tip left of box, spring in the open, point at the
+    # face) is unambiguous. The tip-to-box gap is drawn wider than the
+    # scene's 2 cm so the spring is legible; the figure says "not to scale".
+    x_tip = -0.105
+    tip = np.array([x_tip, 0.0, BOX_HALF])
     S.sphere(tip, TIP_R, "#e6550d", edge=0.3, lw=0.3)
     S.draw(ax)
     # bodies keep their internal depth sort; every line/label is an
     # annotation and always paints on top
     ax.computed_zorder = False
     grey = "#555555"
-    start = np.array([X0, 0.0, BOX_HALF + Z_CLEAR])
-    target = np.array([-0.015, 0.0, BOX_HALF])
+    target = np.array([-BOX_HALF - 0.006, 0.0, BOX_HALF])
     # the commanded point's fixed path: descend beside the box, then sideways
-    ax.plot([start[0], start[0]], [0, 0], [start[2], BOX_HALF], "--", color=grey, lw=1.1, zorder=10)
-    ax.plot([start[0], target[0]], [0, 0], [BOX_HALF, BOX_HALF], "--", color=grey, lw=1.1, zorder=10)
+    ax.plot([x_tip, x_tip], [0, 0], [BOX_HALF + Z_CLEAR, BOX_HALF + 0.012], "--", color=grey, lw=1.1, zorder=10)
+    ax.plot([x_tip + TIP_R + 0.002, target[0]], [0, 0], [BOX_HALF, BOX_HALF], "--", color=grey, lw=1.1, zorder=10)
     ax.plot([target[0]], [0], [BOX_HALF], marker="o", mfc="none", mec=grey, mew=1.4, ms=8, zorder=11)
-    # leader from the label to the commanded point (overdrawn on the box face)
-    ax.plot([0.055, target[0] + 0.004], [-0.055, -0.004], [0.135, BOX_HALF + 0.006], ":", color=grey, lw=0.8, zorder=11)
-    # the virtual spring, stretched tip -> commanded point
-    xs = np.linspace(tip[0], target[0], 13)
-    zig = np.array([0.0 if i in (0, 12) else (0.007 if i % 2 else -0.007) for i in range(13)])
-    ax.plot(xs, np.zeros(13), BOX_HALF + zig, color="#d62728", lw=1.4, zorder=12)
-    # the box's response
-    ax.quiver(0.01, 0.0, 2 * BOX_HALF + 0.015, 0.055, 0, 0, color="#3182bd", arrow_length_ratio=0.35, lw=1.8, zorder=12)
+    # the virtual spring, stretched tip -> commanded point, all in open air
+    xs = np.linspace(x_tip + TIP_R, target[0] - 0.004, 13)
+    zig = np.array([0.0 if i in (0, 12) else (0.005 if i % 2 else -0.005) for i in range(13)])
+    ax.plot(xs, np.zeros(13), BOX_HALF + zig, color="#d62728", lw=1.5, zorder=12)
+    # what happens next: the box slides away to the right
+    ax.quiver(BOX_HALF + 0.012, 0.0, BOX_HALF, 0.04, 0, 0, color="#3182bd", arrow_length_ratio=0.3, lw=1.8, zorder=12)
     fs = 7.5
-    ax.text(start[0] - 0.016, -0.03, 0.126, "commanded\npoint's path", color=grey, fontsize=fs, ha="right", zorder=15)
-    ax.text(0.058, -0.058, 0.138, "commanded point", color=grey, fontsize=fs, ha="left", zorder=15)
-    ax.text(0.01, -0.115, -0.004, "virtual spring, stiffness $K_p$", color="#d62728", fontsize=fs, ha="center", zorder=15)
-    ax.text(-0.12, -0.05, 0.012, "fingertip", color="#e6550d", fontsize=fs, ha="center", zorder=15)
-    ax.text(0.055, 0.01, 0.128, "box slides", color="#3182bd", fontsize=fs, ha="left", zorder=15)
-    ax.set_xlim(-0.16, 0.16)
-    ax.set_ylim(-0.12, 0.12)
-    ax.set_zlim(0, 0.16)
-    ax.set_box_aspect((2.0, 1.5, 1.0))
+    ax.text(-0.125, 0, 0.134, "commanded\npoint's path", color=grey, fontsize=fs, ha="center", zorder=15)
+    ax.text(-0.045, 0, 0.120, "commanded point", color=grey, fontsize=fs, ha="center", zorder=15)
+    ax.plot([-0.052, target[0]], [0, 0], [0.114, BOX_HALF + 0.008], ":", color=grey, lw=0.8, zorder=11)
+    ax.text(-0.078, 0, 0.020, "virtual spring,\nstiffness $K_p$", color="#d62728", fontsize=fs, ha="center", va="top", zorder=15)
+    ax.text(-0.118, 0, 0.075, "fingertip", color="#e6550d", fontsize=fs, ha="right", zorder=15)
+    ax.plot([-0.119, x_tip - 0.004], [0, 0], [0.073, BOX_HALF + 0.010], ":", color="#e6550d", lw=0.8, zorder=11)
+    ax.text(0.062, 0, 0.118, "box slides", color="#3182bd", fontsize=fs, ha="left", zorder=15)
+    ax.text2D(0.97, 0.04, "(not to scale)", color="#999999", fontsize=6, ha="right", transform=ax.transAxes, zorder=15)
+    ax.set_xlim(-0.16, 0.115)
+    ax.set_ylim(-0.11, 0.11)
+    ax.set_zlim(0, 0.155)
+    ax.set_box_aspect((1.77, 1.42, 1.0))
     ax.set_axis_off()
-    # camera on the -x/-y side: the fingertip presses the -x face, so this is
-    # the side the mechanism is visible from
-    ax.view_init(elev=22, azim=-125)
+    # near-side view: the whole program lives in the x-z plane, so an
+    # almost-side camera makes the schematic read like a force diagram
+    ax.view_init(elev=16, azim=-83)
     _save(fig, "scene_actuated")
 
 
