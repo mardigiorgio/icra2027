@@ -253,7 +253,6 @@ def stiffness_sweep() -> None:
     rows = [r for r in _rows("part1_stiffness_sweep.csv") if r["k_N_per_m"] == 1e5]
     if not rows:
         return
-    direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct-stiffness form)")
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.6), sharey=True, constrained_layout=True)
     tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
 
@@ -277,10 +276,8 @@ def stiffness_sweep() -> None:
         return top
 
     styles = dict(STYLE)
-    styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (time-constant form)")
-    styles["mujoco-direct"] = direct_style
     ax = axes[0]
-    draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles, scale=1e3)
+    draw(ax, ["icf", "mujoco"], "dt_s", styles, scale=1e3)
     ax.axvline(tau / 2.0 * 1e3, color="k", lw=0.8, ls=":", label="refsafe clamp onset (δt = τ/2)")
     ax.set_yscale("log")
     ax.set_xticks([0.5, 1, 2, 5, 10], ["0.5", "1", "2", "5", "10"])
