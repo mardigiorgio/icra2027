@@ -263,7 +263,8 @@ def render_actuated() -> None:
 def main() -> None:
     render(ALL_SPECS, "scenes")
     render([s for s in ALL_SPECS if "clutter" in s[0]], "scenes_clutter")
-    render([s for s in ALL_SPECS if s[0] == "hard-clutter"], "scene_hard_clutter")
+    # single-scene render: no panel letter, there is no (a) to pair with
+    render([("hard-clutter", "Hard clutter")], "scene_hard_clutter")
     render_stiffness()
     render_actuated()
 
