@@ -244,41 +244,61 @@ def _impact_pen(scene: str) -> float:
 
 
 def stiffness_sweep() -> None:
-    """Realized contact stiffness: resting penetration of one sphere over the
-    model's m g / k as the requested k rises (ICF Fig. 18's axis), per arm at
-    fixed dt and under error control."""
-    rows = [r for r in _rows("part1_stiffness_sweep.csv") if r.get("finite") in (True, "True")]
+    """Resting penetration at ONE calibrated stiffness (k = 1e5 N/m, the hard
+    anchor), vs the step for the fixed arms and vs the requested tolerance
+    for the error-controlled arms. No fitted tau(k) mapping is plotted:
+    every curve is judged against the model's own m g / k. MuJoCo appears in
+    both its code forms (reference solref = clamped; direct solref =
+    literal k, unstable at coarse steps, drawn as crosses on the top edge)."""
+    rows = [r for r in _rows("part1_stiffness_sweep.csv") if r["k_N_per_m"] == 1e5]
     if not rows:
         return
-    fig, ax = plt.subplots(figsize=(5.4, 3.9), constrained_layout=True)
-    variants = {}
-    for r in rows:
-        variants.setdefault((r["arm"], _knob_label(r)), []).append((r["k_N_per_m"], r["ratio"]))
-    # ICF's four configurations coincide to the pixel (that IS the finding),
-    # so drawn separately three of them exist only in the legend. Collapse
-    # them into ONE labeled line; MuJoCo's four genuinely separate curves
-    # keep their own entries.
-    icf_variants = {k: v for k, v in variants.items() if k[0] in ("icf", "icf-adaptive")}
-    other_variants = {k: v for k, v in variants.items() if k[0] not in ("icf", "icf-adaptive")}
-    if icf_variants:
-        pts = sorted(next(iter(sorted(icf_variants.items())))[1])
-        st = dict(STYLE["icf-adaptive"])
-        st["label"] = "ICF & ICF EC (CENIC) — all steps and tolerances coincide"
-        ax.plot([p[0] for p in pts], [p[1] for p in pts], ms=5, lw=2.2, **st)
-    for (arm, lab), pts in sorted(other_variants.items()):
-        pts.sort()
-        st = dict(STYLE[arm])
-        st["label"] = f"{STYLE[arm]['label']}, {lab}"
-        if "10 ms" in lab or "0.001" in lab:  # the coarser setting of each pair is hollow
-            st["mfc"] = "none"
-        ax.plot([p[0] for p in pts], [p[1] for p in pts], ms=5, **st)
-    ax.axhline(1.0, color="k", lw=0.8, ls=":")
+    direct_style = dict(color="#8e44ad", marker="v", ls="-.", label="MuJoCo (direct solref, literal k)")
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), sharey=True, constrained_layout=True)
+    tau = 0.0024  # the anchor's calibrated timeconst; refsafe bites at dt > tau/2
+
+    def draw(ax, arms, xkey, styles):
+        top = 1.0
+        for arm in arms:
+            pts = sorted((r[xkey], r["ratio"], r.get("unstable") in (True, "True")) for r in rows if r["arm"] == arm and r[xkey] != "")
+            if not pts:
+                continue
+            st = dict(styles[arm])
+            ok = [(x, y) for x, y, u in pts if not u]
+            bad = [x for x, _, u in pts if u]
+            if ok:
+                ax.plot([p[0] for p in ok], [p[1] for p in ok], ms=5, **st)
+                top = max(top, max(p[1] for p in ok))
+            if bad:
+                ax.plot(bad, [top * 2.0] * len(bad), ls="none", marker="x", ms=7, mew=1.8, color=st["color"],
+                        label=st["label"] + " (unstable)" if not ok else None)
+                ax.annotate("unstable: sphere launched", xy=(min(bad), top * 2.0), fontsize=6,
+                            color=st["color"], ha="right", va="center", xytext=(min(bad) * 0.8, top * 2.0))
+        return top
+
+    styles = dict(STYLE)
+    styles["mujoco"] = dict(STYLE["mujoco"], label="MuJoCo (reference solref)")
+    styles["mujoco-direct"] = direct_style
+    ax = axes[0]
+    top = draw(ax, ["icf", "mujoco", "mujoco-direct"], "dt_s", styles)
+    ax.axvline(tau / 2.0, color="k", lw=0.8, ls=":")
+    ax.annotate("refsafe clamp bites\n(2δt > τ)", xy=(tau / 2.0, top), fontsize=6, ha="left", va="top",
+                xytext=(tau / 2.0 * 1.15, top))
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("Requested contact stiffness k (N/m)")
+    ax.set_xlabel("Fixed step δt (s)")
     ax.set_ylabel("Resting penetration / (m g / k)")
-    ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=6)
+    ax.set_title("(a) Fixed step", fontsize=8)
+    ax = axes[1]
+    draw(ax, ["icf-adaptive", "mujoco-adaptive"], "accuracy", styles)
+    ax.set_xscale("log")
+    ax.invert_xaxis()  # tighter tolerance to the right
+    ax.set_xlabel("Requested tolerance ε (m), tightening →")
+    ax.set_title("(b) Error control", fontsize=8)
+    for ax in axes:
+        ax.axhline(1.0, color="k", lw=0.8, ls=":")
+        ax.grid(True, which="both", alpha=0.3)
+        ax.legend(fontsize=6)
     _save(fig, "stiffness_sweep")
 
 
