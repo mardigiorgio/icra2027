@@ -199,6 +199,11 @@ def cenic_scaling() -> None:
     gxs = sorted(r["n_worlds"] for r in gpu)
     gy = [0.1 * n / (next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) / 1000.0) for n in gxs]
     ax.plot(gxs, gy, ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
+    # measured memory wall of the CPU reference on this host
+    ax.plot([xs[-1]], [med[-1]], marker="|", ms=14, mew=2.5, color="#7f3c8d")
+    ax.annotate("memory wall: 123 MB/world;\n1024 worlds need 126 GB (host: 62 GB)",
+                xy=(xs[-1] * 1.1, med[-1]), xytext=(xs[-1] * 1.6, med[-1] * 0.72), fontsize=6.5,
+                ha="left", color="#7f3c8d", arrowprops=dict(arrowstyle="-", lw=0.7, color="#7f3c8d"))
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")

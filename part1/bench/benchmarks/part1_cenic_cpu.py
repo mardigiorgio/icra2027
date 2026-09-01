@@ -50,6 +50,9 @@ MAX_STEP = 0.1
 WARMUP_S = 0.2
 TIMED_S = 2.0
 NS = [1, 2, 4, 8, 16, 32, 64, 96]
+if os.environ.get("CENIC_CPU_NS"):
+    NS = json.loads(os.environ["CENIC_CPU_NS"])
+APPEND = os.environ.get("CENIC_CPU_APPEND") == "1"
 
 
 def _lattice():
@@ -175,9 +178,11 @@ def main() -> int:
         }
         rows.append(row)
         print(row, flush=True)
-    with open(os.path.abspath(out), "w", newline="") as f:
+    mode = "a" if APPEND else "w"
+    with open(os.path.abspath(out), mode, newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
+        if not APPEND:
+            w.writeheader()
         w.writerows(rows)
     print(f"wrote {os.path.abspath(out)}")
     return 0
