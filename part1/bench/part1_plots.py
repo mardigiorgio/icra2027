@@ -202,14 +202,16 @@ def cenic_scaling() -> None:
     # measured memory wall of the CPU reference on this host
     ax.plot([xs[-1]], [med[-1]], marker="|", ms=14, mew=2.5, color="#7f3c8d")
     ax.annotate("memory wall: 123 MB/world;\n1024 worlds need 126 GB (host: 62 GB)",
-                xy=(xs[-1] * 1.1, med[-1]), xytext=(xs[-1] * 1.6, med[-1] * 0.72), fontsize=6.5,
+                xy=(xs[-1] * 1.1, med[-1]), xytext=(xs[-1] * 1.35, med[-1] * 0.5), fontsize=6.5,
                 ha="left", color="#7f3c8d", arrowprops=dict(arrowstyle="-", lw=0.7, color="#7f3c8d"))
+    ax.axvline(2048, color="k", lw=0.9, ls=":")
+    ax.annotate("RL training batch\n(2048 envs): GPU only", xy=(2048, 3.2), fontsize=6.5, ha="center", color="k")
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")
     ax.set_ylabel("Throughput: simulated world-seconds\nper wall second")
     ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=7, loc="lower right")
+    ax.legend(fontsize=7, loc="upper left")
     _save(fig, "cenic_scaling")
 
 
