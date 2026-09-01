@@ -189,20 +189,22 @@ def cenic_scaling() -> None:
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
+    # THROUGHPUT: total simulated world-seconds per wall second (up = better)
     xs = [r["n_worlds"] for r in cpu]
-    med = [r["wall_s_per_sim_s_per_world_median"] for r in cpu]
-    ax.plot(xs, med, color="#7f3c8d", marker="s", ls="-", label="CENIC reference (Drake, CPU)")
-    ax.fill_between(xs, [r["wall_s_per_sim_s_per_world_min"] for r in cpu],
-                    [r["wall_s_per_sim_s_per_world_max"] for r in cpu], color="#7f3c8d", alpha=0.15)
+    med = [n / r["wall_s_per_sim_s_per_world_median"] for n, r in zip(xs, cpu)]
+    lo = [n / r["wall_s_per_sim_s_per_world_max"] for n, r in zip(xs, cpu)]
+    hi = [n / r["wall_s_per_sim_s_per_world_min"] for n, r in zip(xs, cpu)]
+    ax.plot(xs, med, color="#7f3c8d", marker="s", ls="-", label="CENIC reference (Drake, CPU, 128-core host)")
+    ax.fill_between(xs, lo, hi, color="#7f3c8d", alpha=0.15)
     gxs = sorted(r["n_worlds"] for r in gpu)
-    gy = [next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) / 1000.0 / (0.1 * n) for n in gxs]
+    gy = [0.1 * n / (next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) / 1000.0) for n in gxs]
     ax.plot(gxs, gy, ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")
-    ax.set_ylabel("Wall time per simulated second\nper world (s)")
+    ax.set_ylabel("Throughput: simulated world-seconds\nper wall second")
     ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=7)
+    ax.legend(fontsize=7, loc="lower right")
     _save(fig, "cenic_scaling")
 
 
