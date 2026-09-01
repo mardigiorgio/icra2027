@@ -180,6 +180,32 @@ def workprecision() -> None:
 
 
 
+def cenic_scaling() -> None:
+    """Experiment 4: CENIC reference implementation (Drake, CPU) vs this
+    work (Newton/Warp, GPU) on hard clutter at eps = 1e-3: wall time per
+    simulated second PER WORLD vs the number of concurrent worlds."""
+    cpu = _rows("part1_cenic_cpu.csv")
+    gpu = [r for r in _rows("part1_scaling_hard-clutter.csv") if r["arm"] == "icf-adaptive"]
+    if not cpu or not gpu:
+        return
+    fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
+    xs = [r["n_worlds"] for r in cpu]
+    med = [r["wall_s_per_sim_s_per_world_median"] for r in cpu]
+    ax.plot(xs, med, color="#7f3c8d", marker="s", ls="-", label="CENIC reference (Drake, CPU)")
+    ax.fill_between(xs, [r["wall_s_per_sim_s_per_world_min"] for r in cpu],
+                    [r["wall_s_per_sim_s_per_world_max"] for r in cpu], color="#7f3c8d", alpha=0.15)
+    gxs = sorted(r["n_worlds"] for r in gpu)
+    gy = [next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) / 1000.0 / (0.1 * n) for n in gxs]
+    ax.plot(gxs, gy, ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log")
+    ax.set_xlabel("Number of concurrent worlds")
+    ax.set_ylabel("Wall time per simulated second\nper world (s)")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend(fontsize=7)
+    _save(fig, "cenic_scaling")
+
+
 def _knob_label(r: dict) -> str:
     return f"ε={r['accuracy']:g}" if r.get("accuracy", "") != "" else _dt_label(r["dt_s"]).replace("δt = ", "")
 
