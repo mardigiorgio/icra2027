@@ -56,8 +56,11 @@ MAX_STEP = 0.1
 WARMUP_S = 0.2
 TIMED_S = 2.0
 BOUNDARY_S = 0.1
-MAX_WORKERS = 96
+MAX_WORKERS = int(os.environ.get("CENIC_CPU_MAX_WORKERS", "96"))
 NS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+if os.environ.get("CENIC_CPU_NS"):
+    NS = json.loads(os.environ["CENIC_CPU_NS"])
+APPEND = os.environ.get("CENIC_CPU_APPEND") == "1"
 
 
 def _worker(world_seeds: list[int], rendezvous: str) -> None:
@@ -190,9 +193,10 @@ def main() -> int:
         row = _run_batch(n)
         rows.append(row)
         print(row, flush=True)
-    with open(os.path.abspath(out), "w", newline="") as f:
+    with open(os.path.abspath(out), "a" if APPEND else "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
+        if not APPEND:
+            w.writeheader()
         w.writerows(rows)
     print(f"wrote {os.path.abspath(out)}")
     return 0

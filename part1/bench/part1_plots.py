@@ -186,14 +186,21 @@ def cenic_scaling() -> None:
     TIME for the batch of N worlds to complete the 2 s scene, vs N. No
     normalization. Same x points for both stacks; CPU worlds beyond the
     core count run sequentially on the cores available."""
-    cpu = sorted((r for r in _rows("part1_cenic_cpu.csv") if r["n_worlds"] <= 256), key=lambda r: r["n_worlds"])
+    seen = set()
+    cpu = []
+    for r in sorted((r for r in _rows("part1_cenic_cpu.csv") if r["workers"] == min(r["n_worlds"], 96)),
+                    key=lambda r: r["n_worlds"]):
+        if r["n_worlds"] not in seen:
+            seen.add(r["n_worlds"])
+            cpu.append(r)
     gpu = sorted((r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
-                  if r["arm"] == "icf-adaptive" and r["n_worlds"] <= 256), key=lambda r: r["n_worlds"])
+                  + _rows("part1_scaling_hard-clutter_16k.csv")
+                  if r["arm"] == "icf-adaptive"), key=lambda r: r["n_worlds"])
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
     ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
-            color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU)")
+            color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
     n_bounds = 20  # 2 s scene at the 0.1 s boundary
     ax.plot([r["n_worlds"] for r in gpu], [r["wall_ms_median"] / 1000.0 * n_bounds for r in gpu],
             ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
