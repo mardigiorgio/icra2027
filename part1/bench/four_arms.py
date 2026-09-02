@@ -45,6 +45,7 @@ from part1.scenes.contact_objects import (
 )
 
 K_INIT = 0.1  # first attempt = k_Init * dt_max (CENIC Sec. V-F)
+DT_MAX_INNER = 0.1  # the paper's dt_max: inner-step ceiling regardless of boundary size
 NEWTON_KAPPA = 1.0e-3  # eps_tol = max(kappa * eps_acc, NEWTON_TOL_FLOOR) under error control (CENIC Eq. 34)
 NEWTON_TOL_FLOOR = 1.0e-8
 NEWTON_TOL_FIXED = 1.0e-8  # fixed-step mode (CENIC Sec. VI-B)
@@ -141,9 +142,9 @@ def _make_mujoco_adaptive(
     solver = newton.solvers.SolverMuJoCoAdaptive(
         model,
         tol=tol,
-        dt_inner_init=K_INIT * dt_outer,
+        dt_inner_init=K_INIT * min(dt_outer, DT_MAX_INNER),
         dt_inner_min=DT_INNER_MIN,
-        dt_inner_max=dt_outer,
+        dt_inner_max=min(dt_outer, DT_MAX_INNER),
         dt_mode="per_world",
         nconmax=NCONMAX,
         njmax=NJMAX,
@@ -215,15 +216,23 @@ def _make_icf_adaptive(
         params=_icf_params({**(icf_overrides or {}), "newton_tolerance": newton_tol}),
         adaptive=icf.IcfAdaptiveParams(
             tol=tol,
-            dt_inner_init=K_INIT * dt_outer,
+            dt_inner_init=K_INIT * min(dt_outer, DT_MAX_INNER),
             dt_inner_min=DT_INNER_MIN,
-            dt_inner_max=dt_outer,
+            dt_inner_max=min(dt_outer, DT_MAX_INNER),
             **extra,
         ),
     )
     pipeline = newton.CollisionPipeline(model)
     contacts = pipeline.contacts()
-    solver.attach_collision_pipeline(pipeline)
+    # ICF_EC_NO_MIDMARCH=1: cost-attribution diagnostic ONLY -- contacts
+    # collide once per boundary and freeze across the march (the solver's
+    # standalone mode), matching the MuJoCo-EC march's cadence; the
+    # estimator is then blind to pairs formed mid-boundary, so this is
+    # never an experiment arm.
+    import os as _os
+
+    if _os.environ.get("ICF_EC_NO_MIDMARCH") != "1":
+        solver.attach_collision_pipeline(pipeline)
 
     def run(a, b, ctrl):
         # under the outer capture the march records as a conditional
@@ -251,6 +260,7 @@ def make_arm(
     tol: float = 1e-3,
     scene: str | None = None,
     max_substeps: int | None = None,
+    boundary_s: float | None = None,
 ) -> Arm:
     """Build one arm on ``model``. Fixed arms take ``n_sub`` (dt = dt_outer /
     n_sub), adaptive arms ``tol`` (accuracy eps_acc) and an optional
@@ -260,6 +270,14 @@ def make_arm(
     icf = SCENES[scene].icf if scene in SCENES else None
     solref = SCENES[scene].mujoco_solref if scene in SCENES else None
     dt_outer = scene_dt_outer(scene)
+    if boundary_s is not None:
+        # Boundary-free mode (Marco, 2026-09-02): a passive scene has no
+        # controller, so the outer boundary exists only for actuated
+        # systems with fixed control rates. One boundary spans the whole
+        # horizon; the adaptive arms keep the paper's dt_max as their
+        # inner-step ceiling (set below), so only the forced landings and
+        # the per-boundary world sync disappear.
+        dt_outer = boundary_s
     if name == "mujoco":
         return _make_mujoco(model, n_sub, dt_outer, solref)
     if name == "mujoco-adaptive":
