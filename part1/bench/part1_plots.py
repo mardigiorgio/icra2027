@@ -98,7 +98,7 @@ def workprecision() -> None:
             bad = [r for r in rows if r["status"] != "ok" and r["accuracy"] != ""]
             for arm in ("icf-adaptive", "mujoco-adaptive"):
                 pts = sorted(
-                    (r["accuracy"], r["wall_s_per_sim_s"]) for r in ok if r["arm"] == arm and r["accuracy"] != ""
+                    (r["accuracy"], r["wall_s_per_sim_s"] * 2.0) for r in ok if r["arm"] == arm and r["accuracy"] != ""
                 )
                 if pts:
                     ax.plot([p[0] for p in pts], [p[1] for p in pts], ms=4, lw=1.2, **STYLE[arm])
@@ -106,10 +106,10 @@ def workprecision() -> None:
                 for r in sorted((r for r in ok if r["arm"] == arm and r["dt_s"] != ""), key=lambda r: -r["dt_s"]):
                     if r["dt_s"] not in (1e-2, 1e-3):
                         continue  # reference steps: 10 ms and 1 ms
-                    ax.axhline(r["wall_s_per_sim_s"], color=STYLE[arm]["color"], ls=":", lw=0.9, alpha=0.9)
+                    ax.axhline(r["wall_s_per_sim_s"] * 2.0, color=STYLE[arm]["color"], ls=":", lw=0.9, alpha=0.9)
                     ax.text(
                         0.995,
-                        r["wall_s_per_sim_s"],
+                        r["wall_s_per_sim_s"] * 2.0,
                         f"{STYLE[arm]['label'].split(',')[0]} fixed {_dt_label(r['dt_s'])}",
                         fontsize=5.5,
                         color=STYLE[arm]["color"],
@@ -121,8 +121,8 @@ def workprecision() -> None:
             ax.set_yscale("log")
             if not ax.xaxis_inverted():  # shared x: invert exactly once (accuracy tightens to the right)
                 ax.invert_xaxis()
-            thresh = 100.0 * n  # timeout: 100 s per simulated second of one scene
-            top = max([r["wall_s_per_sim_s"] for r in ok if r["wall_s_per_sim_s"] != ""] + [1.0]) * 4.0
+            thresh = 100.0 * n * 2.0  # timeout: 100 s per world-second, over the 2 s scene
+            top = max([r["wall_s_per_sim_s"] * 2.0 for r in ok if r["wall_s_per_sim_s"] != ""] + [2.0]) * 4.0
             if any(r["status"] == "timeout" for r in bad):
                 top = max(top, thresh * 2.5)
             ax.set_ylim(top=top)
@@ -154,10 +154,10 @@ def workprecision() -> None:
                         fontsize=5,
                         color=STYLE[r["arm"]]["color"],
                     )
-            ax.axhline(1.0, color="k", lw=0.6, alpha=0.35)
+            ax.axhline(2.0, color="k", lw=0.6, alpha=0.35)
             ax.text(
                 0.005,
-                1.0,
+                2.0,
                 "real time",
                 fontsize=5.5,
                 color="k",
@@ -171,7 +171,7 @@ def workprecision() -> None:
             if i == len(ns) - 1:
                 ax.set_xlabel("Accuracy")
             if j == 0:
-                ax.set_ylabel(f"Wall Time (s)\nN = {n}")
+                ax.set_ylabel(f"Wall time (s)\nN = {n}")
             ax.grid(True, which="both", alpha=0.3)
             ax.tick_params(labelsize=7)
     axes[0][0].legend(fontsize=6.5, loc="upper left")
@@ -200,7 +200,7 @@ def cenic_scaling() -> None:
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")
-    ax.set_ylabel("Wall time to complete the 2 s scene (s)")
+    ax.set_ylabel("Wall time (s)")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend(fontsize=7, loc="upper left")
     _save(fig, "cenic_scaling")
@@ -222,8 +222,12 @@ def scaling() -> None:
             lo_key, hi_key = (
                 ("wall_ms_trial_min", "wall_ms_trial_max") if has_trials else ("wall_ms_median", "wall_ms_p90")
             )
+            # plain wall time (Marco, 2026-09-02): boundary wall x the 20
+            # boundaries of the 2 s timed window = seconds to complete the scene
+            nb = 2.0 / rows[0].get("dt_outer_s", 0.1)
             pts = sorted(
-                (r["n_worlds"], r["wall_ms_median"], r[lo_key], r[hi_key], _knob_label(r))
+                (r["n_worlds"], r["wall_ms_median"] / 1000.0 * nb, r[lo_key] / 1000.0 * nb,
+                 r[hi_key] / 1000.0 * nb, _knob_label(r))
                 for r in rows
                 if r["arm"] == arm
             )
@@ -239,7 +243,7 @@ def scaling() -> None:
         ax.set_xlabel("Parallel worlds")
         trials = int(rows[0].get("trials", 1) or 1)
         band = f"band: spread of {trials} independent runs" if trials > 1 else "band: median → p90"
-        ax.set_ylabel(f"Wall Time per {rows[0].get('dt_outer_s', 0.01) * 1e3:g} ms step (ms)")
+        ax.set_ylabel("Wall time (s)")
         ax.set_title(SCENE_TITLE[scene], fontsize=9)
         ax.grid(True, which="both", alpha=0.3)
         ax.legend(fontsize=7)
