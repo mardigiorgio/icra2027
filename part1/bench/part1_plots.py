@@ -182,28 +182,25 @@ def workprecision() -> None:
 
 def cenic_scaling() -> None:
     """Experiment 4: CENIC reference implementation (Drake, CPU) vs this
-    work (Newton/Warp, GPU) on hard clutter at eps = 1e-3, in Experiment
-    3's metric: WALL TIME PER 100 ms CONTROL BOUNDARY vs the number of
-    worlds, same x points for both stacks. CPU worlds beyond the core
-    count run sequentially on the cores available (per-core world
-    hosting, no artificial residency cost)."""
-    cpu = sorted(_rows("part1_cenic_cpu.csv"), key=lambda r: r["n_worlds"])
-    gpu = [r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
-           if r["arm"] == "icf-adaptive"]
-    cpu = [r for r in cpu if r["n_worlds"] <= 256]
-    gpu = [r for r in gpu if r["n_worlds"] <= 256]
+    work (Newton/Warp, GPU) on hard clutter at eps = 1e-3: plain WALL
+    TIME for the batch of N worlds to complete the 2 s scene, vs N. No
+    normalization. Same x points for both stacks; CPU worlds beyond the
+    core count run sequentially on the cores available."""
+    cpu = sorted((r for r in _rows("part1_cenic_cpu.csv") if r["n_worlds"] <= 256), key=lambda r: r["n_worlds"])
+    gpu = sorted((r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
+                  if r["arm"] == "icf-adaptive" and r["n_worlds"] <= 256), key=lambda r: r["n_worlds"])
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
-    ax.plot([r["n_worlds"] for r in cpu], [r["wall_ms_per_boundary"] for r in cpu],
+    ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
             color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU)")
-    gxs = sorted(r["n_worlds"] for r in gpu)
-    gy = [next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) for n in gxs]
-    ax.plot(gxs, gy, ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
+    n_bounds = 20  # 2 s scene at the 0.1 s boundary
+    ax.plot([r["n_worlds"] for r in gpu], [r["wall_ms_median"] / 1000.0 * n_bounds for r in gpu],
+            ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")
-    ax.set_ylabel("Wall time per 100 ms control boundary (ms)")
+    ax.set_ylabel("Wall time to complete the 2 s scene (s)")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend(fontsize=7, loc="upper left")
     _save(fig, "cenic_scaling")
