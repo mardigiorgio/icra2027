@@ -3,23 +3,23 @@
 
 """Experiment 4 CPU arm: the CENIC reference implementation (Drake's
 ``integration_scheme="cenic"``, shipped since Drake 1.56) on the hard
-clutter scene: throughput vs number of concurrent worlds.
+clutter scene: WALL TIME PER 100 ms CONTROL BOUNDARY vs number of worlds
+(the Experiment 3 metric, so the CPU and GPU arms read identically).
 
-Scene parity: constants copied from part1/scenes/cenic_scenes.py and the
-initial conditions come from the SAME shared generator both stacks import
-(part1/scenes/clutter_lattice.py), world i seeded BASE_SEED + i, so world
-sets match the GPU benches exactly. Protocol matches part1_scaling.py:
-0.2 s warm-up, 2 s timed, accuracy 1e-3, max step 0.1 s.
+Scene parity: constants copied from part1/scenes/cenic_scenes.py; initial
+conditions come from the SAME shared generator both stacks import
+(part1/scenes/clutter_lattice.py), world i seeded BASE_SEED + i.
 
-Timing (the honest form): every worker builds and warms up, reports
-ready, and all workers start the timed window on one shared GO signal;
-the parent measures ONE makespan from GO to the last worker's finish.
-Per-worker self-timing under staggered starts overstated contended
-throughput. Two workloads per N:
-  free      -- each world advances its 2 s independently (Monte Carlo)
-  lockstep  -- all worlds barrier at every 0.1 s boundary, the way an RL
-               batch must advance
-Run on an idle host; workers are not niced.
+Execution model (Marco, 2026-09-02): worlds beyond the core count run
+SEQUENTIALLY on the cores available, like any CPU batch. W = min(N, 96)
+worker processes each build ONE diagram and host their share of worlds as
+per-world contexts (~1 MB each; the 123 MB framework is paid once per
+worker), so there is no artificial per-world residency cost and no memory
+wall. Lockstep batch semantics: each 0.1 s boundary, every worker
+advances each of its worlds one boundary in sequence, then all workers
+barrier -- exactly how an RL batch consumes the simulator. All workers
+start on one shared GO after building and warming up; the parent times
+one makespan.
 
 RUN (the drake venv, NOT the icra venv; single line)
   ~/Documents/code/drake-cenic/.venv/bin/python part1/bench/benchmarks/part1_cenic_cpu.py
@@ -30,7 +30,6 @@ from __future__ import annotations
 import csv
 import json
 import os
-import statistics
 import subprocess
 import sys
 import tempfile
@@ -39,7 +38,7 @@ import time
 _REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, _REPO)
 
-from part1.scenes.clutter_lattice import BASE_SEED, axis_angle_quat, clutter_lattice  # noqa: E402
+from part1.scenes.clutter_lattice import BASE_SEED, clutter_lattice  # noqa: E402
 
 # part1/scenes/cenic_scenes.py constants (hard clutter)
 K = 1.0e5
@@ -57,11 +56,11 @@ MAX_STEP = 0.1
 WARMUP_S = 0.2
 TIMED_S = 2.0
 BOUNDARY_S = 0.1
-NS = [1, 2, 4, 8, 16, 32, 64, 128, 256]
-MODES = ("free", "lockstep")
+MAX_WORKERS = 96
+NS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 
 
-def _worker(seed: int, rendezvous: str, mode: str) -> None:
+def _worker(world_seeds: list[int], rendezvous: str) -> None:
     import numpy as np
     from pydrake.common.eigen_geometry import AngleAxis
     from pydrake.geometry import AddContactMaterial, Box, HalfSpace, ProximityProperties, Sphere
@@ -94,9 +93,8 @@ def _worker(seed: int, rendezvous: str, mode: str) -> None:
         plant.RegisterCollisionGeometry(plant.world_body(), RigidTransform([px, py, 0.0]),
                                         Box(2 * hx, 2 * hy, 2 * h), f"wall{j}", props())
 
-    lattice = clutter_lattice(seed, hard=True)
     bodies = []
-    for i, (is_cube, pos, axis, angle) in enumerate(lattice):
+    for i, (is_cube, _pos, _axis, _angle) in enumerate(clutter_lattice(BASE_SEED, hard=True)):
         if is_cube:
             inertia = SpatialInertia.SolidBoxWithDensity(DENSITY, 2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
             shape = Box(2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
@@ -105,104 +103,93 @@ def _worker(seed: int, rendezvous: str, mode: str) -> None:
             shape = Sphere(SPHERE_R)
         body = plant.AddRigidBody(f"body{i}", inertia)
         plant.RegisterCollisionGeometry(body, RigidTransform(), shape, f"geom{i}", props())
-        bodies.append((body, pos, axis, angle))
+        bodies.append(body)
 
     plant.set_stiction_tolerance(STICTION)
     plant.Finalize()
     diagram = builder.Build()
-    context = diagram.CreateDefaultContext()
-    pc = plant.GetMyMutableContextFromRoot(context)
-    for body, pos, axis, angle in bodies:
-        rot = RotationMatrix()
-        if axis is not None:
-            rot = RotationMatrix(AngleAxis(angle, np.array(axis)))
-        plant.SetFreeBodyPose(pc, body, RigidTransform(rot, np.array(pos)))
 
-    sim = Simulator(diagram, context)
-    cfg = SimulatorConfig(integration_scheme="cenic", max_step_size=MAX_STEP, accuracy=ACCURACY,
-                          use_error_control=True)
-    ApplySimulatorConfig(cfg, sim)
-    sim.Initialize()
-    sim.AdvanceTo(WARMUP_S)
+    sims = []
+    for seed in world_seeds:
+        ctx = diagram.CreateDefaultContext()
+        pc = plant.GetMyMutableContextFromRoot(ctx)
+        for body, (_is_cube, pos, axis, angle) in zip(bodies, clutter_lattice(seed, hard=True)):
+            rot = RotationMatrix(AngleAxis(angle, np.array(axis))) if axis is not None else RotationMatrix()
+            plant.SetFreeBodyPose(pc, body, RigidTransform(rot, np.array(pos)))
+        sim = Simulator(diagram, ctx)
+        ApplySimulatorConfig(SimulatorConfig(integration_scheme="cenic", max_step_size=MAX_STEP,
+                                             accuracy=ACCURACY, use_error_control=True), sim)
+        sim.Initialize()
+        sim.AdvanceTo(WARMUP_S)
+        sims.append(sim)
 
     me = os.getpid()
     open(os.path.join(rendezvous, f"ready_{me}"), "w").close()
-    go = os.path.join(rendezvous, "go_0")
-    while not os.path.exists(go):
+    while not os.path.exists(os.path.join(rendezvous, "go_0")):
         time.sleep(0.02)
-    t0 = time.perf_counter()
-    if mode == "free":
-        sim.AdvanceTo(WARMUP_S + TIMED_S)
-    else:  # lockstep: barrier at every control boundary, like an RL batch
-        n_bounds = int(round(TIMED_S / BOUNDARY_S))
-        for k in range(1, n_bounds + 1):
-            sim.AdvanceTo(WARMUP_S + k * BOUNDARY_S)
-            open(os.path.join(rendezvous, f"b{k}_{me}"), "w").close()
-            gok = os.path.join(rendezvous, f"go_{k}")
-            if k < n_bounds:
-                while not os.path.exists(gok):
-                    time.sleep(0.005)
-    wall = time.perf_counter() - t0
+    n_bounds = int(round(TIMED_S / BOUNDARY_S))
+    for k in range(1, n_bounds + 1):
+        target = WARMUP_S + k * BOUNDARY_S
+        for sim in sims:
+            sim.AdvanceTo(target)
+        open(os.path.join(rendezvous, f"b{k}_{me}"), "w").close()
+        if k < n_bounds:
+            while not os.path.exists(os.path.join(rendezvous, f"go_{k}")):
+                time.sleep(0.005)
     open(os.path.join(rendezvous, f"done_{me}"), "w").close()
-    print("ROW " + json.dumps({"wall_s": wall}), flush=True)
+    print("ROW " + json.dumps({"worlds": len(sims)}), flush=True)
 
 
 def _count(rendezvous: str, prefix: str) -> int:
     return sum(1 for f in os.listdir(rendezvous) if f.startswith(prefix))
 
 
-def _run_batch(n: int, mode: str) -> dict:
+def _run_batch(n: int) -> dict:
+    workers = min(n, MAX_WORKERS)
+    shares = [[BASE_SEED + i for i in range(n) if i % workers == w] for w in range(workers)]
     with tempfile.TemporaryDirectory(prefix="cenic_cpu_") as rv:
         procs = [
             subprocess.Popen(
-                [sys.executable, os.path.abspath(__file__), "--worker", str(BASE_SEED + i), rv, mode],
+                [sys.executable, os.path.abspath(__file__), "--worker", json.dumps(share), rv],
                 stdout=subprocess.PIPE, text=True,
             )
-            for i in range(n)
+            for share in shares
         ]
-        while _count(rv, "ready_") < n:
+        while _count(rv, "ready_") < workers:
             time.sleep(0.05)
         t0 = time.perf_counter()
         open(os.path.join(rv, "go_0"), "w").close()
-        if mode == "lockstep":
-            n_bounds = int(round(TIMED_S / BOUNDARY_S))
-            for k in range(1, n_bounds):
-                while _count(rv, f"b{k}_") < n:
-                    time.sleep(0.005)
-                open(os.path.join(rv, f"go_{k}"), "w").close()
-        while _count(rv, "done_") < n:
+        n_bounds = int(round(TIMED_S / BOUNDARY_S))
+        for k in range(1, n_bounds):
+            while _count(rv, f"b{k}_") < workers:
+                time.sleep(0.005)
+            open(os.path.join(rv, f"go_{k}"), "w").close()
+        while _count(rv, "done_") < workers:
             time.sleep(0.05)
         makespan = time.perf_counter() - t0
-        walls = []
         for p in procs:
-            stdout, _ = p.communicate(timeout=600)
-            for line in stdout.splitlines():
-                if line.startswith("ROW "):
-                    walls.append(json.loads(line[4:])["wall_s"])
-        assert len(walls) == n, f"{len(walls)}/{n} workers reported"
+            p.communicate(timeout=600)
         return {
             "scheme": "drake-cenic-cpu",
-            "mode": mode,
+            "mode": "lockstep",
             "accuracy": ACCURACY,
             "n_worlds": n,
+            "workers": workers,
             "makespan_s": makespan,
-            "throughput_simss_per_wall_s": n * TIMED_S / makespan,
-            "worker_wall_median_s": statistics.median(walls),
-            "worker_wall_max_s": max(walls),
+            "wall_ms_per_boundary": makespan / n_bounds * 1000.0,
         }
 
 
 def main() -> int:
-    if len(sys.argv) == 5 and sys.argv[1] == "--worker":
-        _worker(int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    if len(sys.argv) == 4 and sys.argv[1] == "--worker":
+        _worker(json.loads(sys.argv[2]), sys.argv[3])
         return 0
     out = os.path.join(os.path.dirname(__file__), "..", "results", "part1_cenic_cpu.csv")
     rows = []
     for n in NS:
-        for mode in MODES:
-            row = _run_batch(n, mode)
-            rows.append(row)
-            print(row, flush=True)
+        row = _run_batch(n)
+        rows.append(row)
+        print(row, flush=True)
     with open(os.path.abspath(out), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
