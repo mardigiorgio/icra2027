@@ -35,7 +35,7 @@ def _capture(viewer, model, state, sim_time: float) -> np.ndarray:
     viewer.log_state(state)
     viewer.end_frame()
     frame = viewer.get_frame().numpy().reshape(H, W, 3)
-    return frame[::-1]  # GL rows are bottom-up
+    return frame
 
 
 def _scene_states(scene: str, t_end: float):
