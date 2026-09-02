@@ -187,7 +187,8 @@ def cenic_scaling() -> None:
     every 0.1 s boundary, the way an RL batch advances) is the primary
     curve; independent worlds are the lighter reference."""
     cpu = _rows("part1_cenic_cpu.csv")
-    gpu = [r for r in _rows("part1_scaling_hard-clutter.csv") if r["arm"] == "icf-adaptive"]
+    gpu = [r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
+           if r["arm"] == "icf-adaptive"]
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
