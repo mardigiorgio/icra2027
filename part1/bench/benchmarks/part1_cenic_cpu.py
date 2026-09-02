@@ -3,19 +3,23 @@
 
 """Experiment 4 CPU arm: the CENIC reference implementation (Drake's
 ``integration_scheme="cenic"``, shipped since Drake 1.56) on the hard
-clutter scene, cost per world vs number of concurrent worlds.
+clutter scene: throughput vs number of concurrent worlds.
 
-The scene is a 1:1 port of part1/scenes/cenic_scenes.py hard clutter
-(constants copied, lattice RNG replayed call-for-call with the same seed,
-so both stacks integrate the same initial condition): 10 spheres
-(r = 2.5 cm, density 1000) + 10 cubes (2.5 cm half), k = 1e5 N/m,
-Hunt-Crossley dissipation 1.0 s/m, mu = 0.5, stiction tolerance 1e-4,
-30 cm bin. Protocol matches part1_scaling.py: 0.2 s warm-up, 2 s timed,
-accuracy 1e-3, max step 0.1 s.
+Scene parity: constants copied from part1/scenes/cenic_scenes.py and the
+initial conditions come from the SAME shared generator both stacks import
+(part1/scenes/clutter_lattice.py), world i seeded BASE_SEED + i, so world
+sets match the GPU benches exactly. Protocol matches part1_scaling.py:
+0.2 s warm-up, 2 s timed, accuracy 1e-3, max step 0.1 s.
 
-CPU worlds are independent processes (one world each, nice +10 so a
-concurrent GPU training keeps its host threads); per-world cost is each
-process's own wall over the timed window.
+Timing (the honest form): every worker builds and warms up, reports
+ready, and all workers start the timed window on one shared GO signal;
+the parent measures ONE makespan from GO to the last worker's finish.
+Per-worker self-timing under staggered starts overstated contended
+throughput. Two workloads per N:
+  free      -- each world advances its 2 s independently (Monte Carlo)
+  lockstep  -- all worlds barrier at every 0.1 s boundary, the way an RL
+               batch must advance
+Run on an idle host; workers are not niced.
 
 RUN (the drake venv, NOT the icra venv; single line)
   ~/Documents/code/drake-cenic/.venv/bin/python part1/bench/benchmarks/part1_cenic_cpu.py
@@ -25,13 +29,17 @@ from __future__ import annotations
 
 import csv
 import json
-import math
 import os
-import random
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
+
+_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+sys.path.insert(0, _REPO)
+
+from part1.scenes.clutter_lattice import BASE_SEED, axis_angle_quat, clutter_lattice  # noqa: E402
 
 # part1/scenes/cenic_scenes.py constants (hard clutter)
 K = 1.0e5
@@ -43,43 +51,19 @@ CUBE_HALF = 0.025
 BIN_HALF = 0.15
 BIN_WALL_T = 0.02
 BIN_WALL_H = 0.30
-LATTICE_SEED = 7
 DENSITY = 1000.0
 ACCURACY = 1e-3
 MAX_STEP = 0.1
 WARMUP_S = 0.2
 TIMED_S = 2.0
-NS = [1, 2, 4, 8, 16, 32, 64, 96]
-if os.environ.get("CENIC_CPU_NS"):
-    NS = json.loads(os.environ["CENIC_CPU_NS"])
-APPEND = os.environ.get("CENIC_CPU_APPEND") == "1"
+BOUNDARY_S = 0.1
+NS = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+MODES = ("free", "lockstep")
 
 
-def _lattice():
-    """Replays cenic_scenes._clutter_template's RNG call-for-call."""
-    rng = random.Random(LATTICE_SEED)
-    bodies = []
-    i = 0
-    for layer in range(5):
-        shift = 0.03 if layer % 2 else 0.0
-        for cx, cy in ((-0.06, -0.06), (0.06, -0.06), (-0.06, 0.06), (0.06, 0.06)):
-            x = cx + shift + rng.uniform(-0.015, 0.015)
-            y = cy + shift + rng.uniform(-0.015, 0.015)
-            z = 0.12 + 0.07 * layer + rng.uniform(-0.005, 0.005)
-            axis, angle = None, 0.0
-            if i % 2 == 1:  # hard clutter: odd indices are cubes, tilted
-                ax = (rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))
-                n = math.sqrt(sum(a * a for a in ax)) or 1.0
-                axis = tuple(a / n for a in ax)
-                angle = rng.uniform(0.0, math.pi)
-            bodies.append((i % 2 == 1, (x, y, z), axis, angle))
-            i += 1
-    return bodies
-
-
-def _run_world() -> dict:
-    os.nice(10)
+def _worker(seed: int, rendezvous: str, mode: str) -> None:
     import numpy as np
+    from pydrake.common.eigen_geometry import AngleAxis
     from pydrake.geometry import AddContactMaterial, Box, HalfSpace, ProximityProperties, Sphere
     from pydrake.math import RigidTransform, RotationMatrix
     from pydrake.multibody.plant import AddMultibodyPlantSceneGraph, ContactModel, CoulombFriction
@@ -88,7 +72,7 @@ def _run_world() -> dict:
     from pydrake.systems.framework import DiagramBuilder
 
     builder = DiagramBuilder()
-    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.0)
+    plant, _ = AddMultibodyPlantSceneGraph(builder, time_step=0.0)
     plant.set_contact_model(ContactModel.kPoint)
 
     def props():
@@ -110,8 +94,9 @@ def _run_world() -> dict:
         plant.RegisterCollisionGeometry(plant.world_body(), RigidTransform([px, py, 0.0]),
                                         Box(2 * hx, 2 * hy, 2 * h), f"wall{j}", props())
 
+    lattice = clutter_lattice(seed, hard=True)
     bodies = []
-    for i, (is_cube, pos, axis, angle) in enumerate(_lattice()):
+    for i, (is_cube, pos, axis, angle) in enumerate(lattice):
         if is_cube:
             inertia = SpatialInertia.SolidBoxWithDensity(DENSITY, 2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
             shape = Box(2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
@@ -130,8 +115,6 @@ def _run_world() -> dict:
     for body, pos, axis, angle in bodies:
         rot = RotationMatrix()
         if axis is not None:
-            from pydrake.common.eigen_geometry import AngleAxis
-
             rot = RotationMatrix(AngleAxis(angle, np.array(axis)))
         plant.SetFreeBodyPose(pc, body, RigidTransform(rot, np.array(pos)))
 
@@ -141,48 +124,88 @@ def _run_world() -> dict:
     ApplySimulatorConfig(cfg, sim)
     sim.Initialize()
     sim.AdvanceTo(WARMUP_S)
+
+    me = os.getpid()
+    open(os.path.join(rendezvous, f"ready_{me}"), "w").close()
+    go = os.path.join(rendezvous, "go_0")
+    while not os.path.exists(go):
+        time.sleep(0.02)
     t0 = time.perf_counter()
-    sim.AdvanceTo(WARMUP_S + TIMED_S)
+    if mode == "free":
+        sim.AdvanceTo(WARMUP_S + TIMED_S)
+    else:  # lockstep: barrier at every control boundary, like an RL batch
+        n_bounds = int(round(TIMED_S / BOUNDARY_S))
+        for k in range(1, n_bounds + 1):
+            sim.AdvanceTo(WARMUP_S + k * BOUNDARY_S)
+            open(os.path.join(rendezvous, f"b{k}_{me}"), "w").close()
+            gok = os.path.join(rendezvous, f"go_{k}")
+            if k < n_bounds:
+                while not os.path.exists(gok):
+                    time.sleep(0.005)
     wall = time.perf_counter() - t0
-    return {"wall_s": wall, "wall_s_per_sim_s": wall / TIMED_S}
+    open(os.path.join(rendezvous, f"done_{me}"), "w").close()
+    print("ROW " + json.dumps({"wall_s": wall}), flush=True)
+
+
+def _count(rendezvous: str, prefix: str) -> int:
+    return sum(1 for f in os.listdir(rendezvous) if f.startswith(prefix))
+
+
+def _run_batch(n: int, mode: str) -> dict:
+    with tempfile.TemporaryDirectory(prefix="cenic_cpu_") as rv:
+        procs = [
+            subprocess.Popen(
+                [sys.executable, os.path.abspath(__file__), "--worker", str(BASE_SEED + i), rv, mode],
+                stdout=subprocess.PIPE, text=True,
+            )
+            for i in range(n)
+        ]
+        while _count(rv, "ready_") < n:
+            time.sleep(0.05)
+        t0 = time.perf_counter()
+        open(os.path.join(rv, "go_0"), "w").close()
+        if mode == "lockstep":
+            n_bounds = int(round(TIMED_S / BOUNDARY_S))
+            for k in range(1, n_bounds):
+                while _count(rv, f"b{k}_") < n:
+                    time.sleep(0.005)
+                open(os.path.join(rv, f"go_{k}"), "w").close()
+        while _count(rv, "done_") < n:
+            time.sleep(0.05)
+        makespan = time.perf_counter() - t0
+        walls = []
+        for p in procs:
+            stdout, _ = p.communicate(timeout=600)
+            for line in stdout.splitlines():
+                if line.startswith("ROW "):
+                    walls.append(json.loads(line[4:])["wall_s"])
+        assert len(walls) == n, f"{len(walls)}/{n} workers reported"
+        return {
+            "scheme": "drake-cenic-cpu",
+            "mode": mode,
+            "accuracy": ACCURACY,
+            "n_worlds": n,
+            "makespan_s": makespan,
+            "throughput_simss_per_wall_s": n * TIMED_S / makespan,
+            "worker_wall_median_s": statistics.median(walls),
+            "worker_wall_max_s": max(walls),
+        }
 
 
 def main() -> int:
-    if len(sys.argv) == 2 and sys.argv[1] == "--single":
-        print("ROW " + json.dumps(_run_world()), flush=True)
+    if len(sys.argv) == 5 and sys.argv[1] == "--worker":
+        _worker(int(sys.argv[2]), sys.argv[3], sys.argv[4])
         return 0
     out = os.path.join(os.path.dirname(__file__), "..", "results", "part1_cenic_cpu.csv")
     rows = []
     for n in NS:
-        procs = [
-            subprocess.Popen([sys.executable, os.path.abspath(__file__), "--single"],
-                             stdout=subprocess.PIPE, text=True)
-            for _ in range(n)
-        ]
-        walls = []
-        for p in procs:
-            stdout, _ = p.communicate(timeout=3600)
-            for line in stdout.splitlines():
-                if line.startswith("ROW "):
-                    walls.append(json.loads(line[4:])["wall_s_per_sim_s"])
-        if len(walls) != n:
-            print(f"FAIL n={n}: {len(walls)}/{n} worlds reported", flush=True)
-            continue
-        row = {
-            "scheme": "drake-cenic-cpu",
-            "accuracy": ACCURACY,
-            "n_worlds": n,
-            "wall_s_per_sim_s_per_world_median": statistics.median(walls),
-            "wall_s_per_sim_s_per_world_min": min(walls),
-            "wall_s_per_sim_s_per_world_max": max(walls),
-        }
-        rows.append(row)
-        print(row, flush=True)
-    mode = "a" if APPEND else "w"
-    with open(os.path.abspath(out), mode, newline="") as f:
+        for mode in MODES:
+            row = _run_batch(n, mode)
+            rows.append(row)
+            print(row, flush=True)
+    with open(os.path.abspath(out), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        if not APPEND:
-            w.writeheader()
+        w.writeheader()
         w.writerows(rows)
     print(f"wrote {os.path.abspath(out)}")
     return 0

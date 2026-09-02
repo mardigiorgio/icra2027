@@ -113,16 +113,21 @@ def _apply_solref(solver, solref) -> None:
 
 
 def _make_mujoco(model: newton.Model, n_sub: int, dt_outer: float, solref=None) -> Arm:
+    # Newton contacts (Marco, 2026-09-01): every arm consumes the SAME
+    # collision pipeline's contact set, so the solver is the only
+    # difference between the MuJoCo and ICF arms.
     solver = newton.solvers.SolverMuJoCo(
-        model, separate_worlds=True, nconmax=NCONMAX, njmax=NJMAX
+        model, separate_worlds=True, nconmax=NCONMAX, njmax=NJMAX, use_mujoco_contacts=False
     )
     _apply_solref(solver, solref)
-    contacts = model.contacts()
+    pipeline = newton.CollisionPipeline(model)
+    contacts = pipeline.contacts()
     dt = dt_outer / n_sub
 
     def run(a, b, ctrl):
         # step() writes state_out in place and returns None; ping-pong
         for _ in range(n_sub):
+            pipeline.collide(a, contacts)
             solver.step(a, b, ctrl, contacts, dt)
             a, b = b, a
 
@@ -142,12 +147,19 @@ def _make_mujoco_adaptive(
         dt_mode="per_world",
         nconmax=NCONMAX,
         njmax=NJMAX,
+        use_newton_contacts=True,
         **extra,
     )
     _apply_solref(solver, solref)
+    # same contact source as every other arm (see _make_mujoco), with the
+    # mid-march pipeline attached for the two-queries-per-attempt cadence
+    pipeline = newton.CollisionPipeline(model)
+    contacts = pipeline.contacts()
+    solver.attach_collision_pipeline(pipeline)
 
     def boundary(s0, s1, ctrl):
-        return solver.step_dt(dt_outer, s0, s1, ctrl)
+        pipeline.collide(s0, contacts)
+        return solver.step(s0, s1, ctrl, contacts, dt_outer)
 
     return Arm(
         "mujoco-adaptive",

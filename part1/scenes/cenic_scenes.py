@@ -123,32 +123,21 @@ def _clutter_template(hard: bool) -> newton.ModelBuilder:
     cfg = newton.ModelBuilder.ShapeConfig(ke=ke, kd=0.02 * ke, mu=CLUTTER_MU, margin=CONTACT_MARGIN, density=1000.0)
     t = newton.ModelBuilder()
     newton.solvers.SolverMuJoCoAdaptive.register_custom_attributes(t)
-    # Initial arrangement: 4 columns x 5 layers above the bin, alternate
-    # layers staggered by half the column spacing, every body jittered
-    # (+-1.5 cm in xy, +-5 mm in z) and every cube tilted by a random
-    # rotation -- a fixed seed, so the scene is one deterministic drop.
-    # Perfectly aligned columns would land as columns, not as clutter.
-    import math
-    import random
+    # Initial arrangement comes from the shared no-overlap generator
+    # (part1/scenes/clutter_lattice.py, also imported verbatim by the
+    # Drake CENIC harness): 4 columns x 5 layers, staggered, jittered,
+    # rejection-sampled so no bodies interpenetrate at spawn. The
+    # template carries world 0's lattice; build_clutter overwrites the
+    # poses per world for randomized initial conditions.
+    from part1.scenes.clutter_lattice import axis_angle_quat, clutter_lattice
 
-    rng = random.Random(LATTICE_SEED)
-    i = 0
-    for layer in range(5):
-        shift = 0.03 if layer % 2 else 0.0
-        for cx, cy in ((-0.06, -0.06), (0.06, -0.06), (-0.06, 0.06), (0.06, 0.06)):
-            x = cx + shift + rng.uniform(-0.015, 0.015)
-            y = cy + shift + rng.uniform(-0.015, 0.015)
-            z = 0.12 + 0.07 * layer + rng.uniform(-0.005, 0.005)
-            q = wp.quat_identity()
-            if hard and i % 2 == 1:
-                ax = wp.vec3(rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))
-                q = wp.quat_from_axis_angle(wp.normalize(ax), rng.uniform(0.0, math.pi))
-            b = t.add_body(xform=wp.transform(p=wp.vec3(x, y, z), q=q))
-            if hard and i % 2 == 1:
-                t.add_shape_box(b, hx=CLUTTER_CUBE_HALF, hy=CLUTTER_CUBE_HALF, hz=CLUTTER_CUBE_HALF, cfg=cfg)
-            else:
-                t.add_shape_sphere(b, radius=CLUTTER_SPHERE_R, cfg=cfg)
-            i += 1
+    for is_cube, pos, axis, angle in clutter_lattice(LATTICE_SEED, hard):
+        q = wp.quat(*axis_angle_quat(axis, angle)) if axis is not None else wp.quat_identity()
+        b = t.add_body(xform=wp.transform(p=wp.vec3(*pos), q=q))
+        if is_cube:
+            t.add_shape_box(b, hx=CLUTTER_CUBE_HALF, hy=CLUTTER_CUBE_HALF, hz=CLUTTER_CUBE_HALF, cfg=cfg)
+        else:
+            t.add_shape_sphere(b, radius=CLUTTER_SPHERE_R, cfg=cfg)
     return t
 
 
@@ -161,7 +150,21 @@ def build_clutter(n_worlds: int, hard: bool) -> newton.Model:
     builder = newton.ModelBuilder()
     builder.replicate(template, n_worlds)
     _add_bin(builder, wall_cfg)
-    return _finish(builder)
+    model = _finish(builder)
+    # Randomized per-world initial conditions (Marco, 2026-09-01): world w
+    # draws lattice seed LATTICE_SEED + w; poses overwrite the replicated
+    # template defaults BEFORE any state is created from the model.
+    import numpy as np
+
+    from part1.scenes.clutter_lattice import axis_angle_quat, clutter_lattice
+
+    bq = model.body_q.numpy().reshape(n_worlds, -1, 7)
+    for w in range(n_worlds):
+        for j, (is_cube, pos, axis, angle) in enumerate(clutter_lattice(LATTICE_SEED + w, hard)):
+            bq[w, j, :3] = pos
+            bq[w, j, 3:] = axis_angle_quat(axis, angle) if axis is not None else (0.0, 0.0, 0.0, 1.0)
+    model.body_q.assign(bq.reshape(-1, 7))
+    return model
 
 
 def build_ball(n_worlds: int) -> newton.Model:
