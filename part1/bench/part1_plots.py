@@ -183,38 +183,31 @@ def workprecision() -> None:
 def cenic_scaling() -> None:
     """Experiment 4: CENIC reference implementation (Drake, CPU) vs this
     work (Newton/Warp, GPU) on hard clutter at eps = 1e-3: throughput vs
-    the number of concurrent worlds. The CPU's lockstep mode (barrier at
-    every 0.1 s boundary, the way an RL batch advances) is the primary
-    curve; independent worlds are the lighter reference."""
-    cpu = _rows("part1_cenic_cpu.csv")
+    the number of concurrent worlds, the SAME x points for both stacks
+    (1 .. 256; the CPU's memory ceiling ends the axis). One curve per
+    stack: the CPU curve is the lockstep-batch workload, matching how the
+    GPU advances its batch."""
+    cpu = sorted((r for r in _rows("part1_cenic_cpu.csv") if r["mode"] == "lockstep"), key=lambda r: r["n_worlds"])
     gpu = [r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
-           if r["arm"] == "icf-adaptive"]
+           if r["arm"] == "icf-adaptive" and r["n_worlds"] <= 256]
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
-    for mode, ls, alpha, label in (
-        ("lockstep", "-", 1.0, "CENIC reference (Drake, CPU), lockstep batch"),
-        ("free", "--", 0.55, "CENIC reference (Drake, CPU), independent worlds"),
-    ):
-        rows = sorted((r for r in cpu if r["mode"] == mode), key=lambda r: r["n_worlds"])
-        ax.plot([r["n_worlds"] for r in rows], [r["throughput_simss_per_wall_s"] for r in rows],
-                color="#7f3c8d", marker="s", ms=4, ls=ls, alpha=alpha, label=label)
-        if mode == "lockstep":
-            wall_x, wall_y = rows[-1]["n_worlds"], rows[-1]["throughput_simss_per_wall_s"]
+    ax.plot([r["n_worlds"] for r in cpu], [r["throughput_simss_per_wall_s"] for r in cpu],
+            color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU)")
+    wall_x, wall_y = cpu[-1]["n_worlds"], cpu[-1]["throughput_simss_per_wall_s"]
     ax.plot([wall_x], [wall_y], marker="|", ms=14, mew=2.5, color="#7f3c8d")
-    ax.annotate("memory wall: 123 MB/world;\n1024 worlds need 126 GB (host: 62 GB)",
-                xy=(wall_x * 1.35, wall_y * 0.22), fontsize=6.5, ha="left", color="#7f3c8d")
+    ax.annotate("CPU memory wall: 123 MB/world;\na 1024-world batch cannot run (62 GB host)",
+                xy=(wall_x * 0.9, wall_y * 0.38), fontsize=6.5, ha="right", color="#7f3c8d")
     gxs = sorted(r["n_worlds"] for r in gpu)
     gy = [0.1 * n / (next(r["wall_ms_median"] for r in gpu if r["n_worlds"] == n) / 1000.0) for n in gxs]
     ax.plot(gxs, gy, ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
-    ax.axvline(2048, color="k", lw=0.9, ls=":")
-    ax.annotate("RL training batch\n(2048 envs): GPU only", xy=(2048, 130), va="top", fontsize=6.5, ha="center", color="k")
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Number of concurrent worlds")
     ax.set_ylabel("Throughput: simulated world-seconds\nper wall second")
     ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=6.5, loc="lower right")
+    ax.legend(fontsize=7, loc="upper left")
     _save(fig, "cenic_scaling")
 
 
