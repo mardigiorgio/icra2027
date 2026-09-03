@@ -193,16 +193,19 @@ def cenic_scaling() -> None:
         if r["n_worlds"] not in seen:
             seen.add(r["n_worlds"])
             cpu.append(r)
-    gpu = sorted((r for r in _rows("part1_scaling_hard-clutter.csv") + _rows("part1_scaling_hard-clutter_smallN.csv")
-                  + _rows("part1_scaling_hard-clutter_16k.csv")
-                  if r["arm"] == "icf-adaptive"), key=lambda r: r["n_worlds"])
+    # GPU: the fair-protocol ladder (same warm-up and timed window as the
+    # CPU bench, one makespan per N), latest solver commit in the file.
+    ladder = _rows("part1_gpu_fair_ladder.csv")
+    if not ladder:
+        return
+    latest = ladder[-1]["solver_commit"]
+    gpu = sorted((r for r in ladder if r["solver_commit"] == latest), key=lambda r: r["n_worlds"])
     if not cpu or not gpu:
         return
     fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
     ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
             color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
-    n_bounds = 20  # 2 s scene at the 0.1 s boundary
-    ax.plot([r["n_worlds"] for r in gpu], [r["wall_ms_median"] / 1000.0 * n_bounds for r in gpu],
+    ax.plot([r["n_worlds"] for r in gpu], [r["makespan_s"] for r in gpu],
             ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")

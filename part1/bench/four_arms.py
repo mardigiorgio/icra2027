@@ -211,6 +211,12 @@ def _make_icf_adaptive(
     icf = _icf()
     extra = {"max_substeps": int(max_substeps)} if max_substeps else {}
     newton_tol = max(NEWTON_KAPPA * tol, NEWTON_TOL_FLOOR)
+    # The Part-1 bench arm runs the solver's narrow-tail march compaction
+    # (ICF_MARCH_COMPACT, read at construction; opt-in in the solver so the
+    # training path is unaffected). An explicit environment value wins.
+    import os as _os0
+
+    _os0.environ.setdefault("ICF_MARCH_COMPACT", "1")
     solver = icf.SolverICFAdaptive(
         model,
         params=_icf_params({**(icf_overrides or {}), "newton_tolerance": newton_tol}),
