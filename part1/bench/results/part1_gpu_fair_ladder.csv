@@ -1,0 +1,6 @@
+scheme,protocol,accuracy,n_worlds,makespan_s,ms_per_world,march_compact,compact_width,solver_commit
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,1024,29.5,28.81,1,256,0892f58
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,2048,48.7,23.78,1,512,0892f58
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,4096,86.1,21.02,1,1024,0892f58
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,8192,159.5,19.47,1,2048,0892f58
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,16384,304.0,18.55,1,4096,0892f58
