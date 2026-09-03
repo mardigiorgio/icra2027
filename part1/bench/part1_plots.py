@@ -399,16 +399,8 @@ def actuated_scaling() -> None:
 
 if __name__ == "__main__":
     workprecision()
-    speed_bars()
-    ball_energy()
-    penetration()
-    artifacts()
+    cenic_scaling()
     scaling()
-    scaling_per_world()
-    ball_workprecision()
-    realtime_trace()
     stiffness_sweep()
-    consistency()
     actuated()
-    actuated_chatter()
     actuated_scaling()
