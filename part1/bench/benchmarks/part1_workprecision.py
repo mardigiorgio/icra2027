@@ -16,8 +16,10 @@ reported ``budget`` (not the paper's timeout) and drawn as a distinct
 cross.
 
 The adaptive arms sweep eps_acc over 1e-1 .. 1e-6 with a march budget of
-``--max-substeps`` (default 4096, dt floor ~2.4 us) so the accuracy is
-genuinely pursued; a run in which ANY world ever exhausted the budget or
+``--max-substeps`` (default 16384 per 0.1 s boundary, dt floor ~6 us) so the
+accuracy is genuinely pursued; the budget has to exceed what the tightest
+tolerance asks for in the impact phase (ICF EC on hard clutter at 1e-6 sits
+between 4096 and 16384), or the flag reports the cap, not the solver; a run in which ANY world ever exhausted the budget or
 latched diverged is reported ``budget-exhausted`` and treated as a
 failure — a budget-limited point is not an accuracy-achieved point. The
 fixed arms have no accuracy knob and are reported at a ladder of time
@@ -92,7 +94,7 @@ def main() -> int:
     p.add_argument("--n", type=int, default=1, help="worlds; the paper's plots are single-scene")
     p.add_argument("--trials", type=int, default=3)
     p.add_argument("--horizon", type=float, default=None, help="simulated seconds (default: the scene's)")
-    p.add_argument("--max-substeps", type=int, default=4096)
+    p.add_argument("--max-substeps", type=int, default=16384)
     p.add_argument("--wall-budget-s", type=float, default=3600.0, help="practical cap per run; exceeding it is 'budget', not the paper's timeout")
     p.add_argument("--out", type=str, default=None)
     p.add_argument("--single", nargs=2, metavar=("ARM", "KNOB"), default=None)
