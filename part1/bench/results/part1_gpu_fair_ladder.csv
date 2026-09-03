@@ -17,3 +17,8 @@ icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,2048,27.4,13.38,1,512,52ac4
 icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,4096,46.4,11.33,1,1024,52ac4c5
 icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,8192,85.3,10.41,1,2048,52ac4c5
 icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,16384,160.8,9.81,1,4096,52ac4c5
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,1024,15.6,15.23,1,256,543879b
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,2048,24.8,12.11,1,512,543879b
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,4096,42.5,10.38,1,1024,543879b
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,8192,79.1,9.66,1,2048,543879b
+icf-adaptive-gpu,warm0.2s_time20x0.1s_makespan,0.001,16384,147.9,9.03,1,4096,543879b
