@@ -61,6 +61,10 @@ NS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 if os.environ.get("CENIC_CPU_NS"):
     NS = json.loads(os.environ["CENIC_CPU_NS"])
 APPEND = os.environ.get("CENIC_CPU_APPEND") == "1"
+# Lattice layers (5 = the paper's 20-body hard clutter; 2 = the 8-body
+# variant); the workers read it too, and the Newton scene of the same name
+# draws the same bodies from the same stream.
+LAYERS = int(os.environ.get("CENIC_CPU_LAYERS", "5"))
 
 
 def _worker(world_seeds: list[int], rendezvous: str) -> None:
@@ -97,7 +101,7 @@ def _worker(world_seeds: list[int], rendezvous: str) -> None:
                                         Box(2 * hx, 2 * hy, 2 * h), f"wall{j}", props())
 
     bodies = []
-    for i, (is_cube, _pos, _axis, _angle) in enumerate(clutter_lattice(BASE_SEED, hard=True)):
+    for i, (is_cube, _pos, _axis, _angle) in enumerate(clutter_lattice(BASE_SEED, hard=True, layers=LAYERS)):
         if is_cube:
             inertia = SpatialInertia.SolidBoxWithDensity(DENSITY, 2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
             shape = Box(2 * CUBE_HALF, 2 * CUBE_HALF, 2 * CUBE_HALF)
@@ -116,7 +120,7 @@ def _worker(world_seeds: list[int], rendezvous: str) -> None:
     for seed in world_seeds:
         ctx = diagram.CreateDefaultContext()
         pc = plant.GetMyMutableContextFromRoot(ctx)
-        for body, (_is_cube, pos, axis, angle) in zip(bodies, clutter_lattice(seed, hard=True)):
+        for body, (_is_cube, pos, axis, angle) in zip(bodies, clutter_lattice(seed, hard=True, layers=LAYERS)):
             rot = RotationMatrix(AngleAxis(angle, np.array(axis))) if axis is not None else RotationMatrix()
             plant.SetFreeBodyPose(pc, body, RigidTransform(rot, np.array(pos)))
         sim = Simulator(diagram, ctx)
@@ -187,7 +191,7 @@ def main() -> int:
     if len(sys.argv) == 4 and sys.argv[1] == "--worker":
         _worker(json.loads(sys.argv[2]), sys.argv[3])
         return 0
-    out = os.path.join(os.path.dirname(__file__), "..", "results", "part1_cenic_cpu.csv")
+    out = os.environ.get("CENIC_CPU_OUT") or os.path.join(os.path.dirname(__file__), "..", "results", "part1_cenic_cpu.csv")
     rows = []
     for n in NS:
         row = _run_batch(n)

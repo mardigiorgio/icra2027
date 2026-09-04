@@ -180,39 +180,55 @@ def workprecision() -> None:
 
 
 
-def cenic_scaling() -> None:
-    """Experiment 4: CENIC reference implementation (Drake, CPU) vs this
-    work (Newton/Warp, GPU) on hard clutter at eps = 1e-3: plain WALL
-    TIME for the batch of N worlds to complete the 2 s scene, vs N. No
-    normalization. Same x points for both stacks; CPU worlds beyond the
-    core count run sequentially on the cores available."""
+def _cenic_pair(cpu_file: str, gpu_file: str):
     seen = set()
     cpu = []
-    for r in sorted((r for r in _rows("part1_cenic_cpu.csv") if r["workers"] == min(r["n_worlds"], 96)),
+    for r in sorted((r for r in _rows(cpu_file) if r["workers"] == min(r["n_worlds"], 96)),
                     key=lambda r: r["n_worlds"]):
         if r["n_worlds"] not in seen:
             seen.add(r["n_worlds"])
             cpu.append(r)
     # GPU: the fair-protocol ladder (same warm-up and timed window as the
     # CPU bench, one makespan per N), latest solver commit in the file.
-    ladder = _rows("part1_gpu_fair_ladder.csv")
-    if not ladder:
-        return
+    ladder = _rows(gpu_file)
+    if not ladder or not cpu:
+        return None
     latest = ladder[-1]["solver_commit"]
     gpu = sorted((r for r in ladder if r["solver_commit"] == latest), key=lambda r: r["n_worlds"])
-    if not cpu or not gpu:
+    return cpu, gpu
+
+
+def cenic_scaling() -> None:
+    """Experiment 4: CENIC reference implementation (Drake, CPU) vs this
+    work (Newton/Warp, GPU) at eps = 1e-3: plain WALL TIME for the batch of
+    N worlds to complete the 2 s scene, vs N. No normalization. Same x
+    points for both stacks; CPU worlds beyond the core count run
+    sequentially on the cores available. Panel (a) is the paper's 20-body
+    hard clutter; panel (b), drawn when its ladders exist, the same scene at
+    2 lattice layers (8 bodies), where the GPU's per-world work is lower and
+    it saturates later."""
+    panels = [("(a) 20 bodies", _cenic_pair("part1_cenic_cpu.csv", "part1_gpu_fair_ladder.csv"))]
+    light = _cenic_pair("part1_cenic_cpu_hard-clutter-8.csv", "part1_gpu_fair_ladder_hard-clutter-8.csv")
+    if light is not None:
+        panels.append(("(b) 8 bodies", light))
+    panels = [(t, pr) for t, pr in panels if pr is not None]
+    if not panels:
         return
-    fig, ax = plt.subplots(figsize=(5.6, 3.9), constrained_layout=True)
-    ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
-            color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
-    ax.plot([r["n_worlds"] for r in gpu], [r["makespan_s"] for r in gpu],
-            ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
-    ax.set_xscale("log", base=2)
-    ax.set_yscale("log")
-    ax.set_xlabel("Number of concurrent worlds")
-    ax.set_ylabel("Wall time (s)")
-    ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=7, loc="upper left")
+    fig, axes = plt.subplots(1, len(panels), figsize=(5.6 * len(panels), 3.9), constrained_layout=True, sharey=True)
+    axes = list(axes) if len(panels) > 1 else [axes]
+    for ax, (title, (cpu, gpu)) in zip(axes, panels):
+        ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
+                color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
+        ax.plot([r["n_worlds"] for r in gpu], [r["makespan_s"] for r in gpu],
+                ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log")
+        ax.set_xlabel("Number of concurrent worlds")
+        ax.grid(True, which="both", alpha=0.3)
+        if len(panels) > 1:
+            ax.set_title(title, loc="left", fontsize=10)
+    axes[0].set_ylabel("Wall time (s)")
+    axes[0].legend(fontsize=7, loc="upper left")
     _save(fig, "cenic_scaling")
 
 

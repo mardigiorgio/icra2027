@@ -38,18 +38,18 @@ def _solver_commit() -> str:
         return "unknown"
 
 
-def _one(n: int) -> dict:
+def _one(n: int, scene: str) -> dict:
     import warp as wp
 
     from part1.bench.four_arms import _icf, _icf_params, K_INIT, NEWTON_KAPPA, NEWTON_TOL_FLOOR, DT_INNER_MIN, build_model
     from part1.scenes.cenic_scenes import SCENES
     import newton
 
-    model = build_model(n, scene="hard-clutter")
+    model = build_model(n, scene=scene)
     icf = _icf()
     solver = icf.SolverICFAdaptive(
         model,
-        params=_icf_params({**SCENES["hard-clutter"].icf, "newton_tolerance": max(NEWTON_KAPPA * TOL, NEWTON_TOL_FLOOR)}),
+        params=_icf_params({**SCENES[scene].icf, "newton_tolerance": max(NEWTON_KAPPA * TOL, NEWTON_TOL_FLOOR)}),
         adaptive=icf.IcfAdaptiveParams(tol=TOL, dt_inner_init=K_INIT * BOUNDARY_S, dt_inner_min=DT_INNER_MIN,
                                        dt_inner_max=BOUNDARY_S, max_substeps=4096),
     )
@@ -92,15 +92,17 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--ns", nargs="*", type=int, default=[1024, 2048, 4096, 8192, 16384])
     p.add_argument("--single", type=int, default=None)
+    p.add_argument("--scene", default="hard-clutter", help="a clutter scene from part1.scenes.cenic_scenes.SCENES")
     args = p.parse_args()
     if args.single is not None:
         import json
 
-        print("ROW " + json.dumps(_one(args.single)), flush=True)
+        print("ROW " + json.dumps(_one(args.single, args.scene)), flush=True)
         return 0
     rows = []
+    out_path = OUT if args.scene == "hard-clutter" else OUT.replace("part1_gpu_fair_ladder.csv", f"part1_gpu_fair_ladder_{args.scene}.csv")
     for n in args.ns:
-        out = subprocess.run([sys.executable, os.path.abspath(__file__), "--single", str(n)],
+        out = subprocess.run([sys.executable, os.path.abspath(__file__), "--single", str(n), "--scene", args.scene],
                              capture_output=True, text=True)
         line = [ln for ln in out.stdout.splitlines() if ln.startswith("ROW ")]
         if not line:
@@ -110,13 +112,13 @@ def main() -> int:
 
         rows.append(json.loads(line[-1][4:]))
         print(rows[-1], flush=True)
-    new_file = not os.path.exists(OUT)
-    with open(OUT, "a", newline="") as f:
+    new_file = not os.path.exists(out_path)
+    with open(out_path, "a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         if new_file:
             w.writeheader()
         w.writerows(rows)
-    print(f"appended {len(rows)} rows to {OUT}")
+    print(f"appended {len(rows)} rows to {out_path}")
     return 0
 
 

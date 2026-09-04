@@ -35,10 +35,14 @@ def _radius(is_cube: bool) -> float:
     return CUBE_CIRCUM if is_cube else SPHERE_R
 
 
-def clutter_lattice(seed: int, hard: bool) -> list[tuple[bool, tuple[float, float, float], tuple | None, float]]:
-    """20 bodies above the bin: 4 columns x 5 layers, alternate layers
-    staggered, every body jittered; hard clutter alternates spheres and
-    tilted cubes. Returns [(is_cube, (x, y, z), axis_or_None, angle)]."""
+def clutter_lattice(
+    seed: int, hard: bool, layers: int = 5
+) -> list[tuple[bool, tuple[float, float, float], tuple | None, float]]:
+    """4 * layers bodies above the bin: 4 columns x `layers` layers (5 =
+    the paper's 20-body clutter), alternate layers staggered, every body
+    jittered; hard clutter alternates spheres and tilted cubes. Fewer layers
+    draw the same first bodies from the same stream. Returns
+    [(is_cube, (x, y, z), axis_or_None, angle)]."""
     attempt_seed = seed
     while True:
         rng = random.Random(attempt_seed)
@@ -46,7 +50,7 @@ def clutter_lattice(seed: int, hard: bool) -> list[tuple[bool, tuple[float, floa
         out = []
         i = 0
         feasible = True
-        for layer in range(5):
+        for layer in range(layers):
             shift = 0.03 if layer % 2 else 0.0
             for cx, cy in ((-0.06, -0.06), (0.06, -0.06), (-0.06, 0.06), (0.06, 0.06)):
                 is_cube = hard and i % 2 == 1

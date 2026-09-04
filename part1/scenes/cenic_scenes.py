@@ -116,7 +116,7 @@ def _add_bin(builder: newton.ModelBuilder, cfg: newton.ModelBuilder.ShapeConfig)
         )
 
 
-def _clutter_template(hard: bool) -> newton.ModelBuilder:
+def _clutter_template(hard: bool, layers: int = 5) -> newton.ModelBuilder:
     # ke: the paper's k. kd: ASSUMED at kd = 0.02 * ke (the repo's demo
     # scene ratio); the paper states no dissipation for clutter.
     ke = 1.0e5 if hard else 1.0e3
@@ -131,7 +131,7 @@ def _clutter_template(hard: bool) -> newton.ModelBuilder:
     # poses per world for randomized initial conditions.
     from part1.scenes.clutter_lattice import axis_angle_quat, clutter_lattice
 
-    for is_cube, pos, axis, angle in clutter_lattice(LATTICE_SEED, hard):
+    for is_cube, pos, axis, angle in clutter_lattice(LATTICE_SEED, hard, layers):
         q = wp.quat(*axis_angle_quat(axis, angle)) if axis is not None else wp.quat_identity()
         b = t.add_body(xform=wp.transform(p=wp.vec3(*pos), q=q))
         if is_cube:
@@ -141,8 +141,8 @@ def _clutter_template(hard: bool) -> newton.ModelBuilder:
     return t
 
 
-def build_clutter(n_worlds: int, hard: bool) -> newton.Model:
-    template = _clutter_template(hard)
+def build_clutter(n_worlds: int, hard: bool, layers: int = 5) -> newton.Model:
+    template = _clutter_template(hard, layers)
     ke = 1.0e5 if hard else 1.0e3
     wall_cfg = newton.ModelBuilder.ShapeConfig(
         ke=ke, kd=0.02 * ke, mu=CLUTTER_MU, margin=CONTACT_MARGIN, is_visible=False
@@ -160,7 +160,7 @@ def build_clutter(n_worlds: int, hard: bool) -> newton.Model:
 
     bq = model.body_q.numpy().reshape(n_worlds, -1, 7)
     for w in range(n_worlds):
-        for j, (is_cube, pos, axis, angle) in enumerate(clutter_lattice(LATTICE_SEED + w, hard)):
+        for j, (is_cube, pos, axis, angle) in enumerate(clutter_lattice(LATTICE_SEED + w, hard, layers)):
             bq[w, j, :3] = pos
             bq[w, j, 3:] = axis_angle_quat(axis, angle) if axis is not None else (0.0, 0.0, 0.0, 1.0)
     model.body_q.assign(bq.reshape(-1, 7))
@@ -193,6 +193,14 @@ SCENES: dict[str, SceneSpec] = {
         lambda n: build_clutter(n, hard=True),
         icf={"contact_stiffness": 1.0e5, "contact_stiction_tolerance": 1.0e-4, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
         note="10 spheres + 10 cubes in a bin, k=1e5 N/m, v_s=0.1 mm/s",
+        dt_outer=0.1,
+        mujoco_solref=(MUJOCO_TAU_K1E5, 1.0),
+    ),
+    "hard-clutter-8": SceneSpec(
+        "hard-clutter-8",
+        lambda n: build_clutter(n, hard=True, layers=2),
+        icf={"contact_stiffness": 1.0e5, "contact_stiction_tolerance": 1.0e-4, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
+        note="hard clutter at 2 lattice layers: 4 spheres + 4 cubes in the bin, k=1e5 N/m, v_s=0.1 mm/s",
         dt_outer=0.1,
         mujoco_solref=(MUJOCO_TAU_K1E5, 1.0),
     ),
