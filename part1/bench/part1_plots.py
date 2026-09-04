@@ -193,11 +193,10 @@ def _cenic_pair(cpu_file: str, gpu_file: str):
     ladder = _rows(gpu_file)
     if not ladder or not cpu:
         return None
-    # ... one curve per tolerance measured at that commit (the nominal
-    # eps = 1e-3 and the step-matched one), each labeled with its eps.
+    # ... at the nominal tolerance only (Marco, 2026-09-03: Drake 1e-3 vs
+    # this work 1e-3, nothing else on the figure).
     latest = ladder[-1]["solver_commit"]
-    tols = sorted({r["accuracy"] for r in ladder if r["solver_commit"] == latest}, reverse=True)
-    gpu = {t: sorted((r for r in ladder if r["solver_commit"] == latest and r["accuracy"] == t), key=lambda r: r["n_worlds"]) for t in tols}
+    gpu = sorted((r for r in ladder if r["solver_commit"] == latest and abs(r["accuracy"] - 1e-3) < 1e-9), key=lambda r: r["n_worlds"])
     return cpu, gpu
 
 
@@ -221,12 +220,8 @@ def cenic_scaling() -> None:
     for ax, (title, (cpu, gpu)) in zip(axes, panels):
         ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
                 color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
-        for k, (t, rows) in enumerate(gpu.items()):
-            st = dict(STYLE["icf-adaptive"])
-            if k > 0:
-                st["ls"] = "--"
-            ax.plot([r["n_worlds"] for r in rows], [r["makespan_s"] for r in rows],
-                    ms=5, **dict(st, label=f"CENIC on GPU (Newton/Warp, this work), eps = {t:g}"))
+        ax.plot([r["n_worlds"] for r in gpu], [r["makespan_s"] for r in gpu],
+                ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
         ax.set_xscale("log", base=2)
         ax.set_yscale("log")
         ax.set_xlabel("Number of concurrent worlds")

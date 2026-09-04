@@ -110,7 +110,8 @@ for t in [
 
 # ------------------------------------------------------------------ Exp 3
 d.add_heading("Experiment 3, Wall time vs number of parallel worlds", level=2)
-d.add_paragraph("Scene: hard clutter, as captured under Experiment 2.")
+_pic("capture_hard_clutter.png", Inches(5.4))
+d.add_paragraph("Hard clutter (4 spheres + 4 cubes), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right; every world of the batch is its own randomized lattice of this scene.")
 _pic("scaling_hard-clutter.png", Inches(6.2))
 d.add_paragraph("Figure: wall time to complete the 2 s hard clutter scene, vs the number of parallel worlds; band is the spread of 3 independent runs.")
 d.add_paragraph("Design:")
@@ -136,8 +137,10 @@ for t in [
 H2 = "80367ff55e"
 B2 = f"https://github.com/mardigiorgio/icra2027/blob/{H2}"
 d.add_heading("Experiment 4, CENIC reference implementation (Drake, CPU) vs this work (Newton/Warp, GPU): wall time vs number of worlds", level=2)
+_pic("capture_hard_clutter.png", Inches(5.4))
+d.add_paragraph("Hard clutter (4 spheres + 4 cubes), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right; the CPU reference integrates the identical randomized worlds (same lattice generator, same seeds).")
 _pic("cenic_scaling.png", Inches(6.2))
-d.add_paragraph("Figure: wall time for the batch of N worlds to complete the 2 s scene (warm-up to 0.2 s excluded, one makespan over the 20 timed control boundaries, identical protocol on both stacks), CPU reference (128 cores, 96 workers, worlds beyond the cores in sequence) vs this work (RTX 5090). Scene: hard clutter at two lattice layers, 8 bodies, both stacks drawing the same bodies from the same seeded stream. Two GPU curves: the nominal tolerance (solid, eps = 1e-3) and the step-matched one (dashed, eps = 3e-5), see the tolerance note below.")
+d.add_paragraph("Figure: wall time for the batch of N worlds to complete the 2 s scene (warm-up to 0.2 s excluded, one makespan over the 20 timed control boundaries, identical protocol on both stacks), CPU reference (128 cores, 96 workers, worlds beyond the cores in sequence) vs this work (RTX 5090), both at requested accuracy 0.001. Scene: the hard clutter of Experiment 2 (8 bodies), both stacks drawing the same bodies from the same seeded stream.")
 d.add_paragraph("Design (replaces the actuated PD push, PI 2026-09-01):")
 for t in [
     "Question: how long a batch of N worlds takes to complete the scene under error-controlled CENIC, reference CPU implementation vs the GPU implementation this paper contributes",
@@ -148,7 +151,7 @@ for t in [
     "Varied: number of concurrent worlds, 1 ... 16384 (fourteen doublings); the CPU is past its 128 cores from N = 128; the GPU is still sublinear at 16384",
     "Measured: plain wall-clock time for the batch to complete the 2 s scene, in seconds; no normalization; lower is better",
     "Held in both stacks: max step 0.1 s, 0.2 s warm-up then 2 s timed, contact constants (k = 100,000 N/m, Hunt-Crossley 1.0 s/m, friction 0.5, stiction tolerance 0.0001); requested tolerance 0.001 in both stacks for the nominal curves",
-    "Tolerance note (2026-09-03): the two stacks' accuracy knobs are not the same quantity. Drake's `accuracy` is a relative tolerance on its weighted state norm; this work's eps is an absolute position L-inf tolerance in metres. On world 0 over the 20 timed boundaries, Drake at 0.001 takes 543 steps on the 8-body scene (about 24 per boundary once the pile is at rest, dt near 4 ms) while this work at 0.001 accepts 105 (42, 15, 2, 1, ... : the steps go to the impacts, then the step opens to the 0.1 s cap); both reach the same rest state. The step-matched GPU tolerance, found by sweeping on the same world, is eps = 3e-5 (574 accepted steps; 20-body scene: 3e-4 for 884 vs Drake's 895). The figure therefore shows the GPU at both tolerances; a matched-achieved-error (work-precision) comparison against a reference solution is the principled resolution and is not part of this document",
+    "Tolerance note: both stacks run at their requested accuracy 0.001. Drake's `accuracy` is a relative tolerance on its weighted state norm; this work's eps is an absolute position L-inf tolerance in metres, so the two controllers take different step counts on the same world (Drake 543 vs this work 105 accepted steps over the 20 timed boundaries of world 0, both reaching the same rest state); the figure compares the two implementations at their own nominal 0.001",
     "CPU bench note (2026-09-03): the lockstep barrier polled its rendezvous files every 5 ms, adding about 0.15 s per run at small N (Drake's own compute on the 8-body world at N = 1 is 0.087 s); polling is now 0.2 ms and the N <= 256 cells of both CPU ladders were re-measured (8-body N = 1: 0.141 s; the remaining gap to 0.087 s is the barrier itself)",
     "Measured result (seconds to complete the scene, CPU / GPU): 1: 0.24 / 0.11; 2: 0.27 / 0.2; 4: 0.29 / 0.2; 8: 0.30 / 0.2; 16: 0.34 / 0.3; 32: 0.37 / 0.3; 64: 0.38 / 0.4; 128: 0.54 / 0.5; 256: 0.77 / 0.7; 512: 1.38 / 0.8; 1024: 2.40 / 1.0; 2048: 4.44 / 1.3; 4096: 8.58 / 1.9; 8192: 16.5 / 3.0; 16384: 33.0 / 5.5. The GPU is at or below the CPU at every N, 6.0x faster at 16384, and still sublinear there (exponent 4096 to 16384: GPU 0.77 vs CPU 0.94); saturated per-world cost GPU 0.34 ms vs CPU 2.0 ms",
     "Solver state for these numbers: icf_warp_adaptive branch perf/contact-solve at e2f39c4 (block-structured assembly on the free-body layout, 24-dof block-sparse Cholesky, narrow-tail march compaction ICF_MARCH_COMPACT=1, exact per-iteration launch folds); physics unchanged (64-world oracle inside the run-to-run envelope, zero solve failures). Before this work the GPU arm cost about 30 ms per added world, 2.1x the CPU, with no crossover",
