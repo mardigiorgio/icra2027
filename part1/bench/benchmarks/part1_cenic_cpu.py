@@ -61,10 +61,10 @@ NS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 if os.environ.get("CENIC_CPU_NS"):
     NS = json.loads(os.environ["CENIC_CPU_NS"])
 APPEND = os.environ.get("CENIC_CPU_APPEND") == "1"
-# Lattice layers (5 = the paper's 20-body hard clutter; 2 = the 8-body
-# variant); the workers read it too, and the Newton scene of the same name
-# draws the same bodies from the same stream.
-LAYERS = int(os.environ.get("CENIC_CPU_LAYERS", "5"))
+# Lattice layers (2 = the paper's 8-body hard clutter since 2026-09-03; 5 =
+# the 20-body original); the workers read it too, and the Newton scene of the
+# same name draws the same bodies from the same stream.
+LAYERS = int(os.environ.get("CENIC_CPU_LAYERS", "2"))
 
 
 def _worker(world_seeds: list[int], rendezvous: str) -> None:

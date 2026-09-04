@@ -116,7 +116,13 @@ def _add_bin(builder: newton.ModelBuilder, cfg: newton.ModelBuilder.ShapeConfig)
         )
 
 
-def _clutter_template(hard: bool, layers: int = 5) -> newton.ModelBuilder:
+# Lattice layers of the paper's clutter scenes: 2 (8 bodies) since Marco's
+# ruling of 2026-09-03 (per-world contact cost is the lever on every Part-1
+# axis); the 20-body originals stay reachable as *-20.
+CLUTTER_LAYERS = 2
+
+
+def _clutter_template(hard: bool, layers: int = CLUTTER_LAYERS) -> newton.ModelBuilder:
     # ke: the paper's k. kd: ASSUMED at kd = 0.02 * ke (the repo's demo
     # scene ratio); the paper states no dissipation for clutter.
     ke = 1.0e5 if hard else 1.0e3
@@ -141,7 +147,7 @@ def _clutter_template(hard: bool, layers: int = 5) -> newton.ModelBuilder:
     return t
 
 
-def build_clutter(n_worlds: int, hard: bool, layers: int = 5) -> newton.Model:
+def build_clutter(n_worlds: int, hard: bool, layers: int = CLUTTER_LAYERS) -> newton.Model:
     template = _clutter_template(hard, layers)
     ke = 1.0e5 if hard else 1.0e3
     wall_cfg = newton.ModelBuilder.ShapeConfig(
@@ -184,7 +190,7 @@ SCENES: dict[str, SceneSpec] = {
         "soft-clutter",
         lambda n: build_clutter(n, hard=False),
         icf={"contact_stiffness": 1.0e3, "contact_stiction_tolerance": 1.0e-2, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
-        note="20 spheres in a bin, k=1e3 N/m, v_s=1 cm/s",
+        note="8 spheres in a bin (2 lattice layers), k=1e3 N/m, v_s=1 cm/s",
         dt_outer=0.1,
         mujoco_solref=(MUJOCO_TAU_K1E3, 1.0),
     ),
@@ -192,15 +198,23 @@ SCENES: dict[str, SceneSpec] = {
         "hard-clutter",
         lambda n: build_clutter(n, hard=True),
         icf={"contact_stiffness": 1.0e5, "contact_stiction_tolerance": 1.0e-4, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
-        note="10 spheres + 10 cubes in a bin, k=1e5 N/m, v_s=0.1 mm/s",
+        note="4 spheres + 4 cubes in a bin (2 lattice layers), k=1e5 N/m, v_s=0.1 mm/s",
         dt_outer=0.1,
         mujoco_solref=(MUJOCO_TAU_K1E5, 1.0),
     ),
-    "hard-clutter-8": SceneSpec(
-        "hard-clutter-8",
-        lambda n: build_clutter(n, hard=True, layers=2),
+    "soft-clutter-20": SceneSpec(
+        "soft-clutter-20",
+        lambda n: build_clutter(n, hard=False, layers=5),
+        icf={"contact_stiffness": 1.0e3, "contact_stiction_tolerance": 1.0e-2, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
+        note="the paper's original 20-sphere soft clutter (5 lattice layers)",
+        dt_outer=0.1,
+        mujoco_solref=(MUJOCO_TAU_K1E3, 1.0),
+    ),
+    "hard-clutter-20": SceneSpec(
+        "hard-clutter-20",
+        lambda n: build_clutter(n, hard=True, layers=5),
         icf={"contact_stiffness": 1.0e5, "contact_stiction_tolerance": 1.0e-4, "contact_hc_dissipation": CLUTTER_HC_DISSIPATION},
-        note="hard clutter at 2 lattice layers: 4 spheres + 4 cubes in the bin, k=1e5 N/m, v_s=0.1 mm/s",
+        note="the paper's original 10 spheres + 10 cubes hard clutter (5 lattice layers)",
         dt_outer=0.1,
         mujoco_solref=(MUJOCO_TAU_K1E5, 1.0),
     ),

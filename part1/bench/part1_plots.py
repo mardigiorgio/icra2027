@@ -30,8 +30,8 @@ STYLE = {
     "icf-adaptive": dict(color="#27ae60", marker="D", ls="-", label="ICF EC (CENIC)"),
 }
 SCENE_NOTE = {
-    "hard-clutter": "hard clutter: 10 spheres + 10 cubes in a bin, k = 10⁵ N/m, v_s = 0.1 mm/s",
-    "soft-clutter": "soft clutter: 20 spheres in a bin, k = 10³ N/m, v_s = 1 cm/s",
+    "hard-clutter": "hard clutter: 4 spheres + 4 cubes in a bin, k = 10⁵ N/m, v_s = 0.1 mm/s",
+    "soft-clutter": "soft clutter: 8 spheres in a bin, k = 10³ N/m, v_s = 1 cm/s",
     "ball": "0.1 kg ball, k = 10³ N/m, zero dissipation, 1 m drop, 10 s",
 }
 
@@ -211,13 +211,8 @@ def cenic_scaling() -> None:
     2 lattice layers (8 bodies), where the GPU's per-world work is lower and
     it saturates later."""
     # The paper's Exp-4 scene is the 8-body hard clutter (Marco, 2026-09-03);
-    # the 20-body ladders stay in the CSVs and are drawn only if the 8-body
-    # ones are missing.
-    light = _cenic_pair("part1_cenic_cpu_hard-clutter-8.csv", "part1_gpu_fair_ladder_hard-clutter-8.csv")
-    if light is not None:
-        panels = [("8 bodies", light)]
-    else:
-        panels = [("20 bodies", _cenic_pair("part1_cenic_cpu.csv", "part1_gpu_fair_ladder.csv"))]
+    # the 20-body ladders live in the *_20.csv files.
+    panels = [("8 bodies", _cenic_pair("part1_cenic_cpu.csv", "part1_gpu_fair_ladder.csv"))]
     panels = [(t, pr) for t, pr in panels if pr is not None]
     if not panels:
         return
