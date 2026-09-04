@@ -19,6 +19,12 @@ import os
 import numpy as np
 import warp as wp
 
+import os
+
+# No X server needed: pyglet's EGL headless display drives Newton's viewer
+# (the box's desktop session is not this process's).
+os.environ.setdefault("PYGLET_HEADLESS", "1")
+
 import newton
 import newton.viewer
 

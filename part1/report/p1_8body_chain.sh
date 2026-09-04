@@ -7,7 +7,7 @@ cd ~/Documents/code/icra2027 || exit 1
 export VIRTUAL_ENV=$PWD/.venv PYTHONPATH=$PWD ICF_MARCH_COMPACT=1
 R=part1/bench/results
 step() { echo ">>> $1 $(date +%H:%M)"; }
-if [ ! -f $R/.captures_8body ]; then step captures; timeout 900 .venv/bin/python part1/bench/part1_scene_captures.py 2>&1 | grep -aE "wrote|saved|Error|Traceback" | tail -3 && touch $R/.captures_8body; fi
+if [ ! -f $R/.captures_8body ]; then step captures; PYGLET_HEADLESS=1 timeout 900 .venv/bin/python part1/bench/part1_scene_captures.py 2>&1 | grep -aE "wrote|saved|Error|Traceback" | tail -3 && touch $R/.captures_8body; fi
 for sc in hard-clutter soft-clutter; do [ -f $R/part1_workprecision_${sc}_n1.csv ] || { step "wp $sc n=1"; timeout 3000 .venv/bin/python -m part1.bench.benchmarks.part1_workprecision --scene $sc --n 1 --trials 3 2>&1 | grep -aE "wrote|budget|Traceback|Error" | tail -2; }; done
 for sc in hard-clutter soft-clutter; do [ -f $R/part1_scaling_${sc}.csv ] || { step "scaling $sc"; timeout 3000 .venv/bin/python -m part1.bench.benchmarks.part1_scaling --scene $sc 2>&1 | grep -aE "wrote|Traceback|Error" | tail -2; }; done
 grep -q ",3e-05," $R/part1_gpu_fair_ladder.csv || { step "GPU ladder 3e-5"; timeout 3000 .venv/bin/python -m part1.bench.benchmarks.part1_gpu_fair --scene hard-clutter --tol 3e-5 --ns 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 2>&1 | grep -aoE "appended.*|Traceback|Error.*"; }
