@@ -56,15 +56,16 @@ d.add_heading("Experiment 1, Contact stiffness realization: penetration vs step 
 _pic("capture_stiffness.png", Inches(3.2))
 d.add_paragraph("Scene (Newton viewer): the 65 g sphere at rest on the plane.")
 _pic("stiffness_sweep.png", Inches(6.2))
-d.add_paragraph("Status (2026-09-03, evening): re-run on icf_warp perf/contact-solve 0fca334; the scene is the single stiffness sphere and did not change.")
+d.add_paragraph("Figure: resting penetration of the sphere divided by the model's m g / k (1 = the stiffness the scene asked for). (a) fixed step, both solvers; the dotted vertical line is where MuJoCo's refsafe clamp starts to bite (δt = τ/2 = 1.2 ms), beyond which its contact time constant is 2 δt instead of τ. (b) error control at the requested tolerance ε.")
 d.add_paragraph("Design:")
 for t in [
     "Scene: one sphere, r = 2.5 cm, density 1000 (65 g), resting on a flat floor; friction 0.5; contact margin 0; 3 s settle before readout",
-    "Contact stiffness: k = 100,000 N/m for the whole experiment (companion rows at k = 1,000 in the same CSV); ICF takes k directly; MuJoCo takes solref τ = 2.4 ms, calibrated so the converged rest depth equals mg/k at a 1 ms step (τ swept at fixed 1 ms until depth = mg/k)",
+    "Contact stiffness: k = 100,000 N/m for the whole experiment (companion rows at k = 1,000 in the same CSV); ICF takes k directly. MuJoCo takes the reference solref (timeconst τ = 2.4 ms, dampratio 1), τ calibrated so the converged rest depth equals m g / k at a 1 ms step; MuJoCo clamps timeconst to at least 2 δt (refsafe), so above δt = τ/2 the contact is softer than asked by (2 δt / τ)^2. The direct solref form (-k, -b), a literal stiffness the clamp does not touch, is run as a control: it is unstable at 10 and 5 ms and exact at 2 ms and below (rows in the CSV, not on the figure)",
     "Arms: ICF fixed, MuJoCo fixed, ICF EC (CENIC), MuJoCo EC",
     "Varied, panel (a): fixed step δt in {10, 5, 2, 1, 0.5} ms; varied, panel (b): tolerance ε in {0.1 ... 0.00001} m; nothing else changes between runs",
     "Measured: resting penetration divided by mg/k (1 = the model); a launched sphere is marked unstable",
-    "Built-in control: at δt <= 1 ms both solvers read 1.00 within 2 percent, which is the definition of same physical system (equality by convergence, no parameter translation anywhere)",
+    "Built-in control: at δt <= 1 ms both solvers read 1.00 within 2 percent (MuJoCo 0.98 at 1 ms and 0.5 ms), which is the definition of same physical system (equality by convergence, no parameter translation anywhere)",
+    "Result (2026-09-03 run): ICF reads 1.00 at every step and every tolerance. MuJoCo fixed reads 57x at 10 ms, 16.8x at 5 ms, 2.7x at 2 ms, 0.98 at 1 ms and 0.5 ms. MuJoCo error control reads 16.8x for every ε from 0.1 to 1e-4 and 1.25x at 1e-5: its controller only brings the step under τ/2 at the tightest tolerance, because the softened contact is self-consistent at every step and produces no error signal. At k = 1,000 (τ = 31.8 ms) both solvers read 1.00 at every step; the clamp never bites",
 ]:
     d.add_paragraph(t, style="List Bullet")
 d.add_paragraph("Code:")
