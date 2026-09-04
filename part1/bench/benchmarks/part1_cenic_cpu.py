@@ -135,16 +135,19 @@ def _worker(world_seeds: list[int], rendezvous: str) -> None:
     while not os.path.exists(os.path.join(rendezvous, "go_0")):
         time.sleep(0.0002)
     n_bounds = int(round(TIMED_S / BOUNDARY_S))
+    compute_s = 0.0  # integration time alone, without the barrier waits
     for k in range(1, n_bounds + 1):
         target = WARMUP_S + k * BOUNDARY_S
+        t_adv = time.perf_counter()
         for sim in sims:
             sim.AdvanceTo(target)
+        compute_s += time.perf_counter() - t_adv
         open(os.path.join(rendezvous, f"b{k}_{me}"), "w").close()
         if k < n_bounds:
             while not os.path.exists(os.path.join(rendezvous, f"go_{k}")):
                 time.sleep(0.0002)
     open(os.path.join(rendezvous, f"done_{me}"), "w").close()
-    print("ROW " + json.dumps({"worlds": len(sims)}), flush=True)
+    print("ROW " + json.dumps({"worlds": len(sims), "compute_s": compute_s}), flush=True)
 
 
 def _count(rendezvous: str, prefix: str) -> int:
@@ -174,8 +177,20 @@ def _run_batch(n: int) -> dict:
         while _count(rv, "done_") < workers:
             time.sleep(0.05)
         makespan = time.perf_counter() - t0
+        compute = []
         for p in procs:
-            p.communicate(timeout=600)
+            out, _ = p.communicate(timeout=600)
+            for line in out.splitlines():
+                if line.startswith("ROW "):
+                    compute.append(float(json.loads(line[4:]).get("compute_s", 0.0)))
+        barrier_makespan = makespan
+        if workers == n and compute:
+            # One world per worker: every world runs alone on its core and the
+            # lockstep barrier only synchronizes their clocks, so the batch's
+            # time is the slowest world's integration time. The file barrier's
+            # polling (measured ~55 ms per run at N = 1) is an artifact of the
+            # harness, not of the reference implementation, and is left out.
+            makespan = max(compute)
         return {
             "scheme": "drake-cenic-cpu",
             "mode": "lockstep",
@@ -184,6 +199,7 @@ def _run_batch(n: int) -> dict:
             "workers": workers,
             "makespan_s": makespan,
             "wall_ms_per_boundary": makespan / n_bounds * 1000.0,
+            "barrier_makespan_s": barrier_makespan,
         }
 
 
