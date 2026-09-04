@@ -11,9 +11,9 @@ from docx.shared import Inches
 FIG = os.path.expanduser("~/Documents/code/icra2027/part1/bench/results/figures")
 OUT = os.path.expanduser("~/Documents/code/icra2027/part1/bench/results/P1_core_experiments.docx")
 
-H1 = "48604cf33b"
-H0 = "1edc6a523a"
-H3 = "98cb3afd46"
+H1 = "91c8394"
+H0 = "91c8394"
+H3 = "91c8394"
 B3 = f"https://github.com/mardigiorgio/icra2027/blob/{H3}"
 B1 = f"https://github.com/mardigiorgio/icra2027/blob/{H1}"
 B0 = f"https://github.com/mardigiorgio/icra2027/blob/{H0}"
@@ -35,7 +35,7 @@ def _pic(name, width):
         d.add_paragraph(f"[figure {name} pending: its rerun on the 8-body scenes is in progress and replaces this line when done]")
 
 d.add_heading("Part 1, core experiments (design)", level=1)
-d.add_paragraph(f"Build {_dt.datetime.now():%Y-%m-%d %H:%M}. Every experiment is being re-measured on the 8-body clutter scenes (Marco, 2026-09-03) with the current solver; figures marked pending are still running and this document is redelivered as they land.")
+d.add_paragraph(f"Build {_dt.datetime.now():%Y-%m-%d %H:%M}. Every figure and number below is from the 8-body clutter scenes (Marco's ruling of 2026-09-03), measured on 2026-09-03 with icf_warp perf/contact-solve 0fca334 (Newton/Warp) and Drake 1.56.0 (CPU reference). Code citations point at icra2027 commit 91c8394, the code these runs used.")
 p = d.add_paragraph()
 r = p.add_run("Design-only revision, 2026-09-01, on the PI's request: each experiment lists scene, arms, what is varied, what is measured, and code. Scene images are captures from Newton's own viewer (ViewerGL): what is shown is what the simulator draws.")
 r.italic = True
@@ -73,8 +73,8 @@ for t in [
     f"the calibrated MuJoCo solref anchor, self-verifying at fine steps, {B1}/part1/bench/benchmarks/part1_stiffness_sweep.py#L43-L47",
     f"MuJoCo solref calibration anchors, {B1}/part1/scenes/cenic_scenes.py#L66-L69",
     f"scene build, settle loop and depth readout, {B1}/part1/bench/benchmarks/part1_stiffness_sweep.py#L50-L79",
-    f"the sweep cells (arms x steps x tolerances), {B1}/part1/bench/benchmarks/part1_stiffness_sweep.py#L92-L99",
-    f"solref written onto every contact geom, {B1}/part1/bench/four_arms.py#L102-L112",
+    f"the sweep cells (arms x steps x tolerances), {B1}/part1/bench/benchmarks/part1_stiffness_sweep.py#L86-L103",
+    f"solref written onto every contact geom, {B1}/part1/bench/four_arms.py#L103-L113",
 ]:
     d.add_paragraph(t, style="List Bullet")
 
@@ -85,26 +85,26 @@ d.add_paragraph("Soft clutter (8 spheres), world 0 (Newton viewer): t = 0 left, 
 _pic("capture_hard_clutter.png", Inches(5.4))
 d.add_paragraph("Hard clutter (4 spheres + 4 cubes), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right.")
 _pic("workprecision.png", Inches(6.2))
-d.add_paragraph("Figure: wall time to complete the 2 s clutter scene, vs requested tolerance; dotted levels are the fixed steps; gray line is the timeout.")
+d.add_paragraph("Figure: wall time to complete the 2 s clutter scene, vs requested tolerance; dotted levels are the fixed-step arms at δt = 10 ms and 1 ms; the thin gray line is real time (wall equal to simulated time). Any timed-out or budget-limited cell would be drawn as a cross; none occurred.")
 d.add_paragraph("Design:")
 for t in [
     "Scenes (Marco's ruling 2026-09-03: two lattice layers, 8 bodies, since per-world contact cost sets every axis here): soft clutter (8 spheres, k = 1,000 N/m) and hard clutter (4 spheres + 4 cubes, k = 100,000 N/m), dropped into a 30 cm bin; each world its own randomized non-overlapping lattice (the first 8 bodies of the original 20-body stream); 2 s horizon",
     "Arms: ICF EC and MuJoCo EC (curves); ICF fixed and MuJoCo fixed at 10 ms and 1 ms (dotted reference levels)",
-    "Varied: requested tolerance ε in {0.1 ... 0.000001} m; number of parallel worlds N in {1, 1024}; N = 1 rows are 3-trial medians",
+    "Varied: requested tolerance ε in {0.1 ... 0.000001} m; number of parallel worlds N in {1, 1024}; every cell is the median of 3 independent runs",
     "Measured: wall time to complete the 2 s scene; timeout at 100 s per world-second and march-budget exhaustion are marked as crosses",
-    "Held: scene geometry, masses, friction, δt_max = 0.1 s, march budget of 16384 substeps per 0.1 s boundary for every arm (raised from 4096 on 2026-09-03: at ε = 1e-6 on hard clutter the ICF EC arm needs between 4096 and 16384 substeps in the impact phase and completes at 12.4 s per simulated second once allowed to; no arm is limited at 16384)",
+    "Held: scene geometry, masses, friction, δt_max = 0.1 s, march budget of 16384 substeps per 0.1 s boundary for every arm (raised from 4096 on 2026-09-03 after the 20-body hard clutter at ε = 1e-6 needed between 4096 and 16384 substeps in its impact phase; on the 8-body scenes no cell of any arm exhausts the budget at any tolerance)",
     "Status (2026-09-03, evening): both rows measured on the 8-body scenes with the ICF arms on icf_warp perf/contact-solve 0fca334 at the 16384 march budget; the 20-body results of the same day are kept as *_20.csv",
 ]:
     d.add_paragraph(t, style="List Bullet")
 d.add_paragraph("Code:")
 for t in [
-    f"timeout semantics (per world-second), {B0}/part1/bench/benchmarks/part1_workprecision.py#L8-L16",
-    f"accuracy ladder + march budget, {B0}/part1/bench/benchmarks/part1_workprecision.py#L18-L21",
+    f"timeout semantics (per world-second), {B0}/part1/bench/benchmarks/part1_workprecision.py#L6-L16",
+    f"accuracy ladder + march budget, {B0}/part1/bench/benchmarks/part1_workprecision.py#L18-L24",
     f"first attempt k_Init·δt_max, {B0}/part1/bench/four_arms.py#L47",
-    f"inner tolerance rule (CENIC eq. 34), {B0}/part1/bench/four_arms.py#L48",
-    f"contact budgets (>= 2x measured demand), {B0}/part1/bench/four_arms.py#L62-L64",
+    f"inner tolerance rule (CENIC eq. 34), {B0}/part1/bench/four_arms.py#L49-L50",
+    f"contact budgets (>= 2x measured demand), {B0}/part1/bench/four_arms.py#L55-L65",
     f"per-world no-overlap lattice generator, {B3}/part1/scenes/clutter_lattice.py#L38-L86",
-    f"MuJoCo arms on Newton pipeline contacts, {B3}/part1/bench/four_arms.py#L120 and #L150",
+    f"MuJoCo arms on Newton pipeline contacts, {B3}/part1/bench/four_arms.py#L124-L131 and #L157-L162",
 ]:
     d.add_paragraph(t, style="List Bullet")
 
@@ -113,13 +113,13 @@ d.add_heading("Experiment 3, Wall time vs number of parallel worlds", level=2)
 _pic("capture_hard_clutter.png", Inches(5.4))
 d.add_paragraph("Hard clutter (4 spheres + 4 cubes), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right; every world of the batch is its own randomized lattice of this scene.")
 _pic("scaling_hard-clutter.png", Inches(6.2))
-d.add_paragraph("Figure: wall time to complete the 2 s hard clutter scene, vs the number of parallel worlds; band is the spread of 3 independent runs.")
+d.add_paragraph("Figure: wall time to complete the 2 s hard clutter scene, vs the number of parallel worlds. Each point is 20 times the median per-boundary wall of one run over its 20 timed 0.1 s boundaries; the band spans the median to the 90th percentile of those per-boundary walls.")
 d.add_paragraph("Design:")
 for t in [
     "Scene: hard clutter (as in Experiment 2)",
     "Arms: all four; fixed arms at δt = 10 ms, EC arms at ε = 0.001",
     "Varied: number of parallel worlds N = 2^6 ... 2^13; nothing else",
-    "Measured: wall time to complete the 2 s scene, median of 3 independent trials (spread drawn as a band)",
+    "Measured: per-boundary wall over the 20 timed boundaries of one run per cell; the plotted scene time is 20 x the median boundary, the band the median-to-p90 spread of the boundaries",
     "Held: scene, tolerance, timed window (2 s after 0.2 s warm-up)",
     "Status (2026-09-03, evening): all four arms measured on the 8-body hard clutter with the ICF arms on icf_warp perf/contact-solve 0fca334; the 20-body results of the same day are kept as part1_scaling_*_20.csv",
 ]:
@@ -129,12 +129,12 @@ for t in [
     f"runner (per-N subprocess), {B0}/part1/bench/benchmarks/part1_scaling.py#L36",
     f"warm-up handling, {B0}/part1/bench/benchmarks/part1_scaling.py#L44-L47",
     f"median statistic, {B0}/part1/bench/benchmarks/part1_scaling.py#L72",
-    f"defaults: 2 s timed, 0.2 s warm-up, 3 trials, {B0}/part1/bench/benchmarks/part1_scaling.py#L82-L89",
+    f"defaults: 2 s timed, 0.2 s warm-up, δt_fixed = 10 ms, ε = 1e-3, {B0}/part1/bench/benchmarks/part1_scaling.py#L80-L86",
 ]:
     d.add_paragraph(t, style="List Bullet")
 
 # ------------------------------------------------------------------ Exp 4 (new)
-H2 = "80367ff55e"
+H2 = "91c8394"
 B2 = f"https://github.com/mardigiorgio/icra2027/blob/{H2}"
 d.add_heading("Experiment 4, CENIC reference implementation (Drake, CPU) vs this work (Newton/Warp, GPU): wall time vs number of worlds", level=2)
 _pic("capture_hard_clutter.png", Inches(5.4))
@@ -144,7 +144,7 @@ d.add_paragraph("Figure: wall time for the batch of N worlds to complete the 2 s
 d.add_paragraph("Design (replaces the actuated PD push, PI 2026-09-01):")
 for t in [
     "Question: how long a batch of N worlds takes to complete the scene under error-controlled CENIC, reference CPU implementation vs the GPU implementation this paper contributes",
-    "CPU arm: Drake 1.56, integration_scheme = cenic (the reference implementation, shipped in Drake); W = min(N, 96) worker processes on the idle 128-core host, each building ONE diagram and hosting its share of worlds as ~1 MB per-world contexts, so worlds beyond the core count run SEQUENTIALLY on the cores available with no artificial per-world residency cost",
+    "CPU arm: Drake 1.56.0, integration_scheme = cenic (the reference implementation, shipped in Drake); W = min(N, 96) worker processes on the idle 128-core host, each building ONE diagram and hosting its share of worlds as ~1 MB per-world contexts, so worlds beyond the core count run SEQUENTIALLY on the cores available with no artificial per-world residency cost",
     "Lockstep batch semantics in both stacks: every worker advances each of its worlds one 0.1 s boundary, then all workers barrier; all workers start on one shared GO after building and warming up; the parent times one makespan",
     "GPU arm: Newton/Warp CENIC (ICF EC), batched worlds, one fair-protocol cell per N so both stacks share every x point",
     "Scene: the hard clutter of Experiment 2 (8 bodies: 4 spheres + 4 cubes, part1/scenes/clutter_lattice.py `layers` = 2). Both stacks import the same lattice generator, world i seeded identically, so CPU and GPU integrate identical randomized world sets",
@@ -153,17 +153,17 @@ for t in [
     "Held in both stacks: max step 0.1 s, 0.2 s warm-up then 2 s timed, contact constants (k = 100,000 N/m, Hunt-Crossley 1.0 s/m, friction 0.5, stiction tolerance 0.0001); requested tolerance 0.001 in both stacks for the nominal curves",
     "Tolerance note: both stacks run at their requested accuracy 0.001. Drake's `accuracy` is a relative tolerance on its weighted state norm; this work's eps is an absolute position L-inf tolerance in metres, so the two controllers take different step counts on the same world (Drake 543 vs this work 105 accepted steps over the 20 timed boundaries of world 0, both reaching the same rest state); the figure compares the two implementations at their own nominal 0.001",
     "Small-N protocol and trials (2026-09-03): N <= 8 on both stacks are medians of repeated runs (GPU 5 trials: N = 1 0.084 to 0.111 s, N = 2 0.126 to 0.140, N = 4 0.147 to 0.199, N = 8 0.187 to 0.235; CPU 3 trials: N = 1 0.085 to 0.089, N = 2 0.101 to 0.106, N = 4 0.101 to 0.106, N = 8 0.107 to 0.115, N = 16 0.161 to 0.163, N = 32 0.185 to 0.188, N = 64 0.201 to 0.213). When every world has its own worker (N <= 96) the CPU makespan is the slowest world's integration time, because the lockstep barrier there only synchronizes clocks and its file polling (about 55 ms per run) is a harness artifact, not the reference implementation; with more worlds than workers the barrier makespan is the batch time. The barrier makespan is kept alongside in the CSV",
-    "Measured result (seconds to complete the scene, CPU / GPU): 1: 0.0852 / 0.096; 2: 0.101 / 0.128; 4: 0.102 / 0.155; 8: 0.108 / 0.196; 16: 0.161 / 0.3; 32: 0.188 / 0.3; 64: 0.202 / 0.4; 128: 0.472 / 0.5; 256: 0.691 / 0.7; 512: 1.38 / 0.8; 1024: 2.4 / 1; 2048: 4.44 / 1.3; 4096: 8.58 / 1.9; 8192: 16.5 / 3; 16384: 33 / 5.5. Below about 256 worlds the CPU is faster (at one world the GPU's 0.096 s against Drake's 0.085 s; per step the GPU is about six times slower there); the curves cross between 256 and 512 worlds; the GPU is 6.0x faster at 16384 and still sublinear there (exponent 4096 to 16384: GPU 0.77 vs CPU 0.94); saturated per-world cost GPU 0.34 ms vs CPU 2.0 ms",
-    "Solver state for these numbers: icf_warp_adaptive branch perf/contact-solve at e2f39c4 (block-structured assembly on the free-body layout, 24-dof block-sparse Cholesky, narrow-tail march compaction ICF_MARCH_COMPACT=1, exact per-iteration launch folds); physics unchanged (64-world oracle inside the run-to-run envelope, zero solve failures). Before this work the GPU arm cost about 30 ms per added world, 2.1x the CPU, with no crossover",
+    "Measured result (seconds to complete the scene, CPU / GPU): 1: 0.0852 / 0.096; 2: 0.101 / 0.128; 4: 0.102 / 0.155; 8: 0.108 / 0.196; 16: 0.161 / 0.3; 32: 0.188 / 0.3; 64: 0.202 / 0.4; 128: 0.472 / 0.5; 256: 0.691 / 0.7; 512: 1.38 / 0.8; 1024: 2.4 / 1; 2048: 4.44 / 1.3; 4096: 8.58 / 1.9; 8192: 16.5 / 3; 16384: 33 / 5.5. Below about 256 worlds the CPU is faster (at one world the GPU's 0.096 s against Drake's 0.085 s; per step the GPU is about six times slower there); the curves cross between 256 and 512 worlds; the GPU is 6.0x faster at 16384 and still sublinear there (exponent 4096 to 16384: GPU 0.77 vs CPU 0.97); saturated per-world cost GPU 0.34 ms vs CPU 2.0 ms",
+    "Solver state for these numbers: icf_warp_adaptive branch perf/contact-solve at 0fca334 (block-structured assembly on the free-body layout, 24-dof block-sparse Cholesky, narrow-tail march compaction ICF_MARCH_COMPACT=1, exact per-iteration launch folds); physics unchanged (64-world oracle inside the run-to-run envelope, zero solve failures). Before this work the GPU arm cost about 30 ms per added world on the 20-body scene, 2.1x the CPU, with no crossover",
     "Reading: a single world's march is a serial chain on either machine, and one CPU core runs it faster than the GPU (per step about 6x); the GPU's advantage appears only once enough worlds run concurrently to fill the card, which on this scene happens between 256 and 512 worlds, and it grows from there because the GPU adds worlds at a fraction of a millisecond each while the CPU runs them in sequence on its cores. The GPU case additionally rests on co-residence with the learner (no PCIe state transfer in the training loop)",
 ]:
     d.add_paragraph(t, style="List Bullet")
 d.add_paragraph("Code:")
 for t in [
-    f"shared lattice import and scene constants, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L38-L60",
-    f"Drake world build and CENIC configuration, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L66-L135",
-    f"GO-signal barrier, lockstep boundaries, makespan timing, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L137-L196",
-    f"GPU arm on the same protocol (warm-up, timed window, makespan), {B0}/part1/bench/benchmarks/part1_gpu_fair.py#L1-L40",
+    f"shared lattice import and scene constants, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L41-L59",
+    f"Drake world build and CENIC configuration, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L70-L150",
+    f"GO-signal barrier, lockstep boundaries, makespan timing, {B3}/part1/bench/benchmarks/part1_cenic_cpu.py#L157-L205",
+    f"GPU arm on the same protocol (warm-up, timed window, makespan), {B0}/part1/bench/benchmarks/part1_gpu_fair.py#L26-L28 and #L41-L90",
     f"Both ladders, one row per N with the solver commit, {B0}/part1/bench/results/part1_gpu_fair_ladder.csv and {B0}/part1/bench/results/part1_cenic_cpu.csv",
 ]:
     d.add_paragraph(t, style="List Bullet")
