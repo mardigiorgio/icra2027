@@ -38,7 +38,7 @@ def _solver_commit() -> str:
         return "unknown"
 
 
-def _one(n: int, scene: str) -> dict:
+def _one(n: int, scene: str, tol: float) -> dict:
     import warp as wp
 
     from part1.bench.four_arms import _icf, _icf_params, K_INIT, NEWTON_KAPPA, NEWTON_TOL_FLOOR, DT_INNER_MIN, build_model
@@ -49,8 +49,8 @@ def _one(n: int, scene: str) -> dict:
     icf = _icf()
     solver = icf.SolverICFAdaptive(
         model,
-        params=_icf_params({**SCENES[scene].icf, "newton_tolerance": max(NEWTON_KAPPA * TOL, NEWTON_TOL_FLOOR)}),
-        adaptive=icf.IcfAdaptiveParams(tol=TOL, dt_inner_init=K_INIT * BOUNDARY_S, dt_inner_min=DT_INNER_MIN,
+        params=_icf_params({**SCENES[scene].icf, "newton_tolerance": max(NEWTON_KAPPA * tol, NEWTON_TOL_FLOOR)}),
+        adaptive=icf.IcfAdaptiveParams(tol=tol, dt_inner_init=K_INIT * BOUNDARY_S, dt_inner_min=DT_INNER_MIN,
                                        dt_inner_max=BOUNDARY_S, max_substeps=4096),
     )
     pipeline = newton.CollisionPipeline(model)
@@ -78,7 +78,7 @@ def _one(n: int, scene: str) -> dict:
     return {
         "scheme": "icf-adaptive-gpu",
         "protocol": "warm0.2s_time20x0.1s_makespan",
-        "accuracy": TOL,
+        "accuracy": tol,
         "n_worlds": n,
         "makespan_s": round(wall, 1),
         "ms_per_world": round(1000.0 * wall / n, 2),
@@ -93,16 +93,17 @@ def main() -> int:
     p.add_argument("--ns", nargs="*", type=int, default=[1024, 2048, 4096, 8192, 16384])
     p.add_argument("--single", type=int, default=None)
     p.add_argument("--scene", default="hard-clutter", help="a clutter scene from part1.scenes.cenic_scenes.SCENES")
+    p.add_argument("--tol", type=float, default=TOL, help="the GPU controller's absolute position tolerance eps_acc [m]")
     args = p.parse_args()
     if args.single is not None:
         import json
 
-        print("ROW " + json.dumps(_one(args.single, args.scene)), flush=True)
+        print("ROW " + json.dumps(_one(args.single, args.scene, args.tol)), flush=True)
         return 0
     rows = []
     out_path = OUT if args.scene == "hard-clutter" else OUT.replace("part1_gpu_fair_ladder.csv", f"part1_gpu_fair_ladder_{args.scene}.csv")
     for n in args.ns:
-        out = subprocess.run([sys.executable, os.path.abspath(__file__), "--single", str(n), "--scene", args.scene],
+        out = subprocess.run([sys.executable, os.path.abspath(__file__), "--single", str(n), "--scene", args.scene, "--tol", repr(args.tol)],
                              capture_output=True, text=True)
         line = [ln for ln in out.stdout.splitlines() if ln.startswith("ROW ")]
         if not line:

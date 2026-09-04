@@ -133,7 +133,7 @@ def _worker(world_seeds: list[int], rendezvous: str) -> None:
     me = os.getpid()
     open(os.path.join(rendezvous, f"ready_{me}"), "w").close()
     while not os.path.exists(os.path.join(rendezvous, "go_0")):
-        time.sleep(0.02)
+        time.sleep(0.0002)
     n_bounds = int(round(TIMED_S / BOUNDARY_S))
     for k in range(1, n_bounds + 1):
         target = WARMUP_S + k * BOUNDARY_S
@@ -142,7 +142,7 @@ def _worker(world_seeds: list[int], rendezvous: str) -> None:
         open(os.path.join(rendezvous, f"b{k}_{me}"), "w").close()
         if k < n_bounds:
             while not os.path.exists(os.path.join(rendezvous, f"go_{k}")):
-                time.sleep(0.005)
+                time.sleep(0.0002)
     open(os.path.join(rendezvous, f"done_{me}"), "w").close()
     print("ROW " + json.dumps({"worlds": len(sims)}), flush=True)
 
@@ -169,7 +169,7 @@ def _run_batch(n: int) -> dict:
         n_bounds = int(round(TIMED_S / BOUNDARY_S))
         for k in range(1, n_bounds):
             while _count(rv, f"b{k}_") < workers:
-                time.sleep(0.005)
+                time.sleep(0.0002)
             open(os.path.join(rv, f"go_{k}"), "w").close()
         while _count(rv, "done_") < workers:
             time.sleep(0.05)

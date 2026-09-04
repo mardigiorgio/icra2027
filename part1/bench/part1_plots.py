@@ -193,8 +193,11 @@ def _cenic_pair(cpu_file: str, gpu_file: str):
     ladder = _rows(gpu_file)
     if not ladder or not cpu:
         return None
+    # ... one curve per tolerance measured at that commit (the nominal
+    # eps = 1e-3 and the step-matched one), each labeled with its eps.
     latest = ladder[-1]["solver_commit"]
-    gpu = sorted((r for r in ladder if r["solver_commit"] == latest), key=lambda r: r["n_worlds"])
+    tols = sorted({r["accuracy"] for r in ladder if r["solver_commit"] == latest}, reverse=True)
+    gpu = {t: sorted((r for r in ladder if r["solver_commit"] == latest and r["accuracy"] == t), key=lambda r: r["n_worlds"]) for t in tols}
     return cpu, gpu
 
 
@@ -207,10 +210,14 @@ def cenic_scaling() -> None:
     hard clutter; panel (b), drawn when its ladders exist, the same scene at
     2 lattice layers (8 bodies), where the GPU's per-world work is lower and
     it saturates later."""
-    panels = [("(a) 20 bodies", _cenic_pair("part1_cenic_cpu.csv", "part1_gpu_fair_ladder.csv"))]
+    # The paper's Exp-4 scene is the 8-body hard clutter (Marco, 2026-09-03);
+    # the 20-body ladders stay in the CSVs and are drawn only if the 8-body
+    # ones are missing.
     light = _cenic_pair("part1_cenic_cpu_hard-clutter-8.csv", "part1_gpu_fair_ladder_hard-clutter-8.csv")
     if light is not None:
-        panels.append(("(b) 8 bodies", light))
+        panels = [("8 bodies", light)]
+    else:
+        panels = [("20 bodies", _cenic_pair("part1_cenic_cpu.csv", "part1_gpu_fair_ladder.csv"))]
     panels = [(t, pr) for t, pr in panels if pr is not None]
     if not panels:
         return
@@ -219,8 +226,12 @@ def cenic_scaling() -> None:
     for ax, (title, (cpu, gpu)) in zip(axes, panels):
         ax.plot([r["n_worlds"] for r in cpu], [r["makespan_s"] for r in cpu],
                 color="#7f3c8d", marker="s", ms=5, ls="-", label="CENIC reference (Drake, CPU, 128 cores)")
-        ax.plot([r["n_worlds"] for r in gpu], [r["makespan_s"] for r in gpu],
-                ms=5, **dict(STYLE["icf-adaptive"], label="CENIC on GPU (Newton/Warp, this work)"))
+        for k, (t, rows) in enumerate(gpu.items()):
+            st = dict(STYLE["icf-adaptive"])
+            if k > 0:
+                st["ls"] = "--"
+            ax.plot([r["n_worlds"] for r in rows], [r["makespan_s"] for r in rows],
+                    ms=5, **dict(st, label=f"CENIC on GPU (Newton/Warp, this work), eps = {t:g}"))
         ax.set_xscale("log", base=2)
         ax.set_yscale("log")
         ax.set_xlabel("Number of concurrent worlds")
