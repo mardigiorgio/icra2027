@@ -1,0 +1,5 @@
+scheme,mode,accuracy,n_worlds,workers,makespan_s,wall_ms_per_boundary
+drake-cenic-cpu,lockstep,0.001,1,1,0.14124987926334143,7.062493963167071
+drake-cenic-cpu,lockstep,0.001,2,2,0.15949117997661233,7.9745589988306165
+drake-cenic-cpu,lockstep,0.001,4,4,0.16969098709523678,8.484549354761839
+drake-cenic-cpu,lockstep,0.001,8,8,0.18532176269218326,9.266088134609163
