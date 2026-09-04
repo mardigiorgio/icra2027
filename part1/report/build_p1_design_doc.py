@@ -19,7 +19,23 @@ B1 = f"https://github.com/mardigiorgio/icra2027/blob/{H1}"
 B0 = f"https://github.com/mardigiorgio/icra2027/blob/{H0}"
 
 d = Document()
+
+# Freshness gate: every figure must postdate the 8-body scene switch
+# (2026-09-03 20:45 local); an older file means its rerun is still in flight
+# and the doc says so instead of showing a stale 20-body figure.
+import datetime as _dt
+_FRESH = _dt.datetime(2026, 9, 3, 20, 45).timestamp()
+
+
+def _pic(name, width):
+    path = os.path.join(FIG, name)
+    if os.path.exists(path) and os.path.getmtime(path) >= _FRESH:
+        d.add_picture(path, width=width)
+    else:
+        d.add_paragraph(f"[figure {name} pending: its rerun on the 8-body scenes is in progress and replaces this line when done]")
+
 d.add_heading("Part 1, core experiments (design)", level=1)
+d.add_paragraph(f"Build {_dt.datetime.now():%Y-%m-%d %H:%M}. Every experiment is being re-measured on the 8-body clutter scenes (Marco, 2026-09-03) with the current solver; figures marked pending are still running and this document is redelivered as they land.")
 p = d.add_paragraph()
 r = p.add_run("Design-only revision, 2026-09-01, on the PI's request: each experiment lists scene, arms, what is varied, what is measured, and code. Scene images are captures from Newton's own viewer (ViewerGL): what is shown is what the simulator draws.")
 r.italic = True
@@ -37,9 +53,9 @@ for t in [
 
 # ------------------------------------------------------------------ Exp 1
 d.add_heading("Experiment 1, Contact stiffness realization: penetration vs step and vs tolerance", level=2)
-d.add_picture(os.path.join(FIG, "capture_stiffness.png"), width=Inches(3.2))
+_pic("capture_stiffness.png", Inches(3.2))
 d.add_paragraph("Scene (Newton viewer): the 65 g sphere at rest on the plane.")
-d.add_picture(os.path.join(FIG, "stiffness_sweep.png"), width=Inches(6.2))
+_pic("stiffness_sweep.png", Inches(6.2))
 d.add_paragraph("Status (2026-09-03, evening): re-run on icf_warp perf/contact-solve 0fca334; the scene is the single stiffness sphere and did not change.")
 d.add_paragraph("Design:")
 for t in [
@@ -64,11 +80,11 @@ for t in [
 
 # ------------------------------------------------------------------ Exp 2
 d.add_heading("Experiment 2, Work-precision on the clutter scenes", level=2)
-d.add_picture(os.path.join(FIG, "capture_soft_clutter.png"), width=Inches(5.4))
+_pic("capture_soft_clutter.png", Inches(5.4))
 d.add_paragraph("Soft clutter (8 spheres), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right.")
-d.add_picture(os.path.join(FIG, "capture_hard_clutter.png"), width=Inches(5.4))
+_pic("capture_hard_clutter.png", Inches(5.4))
 d.add_paragraph("Hard clutter (4 spheres + 4 cubes), world 0 (Newton viewer): t = 0 left, settled at 1.5 s right.")
-d.add_picture(os.path.join(FIG, "workprecision.png"), width=Inches(6.2))
+_pic("workprecision.png", Inches(6.2))
 d.add_paragraph("Figure: wall time to complete the 2 s clutter scene, vs requested tolerance; dotted levels are the fixed steps; gray line is the timeout.")
 d.add_paragraph("Design:")
 for t in [
@@ -95,7 +111,7 @@ for t in [
 # ------------------------------------------------------------------ Exp 3
 d.add_heading("Experiment 3, Wall time vs number of parallel worlds", level=2)
 d.add_paragraph("Scene: hard clutter, as captured under Experiment 2.")
-d.add_picture(os.path.join(FIG, "scaling_hard-clutter.png"), width=Inches(6.2))
+_pic("scaling_hard-clutter.png", Inches(6.2))
 d.add_paragraph("Figure: wall time to complete the 2 s hard clutter scene, vs the number of parallel worlds; band is the spread of 3 independent runs.")
 d.add_paragraph("Design:")
 for t in [
@@ -120,7 +136,7 @@ for t in [
 H2 = "80367ff55e"
 B2 = f"https://github.com/mardigiorgio/icra2027/blob/{H2}"
 d.add_heading("Experiment 4, CENIC reference implementation (Drake, CPU) vs this work (Newton/Warp, GPU): wall time vs number of worlds", level=2)
-d.add_picture(os.path.join(FIG, "cenic_scaling.png"), width=Inches(6.2))
+_pic("cenic_scaling.png", Inches(6.2))
 d.add_paragraph("Figure: wall time for the batch of N worlds to complete the 2 s scene (warm-up to 0.2 s excluded, one makespan over the 20 timed control boundaries, identical protocol on both stacks), CPU reference (128 cores, 96 workers, worlds beyond the cores in sequence) vs this work (RTX 5090). Scene: hard clutter at two lattice layers, 8 bodies, both stacks drawing the same bodies from the same seeded stream. Two GPU curves: the nominal tolerance (solid, eps = 1e-3) and the step-matched one (dashed, eps = 3e-5), see the tolerance note below.")
 d.add_paragraph("Design (replaces the actuated PD push, PI 2026-09-01):")
 for t in [
